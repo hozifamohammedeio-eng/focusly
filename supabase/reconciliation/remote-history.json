@@ -1,0 +1,54 @@
+{
+  "projectId": "lxlpnynpatnsfvvvxwwx",
+  "note": "MCP assigns deployment timestamps. These are genuine applied versions; historical source files were not renamed and remote history was not repaired or rewritten.",
+  "migrations": [
+    {
+      "version": "20260914093941",
+      "name": "preserve_legacy_schema",
+      "source": "reconciliation/20260914093239_preserve_legacy_schema.sql",
+      "normalizedSqlMatches": true
+    },
+    {
+      "version": "20260914094003",
+      "name": "create_focusly_foundation",
+      "source": "migrations/20260913174507_create_focusly_foundation.sql",
+      "normalizedSqlMatches": true
+    },
+    {
+      "version": "20260914094014",
+      "name": "auth_onboarding",
+      "source": "migrations/20260913183022_auth_onboarding.sql",
+      "normalizedSqlMatches": true
+    },
+    {
+      "version": "20260914094143",
+      "name": "import_legacy_user_data",
+      "source": "migrations/20260914094033_import_legacy_user_data.sql",
+      "normalizedSqlMatches": true
+    },
+    {
+      "version": "20260914094744",
+      "name": "index_ownership_foreign_keys",
+      "source": "migrations/20260914094600_index_ownership_foreign_keys.sql",
+      "normalizedSqlMatches": true
+    },
+    {
+      "version": "20260914150311",
+      "name": "phase3_planning",
+      "source": "migrations/20260914095642_phase3_planning.sql",
+      "normalizedSqlMatches": true
+    },
+    {
+      "version": "20260915103116",
+      "name": "phase4_focus_progress",
+      "source": "migrations/20260915100215_phase4_focus_progress.sql",
+      "normalizedSqlMatches": true
+    },
+    {
+      "version": "20260921114959",
+      "name": "egypt_education",
+      "source": "migrations/20260920183348_egypt_education.sql",
+      "normalizedSqlMatches": true
+    }
+  ]
+}

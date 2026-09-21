@@ -1,0 +1,178 @@
+[
+  {
+    "school_stage": "preparatory",
+    "school_year": "prep_1",
+    "education_system": null,
+    "academic_branch": null,
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "preparatory",
+    "school_year": "prep_2",
+    "education_system": null,
+    "academic_branch": null,
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "preparatory",
+    "school_year": "prep_3",
+    "education_system": null,
+    "academic_branch": null,
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_1",
+    "education_system": "general_secondary",
+    "academic_branch": null,
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_1",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "general_secondary",
+    "academic_branch": "scientific",
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "general_secondary",
+    "academic_branch": "literary",
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "medicine_life_sciences",
+    "specialization_subject": "physics"
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "medicine_life_sciences",
+    "specialization_subject": "mathematics"
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "engineering_computer_science",
+    "specialization_subject": "chemistry"
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "engineering_computer_science",
+    "specialization_subject": "programming_ai"
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "business",
+    "specialization_subject": "accounting"
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "business",
+    "specialization_subject": "business_administration"
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "arts_humanities",
+    "specialization_subject": "psychology"
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_2",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "arts_humanities",
+    "specialization_subject": "second_language"
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_3",
+    "education_system": "general_secondary",
+    "academic_branch": "science",
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_3",
+    "education_system": "general_secondary",
+    "academic_branch": "mathematics",
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_3",
+    "education_system": "general_secondary",
+    "academic_branch": "literary",
+    "academic_track": null,
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_3",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "medicine_life_sciences",
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_3",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "engineering_computer_science",
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_3",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "business",
+    "specialization_subject": null
+  },
+  {
+    "school_stage": "secondary",
+    "school_year": "secondary_3",
+    "education_system": "egyptian_baccalaureate",
+    "academic_branch": null,
+    "academic_track": "arts_humanities",
+    "specialization_subject": null
+  }
+]

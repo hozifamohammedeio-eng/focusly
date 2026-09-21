@@ -1,0 +1,15 @@
+# Local configuration and credentials are never deployment sources.
+.env
+.env.*
+.vercel
+.supabase
+.npm-cache
+node_modules
+.next
+coverage
+out
+*.tsbuildinfo
+*.log
+# Development-only checks and migrations are not needed by the web runtime.
+/tests/
+/supabase/

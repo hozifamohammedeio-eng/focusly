@@ -1,0 +1,34 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# testing and builds
+/coverage
+/.next/
+/out/
+
+# local tools
+/.npm-cache/
+/.supabase/
+/supabase/.temp/
+/.vercel/
+
+# environment files (the template is committed)
+.env*
+!.env.example
+
+# editor and OS files
+.DS_Store
+Thumbs.db
+*.pem
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
