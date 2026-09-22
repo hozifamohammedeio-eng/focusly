@@ -10,7 +10,7 @@ import { useCopy } from "@/features/i18n/use-copy";
 import { subjectLabel } from "@/features/i18n/phase2";
 export type EditorState =
   | { entity: "subjects"; row?: Subject }
-  | { entity: "tasks"; row?: Task }
+  | { entity: "tasks"; row?: Task; day?: string }
   | { entity: "study_blocks"; row?: Block; day?: string };
 export function Editor({
   editor,
@@ -57,8 +57,15 @@ export function Editor({
       : {
           day:
             task?.due_on ||
-            (editor.entity === "study_blocks" ? editor.day || today : ""),
-          time: editor.entity === "study_blocks" ? "16:00" : "",
+            (editor.entity === "tasks"
+              ? editor.day || today
+              : editor.entity === "study_blocks"
+                ? editor.day || today
+                : ""),
+          time:
+            editor.entity === "study_blocks"
+              ? "16:00"
+              : "",
         };
   const label =
     editor.entity === "subjects"
@@ -176,8 +183,15 @@ export function Editor({
                 }
                 name="date"
                 type="date"
-                required={editor.entity === "study_blocks"}
-                defaultValue={initial.day}
+                required={
+                  editor.entity ===
+                    "study_blocks" ||
+                  editor.entity ===
+                    "tasks"
+                }
+                defaultValue={
+                  initial.day
+                }
               />
               <Field
                 label={editor.entity === "tasks" ? t.time : t.start}

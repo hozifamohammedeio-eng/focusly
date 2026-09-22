@@ -52,14 +52,26 @@ export function monthMove(day: string, delta: number) {
 }
 export function validZone(zone: string) {
   try {
-    new Intl.DateTimeFormat("en", { timeZone: zone }).format();
+    dateFormatter("en", { timeZone: zone }).format();
     return zone.length <= 100;
   } catch {
     return false;
   }
 }
+// Formatters contain no user data. Bound the cache for user-entered time zones.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+function dateFormatter(locale: string, options: Intl.DateTimeFormatOptions) {
+  const key = JSON.stringify([locale, options]);
+  let formatter = formatters.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, options);
+    if (formatters.size >= 64) formatters.delete(formatters.keys().next().value!);
+    formatters.set(key, formatter);
+  }
+  return formatter;
+}
 function parts(instant: string | number, zone: string) {
-  const p = new Intl.DateTimeFormat("en-CA", {
+  const p = dateFormatter("en-CA", {
     timeZone: zone,
     year: "numeric",
     month: "2-digit",
@@ -112,23 +124,25 @@ export function formatDay(
   locale: string,
   options: Intl.DateTimeFormatOptions = { dateStyle: "medium" },
 ) {
-  return new Intl.DateTimeFormat(locale, {
+  return dateFormatter(locale, {
     ...options,
     timeZone: "UTC",
   }).format(new Date(day + "T12:00:00Z"));
 }
 export function formatTime(instant: string, locale: string, zone: string) {
-  return new Intl.DateTimeFormat(locale, {
+  return dateFormatter(locale, {
     timeZone: zone,
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(instant));
 }
 export function formatRange(from: string, to: string, locale: string) {
-  return new Intl.DateTimeFormat(locale, {
+  return dateFormatter(locale, {
     dateStyle: "medium",
     timeZone: "UTC",
-  }).formatRange(new Date(from + "T12:00:00Z"), new Date(to + "T12:00:00Z"));
+  }).formatRange(new Date(from + "T12:00:00Z"), new Date(to + "T12:00:00Z"))
+    // ICU versions in Node and browsers differ in range separator spacing.
+    .replace(/[\u00a0\u2009\u202f]/g, " ");
 }
 export function taskDay(task: Task, zone: string) {
   return task.due_on || (task.due_at ? dayInZone(task.due_at, zone) : null);

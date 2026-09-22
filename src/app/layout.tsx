@@ -1,4 +1,4 @@
-import { getStudent } from "@/features/auth/session";
+import { getSettings } from "@/features/auth/session";
 import { cookies } from "next/headers";
 import {
   ACCENTS,
@@ -15,19 +15,19 @@ import { AppProviders } from "@/components/providers/app-providers";
 import "./globals.css";
 
 const inter = localFont({
-  src: "./fonts/Inter.ttf",
+  src: "./fonts/Inter.woff2",
   variable: "--font-inter",
   display: "swap",
   weight: "100 900",
 });
 const editorial = localFont({
-  src: "./fonts/SourceSerif4.ttf",
+  src: "./fonts/SourceSerif4.woff2",
   variable: "--font-editorial",
   display: "swap",
   weight: "200 900",
 });
 const cairo = localFont({
-  src: "./fonts/Cairo.ttf",
+  src: "./fonts/Cairo.woff2",
   variable: "--font-cairo",
   display: "swap",
   weight: "200 1000",
@@ -53,7 +53,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
-  const student = await getStudent();
+  const student = await getSettings();
   const preferences = await cookies();
   const guestTheme = preferences.get("focusly-theme")?.value as Theme;
   const guestAccent = preferences.get("focusly-accent")?.value as Accent;

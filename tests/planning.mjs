@@ -11,7 +11,14 @@ import {
   taskDay,
   dateAdd,
   weekStart,
+  formatRange,
 } from "../src/features/planning/logic.ts";
+test("planner date ranges use stable spaces across server/browser ICU versions", () => {
+  assert.equal(formatRange("2026-09-19", "2026-09-25", "en"), "Sep 19 – 25, 2026");
+  for (const locale of ["en", "ar"]) {
+    assert.doesNotMatch(formatRange("2026-09-19", "2026-09-25", locale), /[\u00a0\u2009\u202f]/);
+  }
+});
 const task = (id, fields = {}) => ({
   id,
   title: id,

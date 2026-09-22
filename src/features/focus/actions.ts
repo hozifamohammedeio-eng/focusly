@@ -37,7 +37,14 @@ export async function focusAction(
       console.error("focus_transition_failed", { code: r.error.code });
       return { error: true };
     }
-    revalidatePath("/app", "layout");
+    // Recovery/pause/resume return authoritative timer state directly. Only a
+    // terminal session can change dashboard/statistics aggregates.
+    const reply = r.data as unknown as TimerReply;
+    if (reply.session?.timer_state === "completed" || reply.session?.timer_state === "discarded") {
+      revalidatePath("/app");
+      revalidatePath("/app/statistics");
+      revalidatePath("/app/profile");
+    }
     return r.data as unknown as TimerReply;
   } catch {
     return { error: true };

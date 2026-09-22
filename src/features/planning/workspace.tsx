@@ -6,6 +6,7 @@ import {
   useTransition,
 } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Card } from "@/components/ui/card";
@@ -17,7 +18,9 @@ import { subjectLabel } from "@/features/i18n/phase2";
 import { phase3 } from "@/features/i18n/phase3";
 import type { PlanningData } from "./data";
 import { mutate } from "./actions";
-import { Editor, DeleteDialog, type EditorState } from "./editor";
+import type { EditorState } from "./editor";
+const Editor = dynamic(() => import("./editor").then((module) => module.Editor));
+const DeleteDialog = dynamic(() => import("./editor").then((module) => module.DeleteDialog));
 import {
   dateAdd,
   dayInZone,
@@ -74,8 +77,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
     const timer = setTimeout(() => setMessage(""), 4500);
     return () => clearTimeout(timer);
   }, [message]);
-  const [filter, setFilter] = useState("all"),
-    [subjectFilter, setSubjectFilter] = useState(""),
+  const [subjectFilter, setSubjectFilter] = useState(""),
     [priority, setPriority] = useState(""),
     [archived, setArchived] = useState(false);
   const [week, setWeek] = useState(""),
@@ -201,6 +203,60 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
       ))}
     </ul>
   );
+  const plannerTaskRows = (tasks: Task[]) =>
+    tasks.length ? (
+      <ul className="grid gap-2">
+        {tasks.map((task) => (
+          <li
+            key={task.id}
+            className={`flex items-start gap-3 rounded-2xl border px-3 py-3 ${
+              task.status === "completed"
+                ? "opacity-60"
+                : ""
+            }`}
+          >
+            <label className="completion-target mt-0.5">
+              <input
+                type="checkbox"
+                className="completion-check"
+                checked={task.status === "completed"}
+                disabled={pending}
+                onChange={() => complete(task)}
+                aria-label={`${
+                  task.status === "completed"
+                    ? t.markIncomplete
+                    : t.markComplete
+                }: ${task.title}`}
+              />
+            </label>
+
+            <button
+              type="button"
+              className="min-w-0 flex-1 break-words text-start text-sm font-semibold"
+              onClick={() =>
+                setEditor({
+                  entity: "tasks",
+                  row: task,
+                })
+              }
+            >
+              {task.title}
+            </button>
+
+            <span className="priority-badge shrink-0">
+              {t[task.priority]}
+            </span>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="empty-small">
+        {locale === "ar"
+          ? "لا توجد مهام في هذا اليوم"
+          : "No tasks for this day"}
+      </p>
+    );
+
   const sessionCard = (occ: Occurrence) => (
     <button
       key={occ.block.id + occ.starts}
@@ -288,26 +344,35 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
     today,
     zone,
   ).slice(0, 5);
-  const next = occurrences(data.blocks, today, dateAdd(today, 28), zone).find(
+  const next = view === "home" ? occurrences(data.blocks, today, dateAdd(today, 28), zone).find(
     (o) => Date.parse(o.starts) >= Date.parse(now),
-  );
+  ) : undefined;
   const filtered = filterTasks(
     data.tasks,
-    filter,
+    "all",
     subjectFilter,
     priority,
     today,
     zone,
-  );
-  const weekly = occurrences(
+  ).filter((task) => taskDay(task, zone) === today);
+
+  const undatedTasks = filterTasks(
+    data.tasks,
+    "all",
+    subjectFilter,
+    priority,
+    today,
+    zone,
+  ).filter((task) => !taskDay(task, zone));
+  const weekly = view === "planner" ? occurrences(
     data.blocks,
     currentWeek,
     dateAdd(currentWeek, 6),
     zone,
-  );
+  ) : [];
   const calendarStart = weekStart(currentMonth),
     calendarEnd = dateAdd(calendarStart, 41),
-    calendarBlocks = occurrences(data.blocks, calendarStart, calendarEnd, zone);
+    calendarBlocks = view === "calendar" ? occurrences(data.blocks, calendarStart, calendarEnd, zone) : [];
   const selectedTasks = filterTasks(
     data.tasks,
     "all",
@@ -316,7 +381,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
     today,
     zone,
   ).filter((task) => taskDay(task, zone) === day);
-  const selectedBlocks = occurrences(data.blocks, day, day, zone);
+  const selectedBlocks = view === "planner" || view === "calendar" ? occurrences(data.blocks, day, day, zone) : [];
   return (
     <main id="main" className="study-main">
       <div className="page-heading">
@@ -526,82 +591,138 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
       )}
       {view === "tasks" && (
         <>
-          <div className="task-toolbar">
-            <div className="flex flex-wrap gap-1" aria-label={t.tasks}>
-              {(["all", "today", "upcoming", "completed"] as const).map(
-                (key) => (
-                  <Button
-                    variant="ghost"
-                    className="filter-button"
-                    aria-pressed={filter === key}
-                    key={key}
-                    onClick={() => setFilter(key)}
-                  >
-                    {t[key]}
-                  </Button>
-                ),
-              )}
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow mb-2">
+                {formatDay(today, locale, {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+
+              <h2 className="text-2xl font-semibold tracking-tight">
+                {t.todayTasks}
+              </h2>
+
+              <p className="muted mt-2 text-sm">
+                {locale === "ar"
+                  ? "هنا هتظهر مهام النهارده فقط. مهام الأيام السابقة محفوظة في التخطيط الأسبوعي."
+                  : "Only today's tasks appear here. Previous days stay available in the weekly planner."}
+              </p>
             </div>
+
+            <span className="muted text-sm">
+              {number(filtered.length)} {t.tasks}
+            </span>
+          </div>
+
+          <div className="task-toolbar">
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="sr-only" htmlFor="subject-filter">
+              <label
+                className="sr-only"
+                htmlFor="subject-filter"
+              >
                 {t.subject}
               </label>
+
               <select
                 id="subject-filter"
                 className="field"
                 value={subjectFilter}
-                onChange={(e) => setSubjectFilter(e.target.value)}
+                onChange={(e) =>
+                  setSubjectFilter(
+                    e.target.value,
+                  )
+                }
               >
-                <option value="">{t.allSubjects}</option>
+                <option value="">
+                  {t.allSubjects}
+                </option>
+
                 {data.subjects.map((s) => (
-                  <option value={s.id} key={s.id}>
+                  <option
+                    value={s.id}
+                    key={s.id}
+                  >
                     {subjectLabel(p2, s.name)}
-                    {s.archived_at ? ` (${t.archived})` : ""}
+
+                    {s.archived_at
+                      ? ` (${t.archived})`
+                      : ""}
                   </option>
                 ))}
               </select>
-              <label className="sr-only" htmlFor="priority-filter">
+
+              <label
+                className="sr-only"
+                htmlFor="priority-filter"
+              >
                 {t.priority}
               </label>
+
               <select
                 id="priority-filter"
                 className="field"
                 value={priority}
-                onChange={(e) => setPriority(e.target.value)}
+                onChange={(e) =>
+                  setPriority(
+                    e.target.value,
+                  )
+                }
               >
-                <option value="">{t.allPriorities}</option>
-                {(["low", "medium", "high"] as const).map((p) => (
-                  <option value={p} key={p}>
+                <option value="">
+                  {t.allPriorities}
+                </option>
+
+                {(
+                  [
+                    "low",
+                    "medium",
+                    "high",
+                  ] as const
+                ).map((p) => (
+                  <option
+                    value={p}
+                    key={p}
+                  >
                     {t[p]}
                   </option>
                 ))}
               </select>
             </div>
           </div>
-          <p className="muted mb-4 text-xs">{t.sort}</p>
+
           <div className="surface overflow-hidden">
             {filtered.length ? (
               taskRows(filtered)
             ) : (
               <div className="empty-state">
                 <h2>
-                  {!data.tasks.length
-                    ? t.noTasks
-                    : filter === "today"
-                      ? t.noToday
-                      : t.noMatches}
+                  {t.noToday}
                 </h2>
+
                 <p className="muted">
-                  {!data.tasks.length ? t.noTasksHint : ""}
+                  {locale === "ar"
+                    ? "ابدأ بإضافة مهام النهارده."
+                    : "Start by adding today's tasks."}
                 </p>
-                <Button onClick={() => setEditor({ entity: "tasks" })}>
-                  {t.newTask}
+
+                <Button
+                  onClick={() =>
+                    setEditor({
+                      entity: "tasks",
+                    })
+                  }
+                >
+                  + {t.newTask}
                 </Button>
-                {data.tasks.length > 0 && (
+
+                {(subjectFilter ||
+                  priority) && (
                   <Button
                     variant="ghost"
                     onClick={() => {
-                      setFilter("all");
                       setPriority("");
                       setSubjectFilter("");
                     }}
@@ -612,8 +733,39 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
               </div>
             )}
           </div>
+
+          {undatedTasks.length > 0 && (
+            <div className="mt-8">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <h2 className="text-lg font-semibold">
+                  {locale === "ar"
+                    ? "مهام قديمة بدون تاريخ"
+                    : "Older undated tasks"}
+                </h2>
+
+                <span className="muted text-sm">
+                  {number(
+                    undatedTasks.length,
+                  )}
+                </span>
+              </div>
+
+              <p className="muted mb-4 text-sm">
+                {locale === "ar"
+                  ? "دي مهام اتعملت قبل نظام الأيام. افتح المهمة وحدد لها تاريخ علشان تتحط في يومها."
+                  : "These tasks were created before daily organization. Edit them and choose a date to place them in the correct day."}
+              </p>
+
+              <div className="surface overflow-hidden">
+                {taskRows(
+                  undatedTasks,
+                )}
+              </div>
+            </div>
+          )}
         </>
       )}
+
       {view === "planner" && (
         <>
           <div className="date-toolbar">
@@ -684,17 +836,70 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
                         {number(Number(d.slice(-2)))}
                       </span>
                     </h2>
-                    <Button
-                      variant="ghost"
-                      onClick={() => plan(d)}
-                      aria-label={`${t.plan}: ${formatDay(d, locale)}`}
-                    >
-                      +
-                    </Button>
+                    <div className="flex flex-wrap gap-1">
+                      <Button
+                        variant="ghost"
+                        onClick={() =>
+                          setEditor({
+                            entity: "tasks",
+                            day: d,
+                          })
+                        }
+                        aria-label={`${t.newTask}: ${formatDay(
+                          d,
+                          locale,
+                        )}`}
+                      >
+                        + {t.tasks}
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        onClick={() =>
+                          plan(d)
+                        }
+                        aria-label={`${t.plan}: ${formatDay(
+                          d,
+                          locale,
+                        )}`}
+                      >
+                        + {t.planned}
+                      </Button>
+                    </div>
                   </div>
-                  {sessionList(
-                    weekly.filter((o) => dayInZone(o.starts, zone) === d),
-                  )}
+                  <div className="grid gap-5">
+                    <div>
+                      <p className="muted mb-3 text-xs font-semibold">
+                        {t.tasks}
+                      </p>
+
+                      {plannerTaskRows(
+                        data.tasks.filter(
+                          (task) =>
+                            taskDay(
+                              task,
+                              zone,
+                            ) === d,
+                        ),
+                      )}
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <p className="muted mb-3 text-xs font-semibold">
+                        {t.planned}
+                      </p>
+
+                      {sessionList(
+                        weekly.filter(
+                          (o) =>
+                            dayInZone(
+                              o.starts,
+                              zone,
+                            ) === d,
+                        ),
+                      )}
+                    </div>
+                  </div>
                 </section>
               ),
             )}

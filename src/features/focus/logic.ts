@@ -28,21 +28,55 @@ export function elapsedSeconds(
   >,
   now: number,
 ) {
-  if (s.timer_state === "completed" || s.timer_state === "discarded")
+  if (
+    s.timer_state ===
+      "completed" ||
+    s.timer_state ===
+      "discarded"
+  )
     return s.duration_seconds;
-  return Math.min(
-    s.planned_seconds ?? 0,
+
+  const elapsed =
     Math.max(
       0,
       s.accumulated_seconds +
-        (s.timer_state === "running" && s.running_since
-          ? Math.floor((now - Date.parse(s.running_since)) / 1000)
+        (s.timer_state ===
+          "running" &&
+        s.running_since
+          ? Math.floor(
+              (now -
+                Date.parse(
+                  s.running_since,
+                )) /
+                1000,
+            )
           : 0),
-    ),
-  );
+    );
+
+  return s.planned_seconds ===
+    null
+    ? elapsed
+    : Math.min(
+        s.planned_seconds,
+        elapsed,
+      );
 }
-export function remainingSeconds(s: FocusSession, now: number) {
-  return Math.max(0, (s.planned_seconds ?? 0) - elapsedSeconds(s, now));
+
+export function remainingSeconds(
+  s: FocusSession,
+  now: number,
+) {
+  if (
+    s.planned_seconds ===
+    null
+  )
+    return 0;
+
+  return Math.max(
+    0,
+    s.planned_seconds -
+      elapsedSeconds(s, now),
+  );
 }
 export function stalePaused(s: FocusSession, now: number) {
   return (

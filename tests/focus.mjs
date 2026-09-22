@@ -1,5 +1,32 @@
 import test from "node:test";
+import fs from "node:fs";
+import ts from "typescript";
 import assert from "node:assert/strict";
+
+test("timer recovery preserves auth checks without invalidating the app layout", async () => {
+  const source = fs.readFileSync(new URL("../src/features/focus/actions.ts", import.meta.url), "utf8");
+  const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+  const invalidated = [];
+  let authenticated = true, calls = 0, state = "running";
+  const exports = {};
+  new Function("require", "exports", code)((name) => {
+    if (name === "next/cache") return { revalidatePath: (...args) => invalidated.push(args) };
+    if (name === "@/lib/supabase/server") return { createClient: async () => ({
+      auth: { getUser: async () => ({ data: { user: authenticated ? { id: "fixture" } : null } }) },
+      rpc: async () => { calls++; return { data: { session: { timer_state: state }, serverNow: new Date().toISOString() } }; },
+    }) };
+    if (name === "@/features/planning/logic") return { UUID: /^[0-9a-f-]{36}$/ };
+    return {};
+  }, exports);
+  const f = new FormData(); f.set("action", "recover");
+  await exports.focusAction(f);
+  assert.equal(calls, 1); assert.deepEqual(invalidated, []);
+  authenticated = false;
+  assert.deepEqual(await exports.focusAction(f), { error: true }); assert.equal(calls, 1);
+  authenticated = true; state = "completed";
+  await exports.focusAction(f);
+  assert.deepEqual(invalidated, [["/app"], ["/app/statistics"], ["/app/profile"]]);
+});
 import {
   elapsedSeconds,
   remainingSeconds,

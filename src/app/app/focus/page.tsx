@@ -4,7 +4,7 @@ import { FocusTimer } from "@/features/focus/timer";
 export default async function Page() {
   const [student, data, stats] = await Promise.all([
     focusStudent(),
-    planningData(),
+    planningData("focus"),
     progressData(),
   ]);
   return (

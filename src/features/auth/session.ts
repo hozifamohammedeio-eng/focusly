@@ -17,28 +17,35 @@ export const getIdentity = cache(async () => {
   }
 });
 
+// React cache is scoped to one server render, never shared between users.
+export const getSettings = cache(async () => {
+  const identity = await getIdentity();
+  if (identity.kind !== "authenticated") return identity;
+  try {
+    const result = await identity.client.from("user_settings").select("*")
+      .eq("user_id", identity.user.id).single();
+    if (result.error) return { kind: "unavailable" } as const;
+    return { ...identity, settings: result.data };
+  } catch {
+    return { kind: "unavailable" } as const;
+  }
+});
+
 export const getStudent = cache(async () => {
   const identity = await getIdentity();
   if (identity.kind !== "authenticated") return identity;
   const { client, user } = identity;
   try {
-    const [profile, settings, subjects] = await Promise.all([
+    const [profile, settings] = await Promise.all([
       client.from("profiles").select("*").eq("id", user.id).single(),
-      client.from("user_settings").select("*").eq("user_id", user.id).single(),
-      client
-        .from("subjects")
-        .select("*")
-        .eq("user_id", user.id)
-        .is("archived_at", null)
-        .order("sort_order"),
+      getSettings(),
     ]);
-    if (profile.error || settings.error || subjects.error)
+    if (profile.error || settings.kind !== "authenticated")
       return { kind: "unavailable" } as const;
     return {
       ...identity,
       profile: profile.data,
-      settings: settings.data,
-      subjects: subjects.data,
+      settings: settings.settings,
     };
   } catch {
     return { kind: "unavailable" } as const;

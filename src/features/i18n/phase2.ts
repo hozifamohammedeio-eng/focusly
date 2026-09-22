@@ -1,4 +1,4 @@
-import { LABELS } from "@/features/education/config";
+import { LABELS } from "@/features/education/labels";
 import type { Locale } from "./messages";
 
 const en = {
