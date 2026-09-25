@@ -138,6 +138,44 @@ export type Database = {
         },
         { user_id: string; started_at: string }
       >;
+      progression_profiles: Table<
+        {
+          user_id: string;
+          total_xp: number;
+          coins: number;
+          construction_points: number;
+          created_at: string;
+          updated_at: string;
+        },
+        { user_id: string }
+      >;
+      progression_reward_events: Table<
+        {
+          id: string;
+          user_id: string;
+          event_type:
+            | "focus_completed"
+            | "task_completed"
+            | "achievement_unlocked"
+            | "challenge_completed"
+            | "subject_milestone";
+          source_id: string;
+          xp: number;
+          coins: number;
+          construction_points: number;
+          created_at: string;
+        },
+        {
+          user_id: string;
+          event_type:
+            | "focus_completed"
+            | "task_completed"
+            | "achievement_unlocked"
+            | "challenge_completed"
+            | "subject_milestone";
+          source_id: string;
+        }
+      >;
     };
     Views: Record<string, never>;
     Functions: {
@@ -178,6 +216,14 @@ export type Database = {
           p_accent: "violet" | "blue" | "green" | "orange";
         };
         Returns: undefined;
+      };
+      claim_focus_progression_reward: {
+        Args: { p_session_id: string };
+        Returns: Json;
+      };
+      claim_task_progression_reward: {
+        Args: { p_task_id: string };
+        Returns: Json;
       };
     };
     Enums: {

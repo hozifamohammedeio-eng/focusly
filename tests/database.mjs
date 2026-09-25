@@ -188,6 +188,43 @@ try {
     "study_blocks",
     "focus_sessions",
   ];
+  const progressionTables = ["progression_profiles", "progression_reward_events"];
+  for (const table of progressionTables) {
+    equal(
+      (await db.query("select relrowsecurity from pg_class where oid=$1::regclass", [`public.${table}`])).rows[0].relrowsecurity,
+      true,
+      `${table}: RLS enabled`,
+    );
+    equal(
+      (await db.query("select count(*)::integer as count from pg_policies where schemaname='public' and tablename=$1", [table])).rows[0].count,
+      1,
+      `${table}: ownership policy exists`,
+    );
+    equal(
+      (await db.query("select has_table_privilege('authenticated',$1,'select')", [`public.${table}`])).rows[0].has_table_privilege,
+      true,
+      `${table}: authenticated select grant exists`,
+    );
+    equal(
+      (await db.query("select has_table_privilege('authenticated',$1,'insert')", [`public.${table}`])).rows[0].has_table_privilege,
+      false,
+      `${table}: authenticated insert grant absent`,
+    );
+    await rejects(`insert into public.${table} default values`, "42501", `${table}: direct insert denied`);
+    await rejects(`update public.${table} set ${table === "progression_profiles" ? "total_xp=total_xp" : "xp=xp"}`, "42501", `${table}: direct update denied`);
+    await rejects(`delete from public.${table}`, "42501", `${table}: direct delete denied`);
+  }
+  await db.exec("reset role");
+  await rejects(`insert into public.progression_profiles(user_id,total_xp) values ('${first}',-1)`, "23514", "negative XP rejected");
+  await rejects(`insert into public.progression_profiles(user_id,coins) values ('${first}',-1)`, "23514", "negative coins rejected");
+  await rejects(`insert into public.progression_profiles(user_id,construction_points) values ('${first}',-1)`, "23514", "negative construction points rejected");
+  await rejects(`insert into public.progression_reward_events(user_id,event_type,source_id,xp) values ('${first}','unknown','source',1)`, "23514", "invalid event type rejected");
+  await rejects(`insert into public.progression_reward_events(user_id,event_type,source_id,xp) values ('${first}','task_completed','',1)`, "23514", "empty reward source rejected");
+  await rejects(`insert into public.progression_reward_events(user_id,event_type,source_id) values ('${first}','task_completed','zero')`, "23514", "all-zero reward rejected");
+  await db.query("insert into public.progression_reward_events(user_id,event_type,source_id,xp) values ($1,'task_completed','constraint-test',1)",[first]);
+  await rejects(`insert into public.progression_reward_events(user_id,event_type,source_id,xp) values ('${first}','task_completed','constraint-test',1)`, "23505", "reward identity is unique");
+  await db.query("delete from public.progression_reward_events where user_id=$1 and source_id='constraint-test'", [first]);
+  await asUser(first);
   await asUser(second);
   for (const table of tables) {
     const owner = table === "profiles" ? "id" : "user_id";
@@ -267,17 +304,52 @@ try {
   equal(focus.completed,true,'manual valid time completes');
   equal(focus.duration_seconds>=120&&focus.duration_seconds<125,true,'manual end saves actual time');
   equal((await transition('finish')).duration_seconds,focus.duration_seconds,'duplicate finish cannot double count');
+  const validRewardSession = '66666666-6666-4666-8666-666666666666';
+  await db.query(
+    `insert into public.focus_sessions(id,user_id,started_at,ended_at,duration_seconds,completed,timer_state,planned_seconds,accumulated_seconds)
+     values ($1,$2,now()-interval '25 minutes',now(),1500,true,'completed',1500,1500)`,
+    [validRewardSession, first],
+  );
+  const focusReward = (await db.query("select public.claim_focus_progression_reward($1) as value", [validRewardSession])).rows[0].value;
+  equal(focusReward.awarded, true, "25-minute focus reward is awarded");
+  equal(focusReward.reward, { xp: 25, coins: 5, constructionPoints: 5 }, "25-minute focus reward values are trusted");
+  const duplicateFocusReward = (await db.query("select public.claim_focus_progression_reward($1) as value", [validRewardSession])).rows[0].value;
+  equal(duplicateFocusReward.reason, "already_awarded", "duplicate focus reward is idempotent");
+  equal((await db.query("select count(*)::integer as count from public.progression_reward_events where user_id=$1 and event_type='focus_completed'", [first])).rows[0].count, 1, "duplicate focus reward does not duplicate ledger");
+  const shortSession = '77777777-7777-4777-8777-777777777777';
+  await db.query(`insert into public.focus_sessions(id,user_id,started_at,ended_at,duration_seconds,completed) values ($1,$2,now()-interval '30 seconds',now(),30,true)`, [shortSession, first]);
+  await rejects(`select public.claim_focus_progression_reward('${shortSession}')`, "P0002", "too-short focus reward denied");
+  const incompleteSession = '88888888-8888-4888-8888-888888888888';
+  await db.query(`insert into public.focus_sessions(id,user_id,started_at,duration_seconds,completed,timer_state,planned_seconds,accumulated_seconds) values ($1,$2,now(),0,false,'paused',300,0)`, [incompleteSession, first]);
+  await rejects(`select public.claim_focus_progression_reward('${incompleteSession}')`, "P0002", "incomplete focus reward denied");
+  const discardedSession = '99999999-9999-4999-8999-999999999999';
+  await db.query(`insert into public.focus_sessions(id,user_id,started_at,ended_at,duration_seconds,completed,timer_state,planned_seconds,accumulated_seconds) values ($1,$2,now()-interval '30 seconds',now(),30,false,'discarded',300,30)`, [discardedSession, first]);
+  await rejects(`select public.claim_focus_progression_reward('${discardedSession}')`, "P0002", "discarded focus reward denied");
   const progress=(await db.query('select public.focus_progress() as value')).rows[0].value;
   equal(progress.totalSeconds>=focus.duration_seconds,true,'progress includes finished time');
   await rejects(`update public.user_settings set focus_minutes=0 where user_id='${first}'`,'23514','invalid timer settings rejected');
   await asUser(second);
+  await rejects(`select public.claim_focus_progression_reward('${validRewardSession}')`, "P0002", "cross-user focus reward denied");
   equal((await db.query('select * from public.focus_sessions where id=$1',[fid])).rows.length,0,'focus history private');
   await step(1,{name:'Student Two'}); await step(2,{stage:'secondary'}); await step(3,{year:'secondary_2',education_system:'general_secondary',academic_branch:'scientific'}); await step(4,{minutes:120}); await step(5,{subjects:['Science']}); await complete();
   await rejects(`select public.focus_transition('finish','${fid}')`,'P0002','foreign completion denied');
   await rejects(`insert into public.focus_sessions(user_id,subject_id,started_at) values ('${second}','${subject}',now())`,'23503','focus foreign subject denied');
   await asUser(first);
   const taskid=(await db.query('select id from public.tasks limit 1')).rows[0].id;
+  await db.query("update public.tasks set status='completed',completed_at=now() where id=$1 and user_id=$2", [taskid, first]);
+  const taskReward = (await db.query("select public.claim_task_progression_reward($1) as value", [taskid])).rows[0].value;
+  equal(taskReward.awarded, true, "completed task reward is awarded");
+  equal(taskReward.reward, { xp: 15, coins: 2, constructionPoints: 1 }, "task reward values are trusted");
+  const duplicateTaskReward = (await db.query("select public.claim_task_progression_reward($1) as value", [taskid])).rows[0].value;
+  equal(duplicateTaskReward.reason, "already_awarded", "duplicate task reward is idempotent");
+  equal((await db.query("select count(*)::integer as count from public.progression_reward_events where user_id=$1 and event_type='task_completed' and source_id=$2", [first, taskid])).rows[0].count, 1, "duplicate task reward does not duplicate ledger");
+  const balances = (await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0];
+  equal(balances, { total_xp: 40, coins: 7, construction_points: 6 }, "cached balances match claimed ledger");
+  equal((await db.query("select sum(xp)::integer as total_xp,sum(coins)::integer as coins,sum(construction_points)::integer as construction_points from public.progression_reward_events where user_id=$1", [first])).rows[0], balances, "balances match reward ledger");
   await asUser(second);
+  await rejects(`select public.claim_task_progression_reward('${taskid}')`, "P0002", "cross-user task reward denied");
+  for (const table of progressionTables)
+    equal((await db.query(`select count(*)::integer as count from public.${table} where user_id='${first}'`)).rows[0].count, 0, `${table}: cross-user reads denied`);
   await rejects(`insert into public.focus_sessions(user_id,task_id,started_at) values ('${second}','${taskid}',now())`,'23503','focus foreign task denied');
   await db.exec("reset role; set role anon;");
   for (const table of tables)
@@ -286,6 +358,8 @@ try {
       "42501",
       `${table}: anonymous reads denied`,
     );
+  for (const table of progressionTables)
+    await rejects(`select * from public.${table}`, "42501", `${table}: anonymous reads denied`);
   await rejects(
     "select public.complete_onboarding('en','light','blue')",
     "42501",
