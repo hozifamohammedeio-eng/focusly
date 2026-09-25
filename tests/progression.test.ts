@@ -41,6 +41,12 @@ import {
   createSubjectProgressSnapshots,
 } from "../src/features/progression/mastery";
 
+import {
+  achievementCatalog,
+  getAchievementDefinition,
+  isAchievementKey,
+} from "../src/features/progression/achievements";
+
 import type {
   RewardEvent,
 } from "../src/features/progression/types";
@@ -722,4 +728,33 @@ test("subject mastery conversion is deterministic", () => {
     createSubjectProgressSnapshot(row),
     createSubjectProgressSnapshot(row),
   );
+});
+
+test("achievement catalog keys and reward metadata are stable", () => {
+  const keys = achievementCatalog.map((achievement) => achievement.key);
+  assert.equal(new Set(keys).size, keys.length);
+  assert.deepEqual(keys, [
+    "first_focus",
+    "focus_5",
+    "focus_60_minutes",
+    "focus_300_minutes",
+    "first_task",
+    "tasks_10",
+    "level_2",
+    "level_5",
+    "first_subject_level_2",
+  ]);
+  for (const achievement of achievementCatalog) {
+    assert.ok(achievement.rewards.xp >= 0);
+    assert.ok(achievement.rewards.coins >= 0);
+    assert.ok(achievement.rewards.constructionPoints >= 0);
+  }
+});
+
+test("achievement lookup and reward previews are deterministic", () => {
+  const definition = getAchievementDefinition("focus_5");
+  assert.equal(definition?.label, "Five Focus Sessions");
+  assert.deepEqual(definition?.rewards, getAchievementDefinition("focus_5")?.rewards);
+  assert.equal(isAchievementKey("level_2"), true);
+  assert.equal(isAchievementKey("made_up"), false);
 });

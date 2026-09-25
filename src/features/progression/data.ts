@@ -3,6 +3,11 @@ import "server-only";
 import { cache } from "react";
 
 import { getIdentity } from "@/features/auth/session";
+import {
+  achievementCatalog,
+  isAchievementKey,
+  type AchievementKey,
+} from "./achievements";
 
 import {
   calculateProgressionFromEvents,
@@ -115,6 +120,20 @@ type SubjectMasteryResult =
       subjects: SubjectProgressSnapshot[];
     };
 
+type UnlockedAchievement = Readonly<{
+  id: string;
+  achievementKey: AchievementKey;
+  unlockedAt: string;
+}>;
+
+type AchievementsResult =
+  | { kind: "anonymous" | "unconfigured" | "unavailable" }
+  | {
+      kind: "authenticated";
+      catalog: typeof achievementCatalog;
+      unlocked: UnlockedAchievement[];
+    };
+
 function parseSubjectMasteryRows(value: unknown): SubjectMasteryRow[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
@@ -158,6 +177,45 @@ export const getSubjectMastery = cache(async (): Promise<SubjectMasteryResult> =
     return { kind: "unavailable" };
   }
 });
+
+/** Reads the catalog and owner-scoped unlock ledger for future UI use. */
+export const getAchievements = cache(async (): Promise<AchievementsResult> => {
+  const identity = await getIdentity();
+  if (identity.kind !== "authenticated") return identity;
+  try {
+    const result = await identity.client
+      .from("user_achievements")
+      .select("id, achievement_key, unlocked_at")
+      .eq("user_id", identity.user.id)
+      .order("unlocked_at", { ascending: true });
+    if (result.error) return { kind: "unavailable" };
+    return {
+      kind: "authenticated",
+      catalog: achievementCatalog,
+      unlocked: result.data.flatMap((row) =>
+        isAchievementKey(row.achievement_key)
+          ? [{
+              id: row.id,
+              achievementKey: row.achievement_key,
+              unlockedAt: row.unlocked_at,
+            }]
+          : [],
+      ),
+    };
+  } catch {
+    return { kind: "unavailable" };
+  }
+});
+
+export async function evaluateProgressionAchievements() {
+  const identity = await getIdentity();
+  if (identity.kind !== "authenticated") {
+    throw new Error("Authentication required");
+  }
+  const result = await identity.client.rpc("evaluate_progression_achievements");
+  if (result.error) throw new Error("Achievement evaluation unavailable");
+  return result.data;
+}
 
 export async function claimFocusProgressionReward(sessionId: string) {
   const identity = await getIdentity();

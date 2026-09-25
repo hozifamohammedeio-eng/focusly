@@ -189,6 +189,7 @@ try {
     "focus_sessions",
   ];
   const progressionTables = ["progression_profiles", "progression_reward_events"];
+  const achievementTables = ["user_achievements"];
   for (const table of progressionTables) {
     equal(
       (await db.query("select relrowsecurity from pg_class where oid=$1::regclass", [`public.${table}`])).rows[0].relrowsecurity,
@@ -224,6 +225,27 @@ try {
   await db.query("insert into public.progression_reward_events(user_id,event_type,source_id,xp) values ($1,'task_completed','constraint-test',1)",[first]);
   await rejects(`insert into public.progression_reward_events(user_id,event_type,source_id,xp) values ('${first}','task_completed','constraint-test',1)`, "23505", "reward identity is unique");
   await db.query("delete from public.progression_reward_events where user_id=$1 and source_id='constraint-test'", [first]);
+  await asUser(first);
+  for (const table of achievementTables) {
+    equal(
+      (await db.query("select relrowsecurity from pg_class where oid=$1::regclass", [`public.${table}`])).rows[0].relrowsecurity,
+      true,
+      `${table}: RLS enabled`,
+    );
+    equal(
+      (await db.query("select count(*)::integer as count from pg_policies where schemaname='public' and tablename=$1", [table])).rows[0].count,
+      1,
+      `${table}: ownership policy exists`,
+    );
+    equal(
+      (await db.query("select has_table_privilege('authenticated',$1,'select')", [`public.${table}`])).rows[0].has_table_privilege,
+      true,
+      `${table}: authenticated select grant exists`,
+    );
+    await rejects(`insert into public.${table} default values`, "42501", `${table}: direct insert denied`);
+    await rejects(`update public.${table} set unlocked_at=now()`, "42501", `${table}: direct update denied`);
+    await rejects(`delete from public.${table}`, "42501", `${table}: direct delete denied`);
+  }
   await asUser(first);
   await asUser(second);
   for (const table of tables) {
@@ -383,12 +405,55 @@ try {
   equal(masteryById[subject].totalXp, 15, "archived subject retains historical mastery XP");
   equal(masteryById[masterySubject].completedFocusSessions, 1, "incomplete and discarded focus sessions do not count");
   await rejects(`update public.progression_reward_events set subject_id='${masterySubject}' where user_id='${first}'`, "42501", "client cannot alter reward subject attribution");
+  const firstAchievementEvaluation = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
+  const firstAchievementKeys = firstAchievementEvaluation.map((row) => row.achievementKey).sort();
+  equal(firstAchievementKeys, ["first_focus", "first_task"], "initial achievements use canonical activity");
+  equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1 and achievement_key='level_2'", [first])).rows[0].count, 0, "insufficient XP does not unlock level 2");
+  const firstAchievementRepeat = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
+  equal(firstAchievementRepeat, [], "repeated achievement evaluation is idempotent");
+  for (const sessionId of ['b0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000002']) {
+    await db.query(`insert into public.focus_sessions(id,user_id,subject_id,started_at,ended_at,duration_seconds,completed,timer_state,planned_seconds,accumulated_seconds) values ($1,$2,$3,now()-interval '30 minutes',now(),1800,true,'completed',1800,1800)`, [sessionId, first, masterySubject]);
+    await db.query("select public.claim_focus_progression_reward($1)", [sessionId]);
+  }
+  for (let index = 0; index < 7; index++) {
+    const task = (await db.query("insert into public.tasks(user_id,title,status,completed_at) values ($1,$2,'completed',now()) returning id", [first, `Achievement Task ${index}`])).rows[0];
+    await db.query("select public.claim_task_progression_reward($1)", [task.id]);
+  }
+  const secondAchievementEvaluation = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
+  const secondAchievementKeys = secondAchievementEvaluation.map((row) => row.achievementKey).sort();
+  equal(secondAchievementKeys, ["first_subject_level_2", "focus_5", "focus_60_minutes", "level_2", "tasks_10"], "focus, task, level, and subject achievements unlock from canonical data");
+  const achievementCountBeforeRepeat = (await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1", [first])).rows[0].count;
+  equal((await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value.map((row) => row.achievementKey), ["level_5"], "newly eligible level achievement unlocks once");
+  equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1", [first])).rows[0].count, achievementCountBeforeRepeat + 1, "newly eligible evaluation adds one achievement row");
+  const balanceAfterNewEligibility = (await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0];
+  equal((await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value, [], "fully evaluated achievements are idempotent");
+  equal((await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0], balanceAfterNewEligibility, "repeated evaluation does not duplicate progression rewards");
+  for (let index = 0; index < 13; index++) {
+    const sessionId = `c0000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`;
+    await db.query(`insert into public.focus_sessions(id,user_id,started_at,ended_at,duration_seconds,completed) values ($1,$2,now()-interval '25 minutes',now(),1500,true)`, [sessionId, first]);
+    await db.query("select public.claim_focus_progression_reward($1)", [sessionId]);
+  }
+  const finalAchievementEvaluation = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
+  equal(finalAchievementEvaluation.map((row) => row.achievementKey).sort(), ["focus_300_minutes"], "long-term focus achievement unlocks");
+  equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1", [first])).rows[0].count, 9, "all catalog achievements unlock exactly once");
+  equal((await db.query("select count(*)::integer as count from public.progression_reward_events where user_id=$1 and event_type='achievement_unlocked'", [first])).rows[0].count, 9, "achievement and reward ledgers stay consistent");
+  equal((await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0], (await db.query("select sum(xp)::integer as total_xp,sum(coins)::integer as coins,sum(construction_points)::integer as construction_points from public.progression_reward_events where user_id=$1", [first])).rows[0], "achievement rewards reconcile with cached balances");
   await asUser(second);
   await rejects(`select public.claim_task_progression_reward('${taskid}')`, "P0002", "cross-user task reward denied");
   for (const table of progressionTables)
     equal((await db.query(`select count(*)::integer as count from public.${table} where user_id='${first}'`)).rows[0].count, 0, `${table}: cross-user reads denied`);
+  equal((await db.query(`select count(*)::integer as count from public.user_achievements where user_id='${first}'`)).rows[0].count, 0, "user achievements: cross-user reads denied");
   const secondMasteryRows = (await db.query("select public.get_subject_mastery() as value")).rows[0].value;
   equal(secondMasteryRows.some((row) => row.subjectId === masterySubject), false, "subject mastery read model is owner-scoped");
+  await db.query("insert into public.focus_sessions(id,user_id,started_at,duration_seconds,completed,timer_state,planned_seconds,accumulated_seconds) values ('d0000000-0000-4000-8000-000000000001',$1,now(),0,false,'paused',300,0)", [second]);
+  await db.query("insert into public.focus_sessions(id,user_id,started_at,ended_at,duration_seconds,completed,timer_state,planned_seconds,accumulated_seconds) values ('d0000000-0000-4000-8000-000000000002',$1,now()-interval '30 seconds',now(),30,false,'discarded',300,30)", [second]);
+  equal((await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value, [], "incomplete and discarded focus do not unlock achievements");
+  await db.query("insert into public.focus_sessions(id,user_id,started_at,ended_at,duration_seconds,completed) values ('d0000000-0000-4000-8000-000000000003',$1,now()-interval '1 minute',now(),60,true)", [second]);
+  await db.query("select public.claim_focus_progression_reward('d0000000-0000-4000-8000-000000000003')");
+  equal((await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value.map((row) => row.achievementKey), ["first_focus"], "cross-user activity is evaluated only for its owner");
+  await asUser(first);
+  equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1", [first])).rows[0].count, 9, "another user's activity cannot change owner achievements");
+  await asUser(second);
   await rejects(`insert into public.focus_sessions(user_id,task_id,started_at) values ('${second}','${taskid}',now())`,'23503','focus foreign task denied');
   await db.exec("reset role; set role anon;");
   for (const table of tables)
@@ -398,6 +463,8 @@ try {
       `${table}: anonymous reads denied`,
     );
   for (const table of progressionTables)
+    await rejects(`select * from public.${table}`, "42501", `${table}: anonymous reads denied`);
+  for (const table of achievementTables)
     await rejects(`select * from public.${table}`, "42501", `${table}: anonymous reads denied`);
   await rejects(
     "select public.complete_onboarding('en','light','blue')",

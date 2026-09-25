@@ -177,6 +177,24 @@ export type Database = {
           source_id: string;
         }
       >;
+      user_achievements: Table<
+        {
+          id: string;
+          user_id: string;
+          achievement_key:
+            | "first_focus"
+            | "focus_5"
+            | "focus_60_minutes"
+            | "focus_300_minutes"
+            | "first_task"
+            | "tasks_10"
+            | "level_2"
+            | "level_5"
+            | "first_subject_level_2";
+          unlocked_at: string;
+        },
+        { user_id: string; achievement_key: string }
+      >;
     };
     Views: Record<string, never>;
     Functions: {
@@ -227,6 +245,10 @@ export type Database = {
         Returns: Json;
       };
       get_subject_mastery: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      evaluate_progression_achievements: {
         Args: Record<string, never>;
         Returns: Json;
       };
