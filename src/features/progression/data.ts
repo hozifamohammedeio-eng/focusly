@@ -9,12 +9,15 @@ import {
   createProgressionSnapshot,
   EMPTY_PROGRESSION_BALANCES,
 } from "./calculator";
+import { createSubjectProgressSnapshots } from "./mastery";
 
 import type {
   ProgressionBalances,
   ProgressionSnapshot,
   RewardEvent,
   RewardEventType,
+  SubjectMasteryRow,
+  SubjectProgressSnapshot,
 } from "./types";
 
 type ProgressionResult =
@@ -43,6 +46,7 @@ function eventsFromRows(
     user_id: string;
     event_type: string;
     source_id: string;
+    subject_id: string | null;
     xp: number;
     coins: number;
     construction_points: number;
@@ -54,6 +58,7 @@ function eventsFromRows(
     userId: row.user_id,
     eventType: row.event_type as RewardEventType,
     sourceId: row.source_id,
+    subjectId: row.subject_id,
     rewards: {
       xp: Number(row.xp),
       coins: Number(row.coins),
@@ -82,7 +87,7 @@ export const getProgression = cache(async (): Promise<ProgressionResult> => {
       identity.client
         .from("progression_reward_events")
         .select(
-          "id, user_id, event_type, source_id, xp, coins, construction_points, created_at",
+          "id, user_id, subject_id, event_type, source_id, xp, coins, construction_points, created_at",
         )
         .eq("user_id", identity.user.id)
         .order("created_at", { ascending: true }),
@@ -98,6 +103,57 @@ export const getProgression = cache(async (): Promise<ProgressionResult> => {
       : calculateProgressionFromEvents(events);
 
     return { kind: "authenticated", snapshot, events };
+  } catch {
+    return { kind: "unavailable" };
+  }
+});
+
+type SubjectMasteryResult =
+  | { kind: "anonymous" | "unconfigured" | "unavailable" }
+  | {
+      kind: "authenticated";
+      subjects: SubjectProgressSnapshot[];
+    };
+
+function parseSubjectMasteryRows(value: unknown): SubjectMasteryRow[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const row = item as Record<string, unknown>;
+    if (
+      typeof row.subjectId !== "string" ||
+      typeof row.subjectName !== "string" ||
+      typeof row.totalXp !== "number" ||
+      typeof row.totalStudyMinutes !== "number" ||
+      typeof row.completedFocusSessions !== "number" ||
+      typeof row.completedTasks !== "number"
+    ) return [];
+    return [{
+      subjectId: row.subjectId,
+      subjectName: row.subjectName,
+      archivedAt: typeof row.archivedAt === "string" ? row.archivedAt : null,
+      totalXp: row.totalXp,
+      totalStudyMinutes: row.totalStudyMinutes,
+      completedFocusSessions: row.completedFocusSessions,
+      completedTasks: row.completedTasks,
+    }];
+  });
+}
+
+/**
+ * Loads the trusted subject mastery read model without connecting it to a
+ * rendered route until the local migration is approved and deployed.
+ */
+export const getSubjectMastery = cache(async (): Promise<SubjectMasteryResult> => {
+  const identity = await getIdentity();
+  if (identity.kind !== "authenticated") return identity;
+  try {
+    const result = await identity.client.rpc("get_subject_mastery");
+    if (result.error) return { kind: "unavailable" };
+    return {
+      kind: "authenticated",
+      subjects: createSubjectProgressSnapshots(parseSubjectMasteryRows(result.data)),
+    };
   } catch {
     return { kind: "unavailable" };
   }

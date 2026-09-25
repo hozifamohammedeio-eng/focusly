@@ -153,6 +153,7 @@ export type Database = {
         {
           id: string;
           user_id: string;
+          subject_id: string | null;
           event_type:
             | "focus_completed"
             | "task_completed"
@@ -223,6 +224,10 @@ export type Database = {
       };
       claim_task_progression_reward: {
         Args: { p_task_id: string };
+        Returns: Json;
+      };
+      get_subject_mastery: {
+        Args: Record<string, never>;
         Returns: Json;
       };
     };

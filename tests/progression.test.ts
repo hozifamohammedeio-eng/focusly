@@ -36,6 +36,11 @@ import {
   sumRewards,
 } from "../src/features/progression/calculator";
 
+import {
+  createSubjectProgressSnapshot,
+  createSubjectProgressSnapshots,
+} from "../src/features/progression/mastery";
+
 import type {
   RewardEvent,
 } from "../src/features/progression/types";
@@ -662,3 +667,59 @@ test(
     );
   },
 );
+
+test("zero XP subject mastery starts at level 1", () => {
+  const snapshot = createSubjectProgressSnapshot({
+    subjectId: "subject-1",
+    subjectName: "Mathematics",
+    archivedAt: null,
+    totalXp: 0,
+    totalStudyMinutes: 0,
+    completedFocusSessions: 0,
+    completedTasks: 0,
+  });
+  assert.equal(snapshot.mastery.level, 1);
+  assert.equal(snapshot.mastery.progress, 0);
+});
+
+test("subject mastery uses the shared level boundaries", () => {
+  const snapshots = createSubjectProgressSnapshots([
+    {
+      subjectId: "subject-1",
+      subjectName: "Physics",
+      archivedAt: null,
+      totalXp: 99,
+      totalStudyMinutes: 25,
+      completedFocusSessions: 1,
+      completedTasks: 0,
+    },
+    {
+      subjectId: "subject-2",
+      subjectName: "Chemistry",
+      archivedAt: null,
+      totalXp: 100,
+      totalStudyMinutes: 50,
+      completedFocusSessions: 2,
+      completedTasks: 1,
+    },
+  ]);
+  assert.equal(snapshots[0]?.mastery.level, 1);
+  assert.equal(snapshots[1]?.mastery.level, 2);
+  assert.equal(snapshots[1]?.mastery.levelStartXp, 100);
+});
+
+test("subject mastery conversion is deterministic", () => {
+  const row = {
+    subjectId: "subject-1",
+    subjectName: "Arabic",
+    archivedAt: "2026-09-25T12:00:00.000Z",
+    totalXp: 225,
+    totalStudyMinutes: 75,
+    completedFocusSessions: 3,
+    completedTasks: 2,
+  };
+  assert.deepEqual(
+    createSubjectProgressSnapshot(row),
+    createSubjectProgressSnapshot(row),
+  );
+});

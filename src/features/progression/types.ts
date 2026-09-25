@@ -26,6 +26,8 @@ export type RewardEvent = Readonly<{
   userId: string;
   eventType: RewardEventType;
   sourceId: string;
+
+  subjectId?: string | null;
   rewards: RewardAmounts;
   createdAt: string;
 }>;
@@ -71,6 +73,28 @@ export type TaskRewardContext = Readonly<{
 
 export type SubjectProgressSnapshot = Readonly<{
   subjectId: string;
+
+  subjectName: string;
+
+  archivedAt: string | null;
+
+  totalXp: number;
+
+  totalStudyMinutes: number;
+
+  completedFocusSessions: number;
+
+  completedTasks: number;
+
+  mastery: LevelProgress;
+}>;
+
+export type SubjectMasteryRow = Readonly<{
+  subjectId: string;
+
+  subjectName: string;
+
+  archivedAt: string | null;
 
   totalXp: number;
 
