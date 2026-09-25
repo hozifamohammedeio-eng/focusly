@@ -1,0 +1,705 @@
+.wrapper {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex: 0 0 auto;
+}
+
+/* =========================================================
+   Main glass capsule
+   ========================================================= */
+
+.toggle {
+  --toggle-width: 106px;
+  --toggle-height: 52px;
+  --thumb-size: 42px;
+  --edge-gap: 5px;
+
+  position: relative;
+
+  width: var(--toggle-width);
+  height: var(--toggle-height);
+
+  padding: 0;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      white 22%,
+      var(--foreground) 8%
+    );
+
+  border-radius: 999px;
+
+  overflow: hidden;
+
+  isolation: isolate;
+
+  appearance: none;
+
+  cursor: pointer;
+
+  color: var(--foreground);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(
+        255 255 255 /
+        0.13
+      ),
+      rgb(
+        255 255 255 /
+        0.025
+      )
+    ),
+    color-mix(
+      in srgb,
+      var(--surface) 47%,
+      transparent
+    );
+
+  box-shadow:
+    inset
+    0 1px 0
+    rgb(
+      255 255 255 /
+      0.22
+    ),
+
+    inset
+    0 -1px 0
+    rgb(
+      0 0 0 /
+      0.06
+    ),
+
+    0 7px 22px
+    rgb(
+      0 0 0 /
+      0.08
+    );
+
+  backdrop-filter:
+    blur(18px)
+    saturate(135%);
+
+  -webkit-backdrop-filter:
+    blur(18px)
+    saturate(135%);
+
+  transition:
+    border-color 220ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    box-shadow 220ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    transform 180ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    background 260ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+}
+
+.toggle:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 17%,
+      white 17%
+    );
+
+  box-shadow:
+    inset
+    0 1px 0
+    rgb(
+      255 255 255 /
+      0.28
+    ),
+
+    inset
+    0 -1px 0
+    rgb(
+      0 0 0 /
+      0.06
+    ),
+
+    0 10px 28px
+    rgb(
+      0 0 0 /
+      0.11
+    );
+}
+
+.toggle:active {
+  transform:
+    translateY(0)
+    scale(0.975);
+}
+
+.toggle:focus-visible {
+  outline:
+    3px solid
+    color-mix(
+      in srgb,
+      var(--accent) 30%,
+      transparent
+    );
+
+  outline-offset:
+    3px;
+}
+
+.toggle:disabled {
+  cursor: wait;
+}
+
+/* =========================================================
+   Ambient glass lighting
+   ========================================================= */
+
+.glassHighlight {
+  position: absolute;
+
+  z-index: 0;
+
+  top: 3px;
+  left: 11px;
+  right: 11px;
+
+  height: 43%;
+
+  border-radius: 999px;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgb(
+        255 255 255 /
+        0.17
+      ),
+      transparent
+    );
+
+  filter:
+    blur(1px);
+
+  opacity: 0.75;
+}
+
+.ambientGlow {
+  position: absolute;
+
+  z-index: 0;
+
+  width: 54px;
+  height: 54px;
+
+  top: 50%;
+
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  filter:
+    blur(18px);
+
+  opacity: 0.22;
+
+  transition:
+    left 320ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    background 260ms
+      ease,
+    opacity 260ms
+      ease;
+}
+
+.light
+.ambientGlow {
+  left: -3px;
+
+  background:
+    #9ed7ff;
+}
+
+.dark
+.ambientGlow {
+  left: 55px;
+
+  background:
+    #7c9cff;
+}
+
+/* =========================================================
+   Static sun/moon hints
+   ========================================================= */
+
+.iconSlot {
+  position: absolute;
+
+  z-index: 1;
+
+  top: 50%;
+
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+
+  place-items: center;
+
+  translate:
+    0 -50%;
+
+  pointer-events: none;
+
+  color:
+    color-mix(
+      in srgb,
+      var(--foreground) 52%,
+      transparent
+    );
+
+  transition:
+    opacity 260ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    transform 300ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    color 260ms
+      ease;
+}
+
+.iconSlot svg {
+  width: 18px;
+  height: 18px;
+
+  stroke:
+    currentColor;
+
+  stroke-width: 1.8;
+
+  stroke-linecap:
+    round;
+
+  stroke-linejoin:
+    round;
+}
+
+.sunSlot {
+  left: 5px;
+}
+
+.moonSlot {
+  right: 5px;
+}
+
+.light
+.sunSlot {
+  opacity: 0;
+}
+
+.light
+.moonSlot {
+  opacity: 0.64;
+
+  transform:
+    rotate(-8deg);
+}
+
+.dark
+.sunSlot {
+  opacity: 0.58;
+
+  transform:
+    rotate(9deg);
+}
+
+.dark
+.moonSlot {
+  opacity: 0;
+}
+
+/* =========================================================
+   Moving glass thumb
+   ========================================================= */
+
+.thumb {
+  position: absolute;
+
+  z-index: 3;
+
+  top:
+    var(--edge-gap);
+
+  left:
+    var(--edge-gap);
+
+  width:
+    var(--thumb-size);
+
+  height:
+    var(--thumb-size);
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  overflow: hidden;
+
+  color: #18202c;
+
+  background:
+    radial-gradient(
+      circle at
+      32% 22%,
+      rgb(
+        255 255 255 /
+        0.92
+      ),
+      rgb(
+        255 255 255 /
+        0.58
+      ) 42%,
+      rgb(
+        224 239 255 /
+        0.36
+      ) 100%
+    );
+
+  border:
+    1px solid
+    rgb(
+      255 255 255 /
+      0.54
+    );
+
+  box-shadow:
+    inset
+    0 1px 1px
+    rgb(
+      255 255 255 /
+      0.72
+    ),
+
+    inset
+    0 -4px 10px
+    rgb(
+      51 92 135 /
+      0.07
+    ),
+
+    0 5px 13px
+    rgb(
+      0 0 0 /
+      0.12
+    ),
+
+    0 0 20px
+    color-mix(
+      in srgb,
+      var(--accent) 11%,
+      transparent
+    );
+
+  transform:
+    translate3d(
+      0,
+      0,
+      0
+    );
+
+  transition:
+    transform 340ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    background 280ms
+      ease,
+    color 280ms
+      ease,
+    box-shadow 280ms
+      ease;
+}
+
+.dark
+.thumb {
+  color:
+    #e9f2ff;
+
+  background:
+    radial-gradient(
+      circle at
+      32% 22%,
+      rgb(
+        143 176 220 /
+        0.30
+      ),
+      rgb(
+        39 52 72 /
+        0.86
+      ) 52%,
+      rgb(
+        20 28 40 /
+        0.94
+      ) 100%
+    );
+
+  border-color:
+    rgb(
+      184 211 255 /
+      0.24
+    );
+
+  box-shadow:
+    inset
+    0 1px 1px
+    rgb(
+      255 255 255 /
+      0.22
+    ),
+
+    inset
+    0 -5px 12px
+    rgb(
+      0 0 0 /
+      0.20
+    ),
+
+    0 6px 16px
+    rgb(
+      0 0 0 /
+      0.24
+    ),
+
+    0 0 22px
+    color-mix(
+      in srgb,
+      var(--accent) 16%,
+      transparent
+    );
+
+  transform:
+    translate3d(
+      calc(
+        var(--toggle-width) -
+        var(--thumb-size) -
+        (
+          var(--edge-gap) *
+          2
+        )
+      ),
+      0,
+      0
+    );
+}
+
+.thumbGlow {
+  position: absolute;
+
+  inset: 3px;
+
+  border-radius: inherit;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at
+      32% 18%,
+      rgb(
+        255 255 255 /
+        0.55
+      ),
+      transparent 44%
+    );
+}
+
+.dark
+.thumbGlow {
+  opacity: 0.48;
+}
+
+.thumbIcon {
+  position: relative;
+
+  z-index: 2;
+
+  display: grid;
+
+  place-items: center;
+
+  transition:
+    transform 320ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+}
+
+.light
+.thumbIcon {
+  transform:
+    rotate(0deg)
+    scale(1);
+}
+
+.dark
+.thumbIcon {
+  transform:
+    rotate(-14deg)
+    scale(0.96);
+}
+
+.thumbIcon svg {
+  width: 20px;
+  height: 20px;
+
+  fill: none;
+
+  stroke:
+    currentColor;
+
+  stroke-width: 1.85;
+
+  stroke-linecap:
+    round;
+
+  stroke-linejoin:
+    round;
+}
+
+/* =========================================================
+   State details
+   ========================================================= */
+
+.pending {
+  opacity: 0.86;
+}
+
+.failed {
+  animation:
+    themeToggleShake
+    300ms
+    ease-out;
+}
+
+@keyframes themeToggleShake {
+  0%,
+  100% {
+    transform:
+      translateX(0);
+  }
+
+  35% {
+    transform:
+      translateX(-2px);
+  }
+
+  70% {
+    transform:
+      translateX(2px);
+  }
+}
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (
+  max-width: 640px
+) {
+  .toggle {
+    --toggle-width: 98px;
+    --toggle-height: 48px;
+    --thumb-size: 38px;
+    --edge-gap: 5px;
+  }
+
+  .iconSlot {
+    width: 38px;
+    height: 38px;
+  }
+
+  .iconSlot svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .thumbIcon svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* =========================================================
+   Reduced motion
+   ========================================================= */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .toggle,
+  .thumb,
+  .thumbIcon,
+  .ambientGlow,
+  .iconSlot {
+    transition:
+      none !important;
+  }
+
+  .failed {
+    animation:
+      none !important;
+  }
+}

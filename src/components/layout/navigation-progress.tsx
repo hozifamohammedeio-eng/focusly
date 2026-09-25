@@ -10,7 +10,17 @@ export function NavigationProgress() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(false);
+    const timer =
+      window.setTimeout(
+        () => {
+          setLoading(false);
+        },
+        0,
+      );
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [pathname, searchParams]);
 
   useEffect(() => {

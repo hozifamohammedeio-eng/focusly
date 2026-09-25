@@ -85,7 +85,7 @@ html[data-accent="orange"] {
 html {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), var(--font-cairo), Arial, sans-serif;
+  font-family: var(--font-focusly-en), var(--font-focusly-ar), Arial, sans-serif;
   font-size: 16px;
   line-height: 1.65;
 }
@@ -664,7 +664,7 @@ html[dir="rtl"] h1 {
 .dashboard-grid {display:grid;gap:1.25rem;}
 .focus-page {max-width:1100px;margin-inline:auto;}
 .timer-stage {max-width:650px;margin:4rem auto 0;text-align:center;padding-block:2rem;}
-.timer-digits {font-family:var(--font-inter),Arial,sans-serif;font-size:clamp(4.5rem,15vw,9rem);font-weight:400;font-variant-numeric:tabular-nums;letter-spacing:-.05em;line-height:1.4;}
+.timer-digits {font-family:var(--font-focusly-en),Arial,sans-serif;font-size:clamp(4.5rem,15vw,9rem);font-weight:400;font-variant-numeric:tabular-nums;letter-spacing:-.05em;line-height:1.4;}
 .timer-controls {display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;margin-top:2.5rem;}
 .timer-controls button {min-width:130px;min-height:52px;}
 .duration-presets {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.6rem;}
@@ -684,14 +684,14 @@ html[dir="rtl"] h1 {
 @media(min-width:1024px){.study-sidebar{padding-top:1.5rem;padding-bottom:1.5rem;}.study-sidebar nav{margin-top:1.5rem;gap:.25rem;}}
 /* Editorial identity: semantic variants keep page layouts on one design system. */
 :root { --accent-soft: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
-html[lang="ar"] { font-family: var(--font-cairo), Tahoma, Arial, sans-serif; }
+html[lang="ar"] { font-family: var(--font-focusly-ar), Tahoma, Arial, sans-serif; }
 html[data-theme="dark"] { color-scheme: dark; }
 html[data-theme="light"] { color-scheme: light; }
 @media (prefers-color-scheme: dark) { html[data-theme="system"] { color-scheme: dark; } }
 body { margin: 0; }
-h1, .display-type { font-family: var(--font-editorial), Georgia, serif; font-weight: 400; letter-spacing: -.045em; line-height: 1.12; }
+h1, .display-type { font-family: var(--font-focusly-en), Georgia, serif; font-weight: 400; letter-spacing: -.045em; line-height: 1.12; }
 h1[class] { font-size: clamp(2.125rem, 4vw, 3rem); font-weight: 400; }
-html[lang="ar"] h1, html[lang="ar"] .display-type { font-family: var(--font-cairo), Tahoma, sans-serif; letter-spacing: 0; line-height: 1.55; }
+html[lang="ar"] h1, html[lang="ar"] .display-type { font-family: var(--font-focusly-ar), Tahoma, sans-serif; letter-spacing: 0; line-height: 1.55; }
 input, select, textarea, button { font-family: inherit; }
 .field { border-color: color-mix(in srgb, var(--foreground) 50%, var(--background)); border-radius: 16px; background: var(--background); transition: border-color 180ms, background 180ms; font-size: 1rem; }
 .field::placeholder { color: var(--muted); }
@@ -724,20 +724,20 @@ textarea.field { min-height: 8rem; resize: vertical; }
 .study-main { padding-top: 2rem; }
 .dashboard-grid { align-items: start; gap: 2rem; }
 .goal-card { padding: 2rem; min-height: 280px; display: flex; flex-direction: column; justify-content: center; }
-.goal-card > p:first-of-type { font-family: var(--font-editorial), Georgia, serif; font-size: clamp(2.8rem, 5vw, 4rem); font-weight: 400; line-height: 1.15; }
-.goal-card > p:first-of-type span { font-family: var(--font-inter), Arial, sans-serif; font-size: 1rem; font-weight: 400; display: block; margin-top: .5rem; }
+.goal-card > p:first-of-type { font-family: var(--font-focusly-en), Georgia, serif; font-size: clamp(2.8rem, 5vw, 4rem); font-weight: 400; line-height: 1.15; }
+.goal-card > p:first-of-type span { font-family: var(--font-focusly-en), Arial, sans-serif; font-size: 1rem; font-weight: 400; display: block; margin-top: .5rem; }
 .quick-focus { padding: 2rem; margin-block: .6rem; }
-.quick-digits { font-family: var(--font-inter), Arial, sans-serif; font-size: clamp(3rem, 5vw, 4rem); font-weight: 400; letter-spacing: -.05em; font-variant-numeric: tabular-nums; margin-block: 1rem; line-height: 1.15; }
+.quick-digits { font-family: var(--font-focusly-en), Arial, sans-serif; font-size: clamp(3rem, 5vw, 4rem); font-weight: 400; letter-spacing: -.05em; font-variant-numeric: tabular-nums; margin-block: 1rem; line-height: 1.15; }
 .dashboard-tasks { padding: 1.5rem 2rem; }
 .next-session { padding-top: 2rem; border-top: 1px solid var(--border); border-radius: 0; }
 .weekly-card { padding-inline: 0; }
 .streak-card { padding-top: 2rem; }
-.streak-card > p:first-of-type { font-family: var(--font-editorial), Georgia, serif; font-size: 3.5rem; font-weight: 400; }
+.streak-card > p:first-of-type { font-family: var(--font-focusly-en), Georgia, serif; font-size: 3.5rem; font-weight: 400; }
 .stats-summary { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 2rem 1rem; align-items: end; margin-block: 3.5rem; }
 .stats-summary > .surface { padding: 0; }
 .stats-summary > .surface:first-child { grid-column: 1 / -1; background: var(--highlight); color: var(--highlight-ink); padding: 2rem; }
 .stats-summary > .surface:first-child .muted { color: inherit; }
-.stats-summary p { font-family: var(--font-editorial), Georgia, serif; font-size: 2.5rem; font-weight: 400; line-height: 1.2; }
+.stats-summary p { font-family: var(--font-focusly-en), Georgia, serif; font-size: 2.5rem; font-weight: 400; line-height: 1.2; }
 .stats-summary > .surface:first-child p { font-size: clamp(3.5rem, 7vw, 5.5rem); }
 .stats-summary h2 { font-size: .875rem; }
 .subject-stats, .history-card { padding-inline: 0; border-top: 1px solid var(--border); border-radius: 0; }
@@ -754,7 +754,7 @@ textarea.field { min-height: 8rem; resize: vertical; }
 .focus-result { padding: 2rem; border-radius: 24px; }
 .focus-result.is-complete { background: var(--highlight); color: var(--highlight-ink); }
 .focus-result.is-complete > .muted { color: inherit; }
-.focus-result > h2 { font-family: var(--font-editorial), Georgia, serif; font-size: 3rem; font-weight: 400; }
+.focus-result > h2 { font-family: var(--font-focusly-en), Georgia, serif; font-size: 3rem; font-weight: 400; }
 .focus-result .goal-card { min-height: auto; padding: 1rem 0; text-align: start; }
 .focus-result .goal-card > p:first-of-type { font-size: 2.5rem; }
 .task-toolbar { margin-block: 2.5rem 1rem; }
@@ -795,7 +795,7 @@ textarea.field { min-height: 8rem; resize: vertical; }
 .empty-state { padding: 3rem 1.5rem; min-height: 250px; }
 .skeleton { border-radius: 16px; }
 html[lang="ar"] .goal-card > p:first-of-type, html[lang="ar"] .streak-card > p:first-of-type,
-html[lang="ar"] .stats-summary p, html[lang="ar"] .focus-result > h2 { font-family: var(--font-cairo), Tahoma, sans-serif; line-height: 1.5; }
+html[lang="ar"] .stats-summary p, html[lang="ar"] .focus-result > h2 { font-family: var(--font-focusly-ar), Tahoma, sans-serif; line-height: 1.5; }
 html[dir="rtl"] .eyebrow { letter-spacing: 0; }
 @media(min-width:768px) {
   .study-main { padding: 2.5rem 2rem 5rem; }
@@ -963,3 +963,5972 @@ html[lang="ar"] .landing-introduction h1 { line-height: 1.4; font-size: clamp(2.
     animation: none !important;
   }
 }
+
+/* FOCUSLY_LIQUID_IDENTITY_V1_START */
+
+/* =========================================================
+   FOCUSLY LIQUID IDENTITY
+   Global visual foundation
+   ========================================================= */
+
+:root {
+  --focusly-glass-bg:
+    color-mix(
+      in srgb,
+      var(--surface) 76%,
+      transparent
+    );
+
+  --focusly-glass-bg-soft:
+    color-mix(
+      in srgb,
+      var(--surface) 58%,
+      transparent
+    );
+
+  --focusly-glass-bg-strong:
+    color-mix(
+      in srgb,
+      var(--surface) 88%,
+      transparent
+    );
+
+  --focusly-glass-border:
+    color-mix(
+      in srgb,
+      var(--foreground) 10%,
+      transparent
+    );
+
+  --focusly-glass-border-soft:
+    color-mix(
+      in srgb,
+      var(--foreground) 6%,
+      transparent
+    );
+
+  --focusly-accent-wash:
+    color-mix(
+      in srgb,
+      var(--accent) 7%,
+      transparent
+    );
+
+  --focusly-accent-wash-strong:
+    color-mix(
+      in srgb,
+      var(--accent) 11%,
+      transparent
+    );
+
+  --focusly-accent-border:
+    color-mix(
+      in srgb,
+      var(--accent) 24%,
+      transparent
+    );
+
+  --focusly-glass-shadow:
+    0 18px 46px
+      rgb(0 0 0 / 0.09);
+
+  --focusly-glass-shadow-small:
+    0 8px 22px
+      rgb(0 0 0 / 0.075);
+
+  --focusly-glass-inset:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.28),
+    inset -1px -1px 0
+      rgb(0 0 0 / 0.035);
+
+  --focusly-card-radius: 24px;
+  --focusly-control-radius: 16px;
+  --focusly-pill-radius: 999px;
+}
+
+/* =========================================================
+   PAGE ATMOSPHERE
+   Gives the glass something subtle to refract.
+   ========================================================= */
+
+body {
+  background:
+    radial-gradient(
+      circle at 8% 3%,
+      color-mix(
+        in srgb,
+        var(--accent) 6%,
+        transparent
+      ),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 92% 18%,
+      color-mix(
+        in srgb,
+        var(--accent) 3.5%,
+        transparent
+      ),
+      transparent 28rem
+    ),
+    var(--background);
+
+  background-attachment: fixed;
+}
+
+.study-main {
+  position: relative;
+}
+
+/* =========================================================
+   GLOBAL GLASS CARDS
+   ========================================================= */
+
+.surface:not(.card-accent),
+.card-floating,
+.week-day,
+.session-card,
+.focus-result:not(.is-complete),
+.focusly-dialog,
+.study-toast {
+  border:
+    1px solid
+    var(--focusly-glass-border);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.08),
+      transparent 45%
+    ),
+    var(--focusly-glass-bg);
+
+  box-shadow:
+    var(--focusly-glass-inset),
+    var(--focusly-glass-shadow);
+
+  backdrop-filter:
+    blur(20px)
+    saturate(145%);
+
+  -webkit-backdrop-filter:
+    blur(20px)
+    saturate(145%);
+}
+
+/* Main card shape */
+.surface:not(.card-accent),
+.card-floating {
+  border-radius:
+    var(--focusly-card-radius);
+}
+
+/* Keep layouts intentional while making them glass */
+.settings-editorial > .surface,
+.profile-layout > div > .surface {
+  border:
+    1px solid
+    var(--focusly-glass-border);
+
+  border-radius:
+    var(--focusly-card-radius);
+
+  padding: 1.5rem;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.07),
+      transparent
+    ),
+    var(--focusly-glass-bg-soft);
+
+  box-shadow:
+    var(--focusly-glass-inset),
+    var(--focusly-glass-shadow-small);
+
+  backdrop-filter:
+    blur(18px)
+    saturate(140%);
+
+  -webkit-backdrop-filter:
+    blur(18px)
+    saturate(140%);
+}
+
+/* =========================================================
+   ACCENT CARDS
+   Accent is a highlight, not a loud solid color.
+   ========================================================= */
+
+.card-accent,
+.focus-result.is-complete,
+.stats-summary > .surface:first-child {
+  color: var(--foreground);
+
+  border:
+    1px solid
+    var(--focusly-accent-border);
+
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      color-mix(
+        in srgb,
+        var(--accent) 12%,
+        transparent
+      ),
+      transparent 44%
+    ),
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.08),
+      transparent
+    ),
+    var(--focusly-glass-bg);
+
+  box-shadow:
+    var(--focusly-glass-inset),
+    0 14px 38px
+      color-mix(
+        in srgb,
+        var(--accent) 7%,
+        rgb(0 0 0 / 0.08)
+      );
+
+  backdrop-filter:
+    blur(20px)
+    saturate(150%);
+
+  -webkit-backdrop-filter:
+    blur(20px)
+    saturate(150%);
+}
+
+.card-accent .muted,
+.focus-result.is-complete .muted,
+.stats-summary > .surface:first-child .muted {
+  color: var(--muted);
+}
+
+/* =========================================================
+   INPUTS / SELECTS / TEXTAREAS
+   ========================================================= */
+
+.field {
+  border:
+    1px solid
+    var(--focusly-glass-border);
+
+  border-radius:
+    var(--focusly-control-radius);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.06),
+      transparent
+    ),
+    var(--focusly-glass-bg-soft);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.16),
+    0 5px 15px
+      rgb(0 0 0 / 0.035);
+
+  backdrop-filter:
+    blur(14px)
+    saturate(135%);
+
+  -webkit-backdrop-filter:
+    blur(14px)
+    saturate(135%);
+
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background 200ms ease,
+    transform 200ms ease;
+}
+
+.field:hover {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--foreground) 14%,
+      transparent
+    );
+}
+
+.field:focus {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 28%,
+      var(--focusly-glass-border)
+    );
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-accent-wash),
+      transparent
+    ),
+    var(--focusly-glass-bg);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.2),
+
+    0 0 0 3px
+      color-mix(
+        in srgb,
+        var(--accent) 8%,
+        transparent
+      );
+}
+
+.field:focus-visible {
+  outline: none;
+}
+
+.field:read-only {
+  background:
+    var(--focusly-glass-bg-soft);
+}
+
+/* =========================================================
+   CHOICES / RADIO / CHECKBOX CARDS
+   ========================================================= */
+
+.choice {
+  border:
+    1px solid
+    var(--focusly-glass-border);
+
+  border-radius:
+    18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.06),
+      transparent
+    ),
+    var(--focusly-glass-bg-soft);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.12);
+
+  backdrop-filter:
+    blur(15px)
+    saturate(135%);
+
+  -webkit-backdrop-filter:
+    blur(15px)
+    saturate(135%);
+
+  transition:
+    background 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.choice:hover {
+  transform: translateY(-1px);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.08),
+      transparent
+    ),
+    var(--focusly-glass-bg);
+}
+
+.choice:has(input:checked) {
+  border-color:
+    var(--focusly-accent-border);
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-accent-wash-strong),
+      transparent 70%
+    ),
+    var(--focusly-glass-bg);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.16),
+
+    0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--accent) 8%,
+        transparent
+      );
+}
+
+/* =========================================================
+   BUTTONS
+   Soft liquid-glass controls
+   ========================================================= */
+
+.focusly-button,
+.filter-button,
+.duration-presets button {
+  border-radius:
+    var(--focusly-pill-radius);
+
+  border:
+    1px solid
+    var(--focusly-glass-border);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.09),
+      transparent
+    ),
+    var(--focusly-glass-bg);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.22),
+    var(--focusly-glass-shadow-small);
+
+  backdrop-filter:
+    blur(15px)
+    saturate(145%);
+
+  -webkit-backdrop-filter:
+    blur(15px)
+    saturate(145%);
+
+  transition:
+    transform 200ms
+      cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 200ms ease,
+    background 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease;
+}
+
+.focusly-button:hover,
+.filter-button:hover,
+.duration-presets button:hover {
+  transform: translateY(-1px);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 18%,
+      var(--focusly-glass-border)
+    );
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-accent-wash),
+      transparent 70%
+    ),
+    var(--focusly-glass-bg);
+}
+
+.focusly-button:active,
+.filter-button:active,
+.duration-presets button:active {
+  transform: scale(0.975);
+}
+
+/* Secondary stays especially quiet */
+.focusly-button.button-secondary {
+  border-color:
+    var(--focusly-glass-border);
+
+  background:
+    var(--focusly-glass-bg-soft);
+}
+
+/* =========================================================
+   ACTIVE / SELECTED STATES
+   Accent must remain subtle.
+   ========================================================= */
+
+.filter-button[aria-pressed="true"],
+.duration-presets [aria-pressed="true"] {
+  color: var(--accent);
+
+  border-color:
+    var(--focusly-accent-border);
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-accent-wash-strong),
+      transparent
+    ),
+    var(--focusly-glass-bg);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.18),
+
+    0 6px 18px
+      color-mix(
+        in srgb,
+        var(--accent) 7%,
+        transparent
+      );
+}
+
+/* =========================================================
+   CHIPS
+   ========================================================= */
+
+.subject-chip {
+  border:
+    1px solid
+    var(--focusly-glass-border);
+
+  border-radius:
+    var(--focusly-pill-radius);
+
+  background:
+    var(--focusly-glass-bg-soft);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.12);
+
+  backdrop-filter:
+    blur(12px);
+
+  -webkit-backdrop-filter:
+    blur(12px);
+}
+
+/* =========================================================
+   TASKS
+   ========================================================= */
+
+.task-row {
+  border-bottom:
+    1px solid
+    var(--focusly-glass-border-soft);
+
+  transition:
+    background 180ms ease;
+}
+
+.task-row:hover {
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 3%,
+      transparent
+    );
+}
+
+/* =========================================================
+   PLANNER
+   ========================================================= */
+
+.week-day {
+  border:
+    1px solid
+    var(--focusly-glass-border);
+
+  border-radius:
+    20px;
+
+  background:
+    var(--focusly-glass-bg-soft);
+}
+
+.session-card {
+  border:
+    1px solid
+    var(--focusly-glass-border);
+
+  border-inline-start:
+    2px solid
+    color-mix(
+      in srgb,
+      var(--accent) 20%,
+      var(--focusly-glass-border)
+    );
+
+  border-radius:
+    16px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.05),
+      transparent
+    ),
+    var(--focusly-glass-bg-soft);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.09);
+}
+
+.session-card:hover {
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-accent-wash),
+      transparent
+    ),
+    var(--focusly-glass-bg);
+}
+
+/* =========================================================
+   CALENDAR
+   ========================================================= */
+
+.month-cell {
+  border-radius:
+    15px;
+
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.month-cell:hover {
+  background:
+    var(--focusly-glass-bg-soft);
+}
+
+.month-cell[aria-pressed="true"] {
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-accent-wash),
+      transparent
+    ),
+    var(--focusly-glass-bg-soft);
+}
+
+.month-cell[aria-current="date"] {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 30%,
+      transparent
+    );
+
+  box-shadow:
+    inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--accent) 8%,
+        transparent
+      );
+}
+
+/* =========================================================
+   EMPTY STATES
+   ========================================================= */
+
+.empty-symbol {
+  border:
+    1px solid
+    var(--focusly-glass-border);
+
+  border-radius:
+    50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-accent-wash),
+      transparent
+    ),
+    var(--focusly-glass-bg);
+
+  box-shadow:
+    var(--focusly-glass-inset),
+    var(--focusly-glass-shadow-small);
+
+  backdrop-filter:
+    blur(14px);
+
+  -webkit-backdrop-filter:
+    blur(14px);
+}
+
+/* =========================================================
+   FOCUS TIMER
+   ========================================================= */
+
+.timer-stage {
+  position: relative;
+}
+
+.timer-digits {
+  color: var(--foreground);
+
+  text-shadow:
+    0 0 28px
+      color-mix(
+        in srgb,
+        var(--accent) 7%,
+        transparent
+      );
+}
+
+.timer-stage .eyebrow {
+  color: var(--accent);
+}
+
+.focus-progress,
+.subject-track {
+  background:
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+}
+
+.focus-progress::-webkit-progress-bar {
+  background:
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+}
+
+.focus-progress::-webkit-progress-value {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(
+        in srgb,
+        var(--accent) 70%,
+        white
+      ),
+      var(--accent)
+    );
+}
+
+.focus-progress::-moz-progress-bar {
+  background: var(--accent);
+}
+
+/* =========================================================
+   DIALOG
+   ========================================================= */
+
+.focusly-dialog {
+  border-radius:
+    28px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.08),
+      transparent
+    ),
+    var(--focusly-glass-bg-strong);
+}
+
+.focusly-dialog::backdrop {
+  background:
+    rgb(15 17 22 / 0.35);
+
+  backdrop-filter:
+    blur(10px);
+
+  -webkit-backdrop-filter:
+    blur(10px);
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+.study-toast {
+  border-radius:
+    var(--focusly-pill-radius);
+
+  background:
+    var(--focusly-glass-bg-strong);
+
+  backdrop-filter:
+    blur(20px)
+    saturate(150%);
+
+  -webkit-backdrop-filter:
+    blur(20px)
+    saturate(150%);
+}
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.study-topbar {
+  background:
+    color-mix(
+      in srgb,
+      var(--background) 72%,
+      transparent
+    );
+
+  border-bottom:
+    1px solid
+    var(--focusly-glass-border-soft);
+
+  backdrop-filter:
+    blur(20px)
+    saturate(145%);
+
+  -webkit-backdrop-filter:
+    blur(20px)
+    saturate(145%);
+}
+
+/* =========================================================
+   DARK MODE TUNING
+   ========================================================= */
+
+html[data-theme="dark"] {
+  --focusly-glass-bg:
+    color-mix(
+      in srgb,
+      var(--surface) 63%,
+      transparent
+    );
+
+  --focusly-glass-bg-soft:
+    color-mix(
+      in srgb,
+      var(--surface) 44%,
+      transparent
+    );
+
+  --focusly-glass-bg-strong:
+    color-mix(
+      in srgb,
+      var(--surface) 78%,
+      transparent
+    );
+
+  --focusly-glass-border:
+    rgb(255 255 255 / 0.09);
+
+  --focusly-glass-border-soft:
+    rgb(255 255 255 / 0.055);
+
+  --focusly-glass-shadow:
+    0 20px 52px
+      rgb(0 0 0 / 0.22);
+
+  --focusly-glass-shadow-small:
+    0 9px 24px
+      rgb(0 0 0 / 0.17);
+
+  --focusly-glass-inset:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.10),
+    inset -1px -1px 0
+      rgb(0 0 0 / 0.18);
+}
+
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(
+      circle at 8% 3%,
+      color-mix(
+        in srgb,
+        var(--accent) 7%,
+        transparent
+      ),
+      transparent 30rem
+    ),
+    radial-gradient(
+      circle at 92% 18%,
+      color-mix(
+        in srgb,
+        var(--accent) 4%,
+        transparent
+      ),
+      transparent 28rem
+    ),
+    var(--background);
+}
+
+/* =========================================================
+   SYSTEM DARK MODE
+   ========================================================= */
+
+@media (prefers-color-scheme: dark) {
+  html[data-theme="system"] {
+    --focusly-glass-border:
+      rgb(255 255 255 / 0.09);
+
+    --focusly-glass-border-soft:
+      rgb(255 255 255 / 0.055);
+
+    --focusly-glass-shadow:
+      0 20px 52px
+        rgb(0 0 0 / 0.22);
+
+    --focusly-glass-shadow-small:
+      0 9px 24px
+        rgb(0 0 0 / 0.17);
+  }
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 767px) {
+  .surface:not(.card-accent),
+  .card-floating,
+  .week-day,
+  .focus-result {
+    border-radius:
+      20px;
+  }
+
+  .settings-editorial > .surface,
+  .profile-layout > div > .surface {
+    padding: 1.25rem;
+
+    border-radius:
+      20px;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .field,
+  .choice,
+  .focusly-button,
+  .filter-button,
+  .duration-presets button,
+  .month-cell {
+    transition: none !important;
+  }
+}
+
+/* FOCUSLY_LIQUID_IDENTITY_V1_END */
+
+/* FOCUSLY_UI_POLISH_V2_START */
+
+/* =========================================================
+   FOCUSLY UI POLISH V2
+   Unified Liquid Glass identity
+   ========================================================= */
+
+:root {
+  --focusly-ui-radius: 26px;
+  --focusly-ui-control-radius: 999px;
+
+  --focusly-ui-border:
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+
+  --focusly-ui-border-hover:
+    color-mix(
+      in srgb,
+      var(--foreground) 13%,
+      transparent
+    );
+
+  --focusly-ui-accent-soft:
+    color-mix(
+      in srgb,
+      var(--accent) 6%,
+      transparent
+    );
+
+  --focusly-ui-accent-medium:
+    color-mix(
+      in srgb,
+      var(--accent) 10%,
+      transparent
+    );
+
+  --focusly-ui-accent-border:
+    color-mix(
+      in srgb,
+      var(--accent) 18%,
+      transparent
+    );
+
+  --focusly-ui-glass:
+    color-mix(
+      in srgb,
+      var(--surface) 68%,
+      transparent
+    );
+
+  --focusly-ui-glass-soft:
+    color-mix(
+      in srgb,
+      var(--surface) 52%,
+      transparent
+    );
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.surface:not(.card-accent),
+.card-floating,
+.week-day,
+.session-card,
+.focus-result:not(.is-complete),
+.focusly-dialog,
+.study-toast {
+  border:
+    1px solid
+    var(--focusly-ui-border);
+
+  border-radius:
+    var(--focusly-ui-radius);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.07),
+      transparent 45%
+    ),
+    var(--focusly-ui-glass);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.16),
+
+    inset -1px -1px 0
+      rgb(0 0 0 / 0.03),
+
+    0 14px 36px
+      rgb(0 0 0 / 0.07);
+
+  backdrop-filter:
+    blur(20px)
+    saturate(145%);
+
+  -webkit-backdrop-filter:
+    blur(20px)
+    saturate(145%);
+}
+
+/* Accent cards should be subtle too */
+
+.card-accent,
+.focus-result.is-complete,
+.stats-summary > .surface:first-child {
+  color: var(--foreground);
+
+  border:
+    1px solid
+    var(--focusly-ui-accent-border);
+
+  border-radius:
+    var(--focusly-ui-radius);
+
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      var(--focusly-ui-accent-medium),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.07),
+      transparent 55%
+    ),
+    var(--focusly-ui-glass);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.16),
+
+    0 14px 36px
+      color-mix(
+        in srgb,
+        var(--accent) 5%,
+        rgb(0 0 0 / 0.07)
+      );
+}
+
+.card-accent .muted,
+.focus-result.is-complete .muted,
+.stats-summary > .surface:first-child .muted {
+  color: var(--muted);
+}
+
+/* =========================================================
+   BUTTON FOUNDATION
+   ========================================================= */
+
+.study-shell button:not(.completion-target),
+.focusly-dialog button,
+.focusly-button,
+.filter-button,
+.timer-controls button,
+.duration-presets button,
+.row-actions button {
+  border-radius:
+    var(--focusly-ui-control-radius);
+
+  border:
+    1px solid
+    var(--focusly-ui-border);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.08),
+      transparent 58%
+    ),
+    var(--focusly-ui-glass-soft);
+
+  color: var(--foreground);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.16),
+
+    inset -1px -1px 0
+      rgb(0 0 0 / 0.025),
+
+    0 7px 18px
+      rgb(0 0 0 / 0.055);
+
+  backdrop-filter:
+    blur(15px)
+    saturate(140%);
+
+  -webkit-backdrop-filter:
+    blur(15px)
+    saturate(140%);
+
+  transition:
+    transform 200ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+
+    border-color 200ms ease,
+    background 200ms ease,
+    box-shadow 200ms ease,
+    color 200ms ease;
+}
+
+.study-shell button:not(.completion-target):hover,
+.focusly-dialog button:hover,
+.focusly-button:hover,
+.filter-button:hover,
+.timer-controls button:hover,
+.duration-presets button:hover,
+.row-actions button:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 15%,
+      var(--focusly-ui-border-hover)
+    );
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-ui-accent-soft),
+      transparent 65%
+    ),
+    var(--focusly-ui-glass);
+}
+
+.study-shell button:not(.completion-target):active,
+.focusly-dialog button:active,
+.focusly-button:active,
+.filter-button:active,
+.timer-controls button:active,
+.duration-presets button:active,
+.row-actions button:active {
+  transform:
+    scale(0.975);
+}
+
+/* =========================================================
+   ACTIVE BUTTON STATES
+   Accent = subtle tint only
+   ========================================================= */
+
+.filter-button[aria-pressed="true"],
+.duration-presets [aria-pressed="true"],
+.study-shell button[aria-pressed="true"] {
+  color:
+    color-mix(
+      in srgb,
+      var(--accent) 82%,
+      var(--foreground)
+    );
+
+  border-color:
+    var(--focusly-ui-accent-border);
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-ui-accent-medium),
+      transparent 68%
+    ),
+    var(--focusly-ui-glass);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.18),
+
+    0 6px 18px
+      color-mix(
+        in srgb,
+        var(--accent) 5%,
+        transparent
+      );
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.field {
+  border:
+    1px solid
+    var(--focusly-ui-border);
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.05),
+      transparent
+    ),
+    var(--focusly-ui-glass-soft);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.1);
+
+  backdrop-filter:
+    blur(14px)
+    saturate(135%);
+
+  -webkit-backdrop-filter:
+    blur(14px)
+    saturate(135%);
+
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.field:hover {
+  border-color:
+    var(--focusly-ui-border-hover);
+}
+
+.field:focus,
+.field:focus-visible {
+  outline: none;
+
+  border-color:
+    var(--focusly-ui-accent-border);
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-ui-accent-soft),
+      transparent
+    ),
+    var(--focusly-ui-glass);
+
+  box-shadow:
+    0 0 0 3px
+      color-mix(
+        in srgb,
+        var(--accent) 6%,
+        transparent
+      );
+}
+
+/* =========================================================
+   CHOICES
+   ========================================================= */
+
+.choice {
+  border:
+    1px solid
+    var(--focusly-ui-border);
+
+  border-radius: 20px;
+
+  background:
+    var(--focusly-ui-glass-soft);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.09);
+
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.choice:hover {
+  transform:
+    translateY(-1px);
+}
+
+.choice:has(input:checked) {
+  border-color:
+    var(--focusly-ui-accent-border);
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-ui-accent-medium),
+      transparent 70%
+    ),
+    var(--focusly-ui-glass);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.14);
+}
+
+/* =========================================================
+   TASK AREA
+   ========================================================= */
+
+.task-row {
+  border-bottom:
+    1px solid
+    var(--focusly-ui-border);
+
+  transition:
+    background 180ms ease;
+}
+
+.task-row:hover {
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 2.5%,
+      transparent
+    );
+}
+
+.row-actions button {
+  min-width: 44px;
+}
+
+/* =========================================================
+   FILTERS
+   ========================================================= */
+
+.filter-button {
+  padding-inline: 1rem;
+}
+
+/* =========================================================
+   FOCUS TIMER
+   ========================================================= */
+
+.timer-controls {
+  gap: 0.75rem;
+}
+
+.timer-controls button {
+  min-height: 52px;
+  min-width: 125px;
+}
+
+.duration-presets button {
+  min-height: 48px;
+}
+
+.timer-digits {
+  color: var(--foreground);
+
+  text-shadow:
+    0 0 30px
+      color-mix(
+        in srgb,
+        var(--accent) 6%,
+        transparent
+      );
+}
+
+.timer-stage .eyebrow {
+  color:
+    color-mix(
+      in srgb,
+      var(--accent) 76%,
+      var(--foreground)
+    );
+}
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+.focus-progress {
+  height: 5px;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    );
+}
+
+.focus-progress::-webkit-progress-bar {
+  background:
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    );
+}
+
+.focus-progress::-webkit-progress-value {
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 72%,
+      var(--foreground)
+    );
+}
+
+.focus-progress::-moz-progress-bar {
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 72%,
+      var(--foreground)
+    );
+}
+
+/* =========================================================
+   PLANNER / SCHEDULE
+   ========================================================= */
+
+.week-day {
+  border-radius: 22px;
+}
+
+.session-card {
+  border-radius: 18px;
+
+  border-inline-start:
+    2px solid
+    color-mix(
+      in srgb,
+      var(--accent) 14%,
+      var(--focusly-ui-border)
+    );
+}
+
+.session-card:hover {
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-ui-accent-soft),
+      transparent
+    ),
+    var(--focusly-ui-glass-soft);
+}
+
+/* =========================================================
+   CALENDAR
+   ========================================================= */
+
+.month-cell {
+  border-radius: 16px;
+
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.month-cell:hover {
+  background:
+    var(--focusly-ui-glass-soft);
+}
+
+.month-cell[aria-pressed="true"] {
+  background:
+    linear-gradient(
+      145deg,
+      var(--focusly-ui-accent-soft),
+      transparent
+    ),
+    var(--focusly-ui-glass-soft);
+}
+
+.month-cell[aria-current="date"] {
+  border-color:
+    var(--focusly-ui-accent-border);
+}
+
+/* =========================================================
+   SUBJECT CHIPS
+   ========================================================= */
+
+.subject-chip {
+  border-radius:
+    var(--focusly-ui-control-radius);
+
+  border:
+    1px solid
+    var(--focusly-ui-border);
+
+  background:
+    var(--focusly-ui-glass-soft);
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.08);
+}
+
+/* =========================================================
+   DIALOG
+   ========================================================= */
+
+.focusly-dialog {
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.07),
+      transparent
+    ),
+    color-mix(
+      in srgb,
+      var(--surface) 84%,
+      transparent
+    );
+}
+
+.focusly-dialog::backdrop {
+  background:
+    rgb(15 17 22 / 0.32);
+
+  backdrop-filter:
+    blur(10px);
+
+  -webkit-backdrop-filter:
+    blur(10px);
+}
+
+/* =========================================================
+   DARK MODE
+   ========================================================= */
+
+html[data-theme="dark"] {
+  --focusly-ui-border:
+    rgb(255 255 255 / 0.075);
+
+  --focusly-ui-border-hover:
+    rgb(255 255 255 / 0.12);
+
+  --focusly-ui-glass:
+    color-mix(
+      in srgb,
+      var(--surface) 54%,
+      transparent
+    );
+
+  --focusly-ui-glass-soft:
+    color-mix(
+      in srgb,
+      var(--surface) 38%,
+      transparent
+    );
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 767px) {
+  :root {
+    --focusly-ui-radius: 22px;
+  }
+
+  .timer-controls button {
+    min-width: 105px;
+  }
+}
+
+/* FOCUSLY_UI_POLISH_V2_END */
+
+/* FOCUSLY_3D_GLASS_V3_START */
+
+/* =========================================================
+   FOCUSLY 3D GLASS V3
+   ========================================================= */
+
+:root {
+  --focusly-3d-border:
+    color-mix(
+      in srgb,
+      var(--foreground) 9%,
+      transparent
+    );
+
+  --focusly-3d-surface:
+    color-mix(
+      in srgb,
+      var(--surface) 45%,
+      transparent
+    );
+
+  --focusly-3d-surface-soft:
+    color-mix(
+      in srgb,
+      var(--surface) 28%,
+      transparent
+    );
+}
+
+/* =========================================================
+   USER BACKGROUND
+   ========================================================= */
+
+html[
+  data-focusly-background="custom"
+] body {
+  background-color:
+    var(--background);
+
+  background-image:
+    linear-gradient(
+      color-mix(
+        in srgb,
+        var(--background) 16%,
+        transparent
+      ),
+      color-mix(
+        in srgb,
+        var(--background) 16%,
+        transparent
+      )
+    ),
+    var(--focusly-user-background);
+
+  background-size:
+    cover;
+
+  background-position:
+    center;
+
+  background-repeat:
+    no-repeat;
+
+  background-attachment:
+    fixed;
+}
+
+html[
+  data-focusly-background="custom"
+] .study-sidebar {
+  background:
+    transparent !important;
+}
+
+/* =========================================================
+   3D GLASS CARDS
+   ========================================================= */
+
+.surface:not(.card-accent),
+.card-floating,
+.week-day,
+.session-card,
+.focus-result,
+.subject-stats,
+.history-card,
+.focusly-dialog,
+.study-toast {
+  border:
+    1px solid
+    var(--focusly-3d-border) !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.09),
+      rgb(255 255 255 / 0.015)
+    ),
+    var(--focusly-3d-surface) !important;
+
+  box-shadow:
+    inset 1.5px 1.5px 0
+      rgb(255 255 255 / 0.18),
+
+    inset -1.5px -1.5px 0
+      rgb(0 0 0 / 0.08),
+
+    inset 0 0 20px
+      rgb(255 255 255 / 0.025),
+
+    0 18px 42px
+      rgb(0 0 0 / 0.11) !important;
+
+  backdrop-filter:
+    blur(24px)
+    saturate(150%)
+    contrast(103%);
+
+  -webkit-backdrop-filter:
+    blur(24px)
+    saturate(150%)
+    contrast(103%);
+}
+
+/*
+ * With a custom background,
+ * surfaces become substantially
+ * more transparent.
+ */
+
+html[
+  data-focusly-background="custom"
+]
+.surface:not(.card-accent),
+
+html[
+  data-focusly-background="custom"
+]
+.card-floating,
+
+html[
+  data-focusly-background="custom"
+]
+.week-day,
+
+html[
+  data-focusly-background="custom"
+]
+.session-card,
+
+html[
+  data-focusly-background="custom"
+]
+.focus-result,
+
+html[
+  data-focusly-background="custom"
+]
+.subject-stats,
+
+html[
+  data-focusly-background="custom"
+]
+.history-card,
+
+html[
+  data-focusly-background="custom"
+]
+.focusly-dialog,
+
+html[
+  data-focusly-background="custom"
+]
+.study-toast {
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.09),
+      rgb(255 255 255 / 0.018)
+    ),
+    color-mix(
+      in srgb,
+      var(--surface) 16%,
+      transparent
+    ) !important;
+
+  border-color:
+    rgb(255 255 255 / 0.15)
+    !important;
+
+  box-shadow:
+    inset 1.5px 1.5px 0
+      rgb(255 255 255 / 0.22),
+
+    inset -1.5px -1.5px 0
+      rgb(0 0 0 / 0.12),
+
+    0 20px 50px
+      rgb(0 0 0 / 0.16)
+      !important;
+
+  backdrop-filter:
+    blur(30px)
+    saturate(165%);
+
+  -webkit-backdrop-filter:
+    blur(30px)
+    saturate(165%);
+}
+
+/* =========================================================
+   ACCENT IS ONLY A SOFT HIGHLIGHT
+   ========================================================= */
+
+.card-accent,
+.focus-result.is-complete,
+.stats-summary
+  > .surface:first-child {
+  color:
+    var(--foreground) !important;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 16%,
+      var(--focusly-3d-border)
+    ) !important;
+
+  background:
+    radial-gradient(
+      circle at 10% 5%,
+      color-mix(
+        in srgb,
+        var(--accent) 7%,
+        transparent
+      ),
+      transparent 40%
+    ),
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.07),
+      transparent
+    ),
+    var(--focusly-3d-surface)
+    !important;
+}
+
+/* =========================================================
+   BUTTONS = MINI 3D GLASS
+   ========================================================= */
+
+.study-shell
+button:not(.completion-target),
+
+.focusly-dialog button,
+
+.focusly-button,
+
+.filter-button,
+
+.duration-presets button,
+
+.row-actions button {
+  border:
+    1px solid
+    var(--focusly-3d-border)
+    !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.09),
+      rgb(255 255 255 / 0.012)
+    ),
+    var(--focusly-3d-surface-soft)
+    !important;
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.18),
+
+    inset -1px -1px 0
+      rgb(0 0 0 / 0.07),
+
+    0 7px 18px
+      rgb(0 0 0 / 0.08)
+      !important;
+
+  backdrop-filter:
+    blur(17px)
+    saturate(145%);
+
+  -webkit-backdrop-filter:
+    blur(17px)
+    saturate(145%);
+}
+
+.study-shell
+button[aria-pressed="true"],
+
+.filter-button[
+  aria-pressed="true"
+],
+
+.duration-presets
+[aria-pressed="true"] {
+  color:
+    color-mix(
+      in srgb,
+      var(--accent) 72%,
+      var(--foreground)
+    ) !important;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 16%,
+      var(--focusly-3d-border)
+    ) !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(
+        in srgb,
+        var(--accent) 6%,
+        rgb(255 255 255 / 0.04)
+      ),
+      transparent
+    ),
+    var(--focusly-3d-surface-soft)
+    !important;
+}
+
+/* =========================================================
+   INPUTS / SELECTS
+   ========================================================= */
+
+.field {
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.06),
+      transparent
+    ),
+    var(--focusly-3d-surface-soft)
+    !important;
+
+  border-color:
+    var(--focusly-3d-border)
+    !important;
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.11)
+      !important;
+
+  backdrop-filter:
+    blur(17px);
+
+  -webkit-backdrop-filter:
+    blur(17px);
+}
+
+/* =========================================================
+   WEEKLY CALENDAR FIX
+   ========================================================= */
+
+.week-grid {
+  align-items:
+    stretch;
+}
+
+.week-day {
+  overflow:
+    hidden;
+
+  min-width:
+    0;
+
+  padding:
+    1rem !important;
+}
+
+.week-day
+.section-heading {
+  display:
+    grid;
+
+  grid-template-columns:
+    minmax(0, 1fr);
+
+  align-items:
+    stretch;
+
+  gap:
+    0.6rem;
+}
+
+.week-day
+.section-heading > * {
+  min-width:
+    0;
+}
+
+.week-day button {
+  max-width:
+    100%;
+
+  min-width:
+    0 !important;
+
+  white-space:
+    normal;
+
+  line-height:
+    1.4;
+}
+
+.week-day
+.row-actions {
+  width:
+    100%;
+
+  margin-inline-start:
+    0;
+
+  display:
+    flex;
+
+  flex-wrap:
+    wrap;
+
+  gap:
+    0.4rem;
+
+  justify-content:
+    stretch;
+}
+
+.week-day
+.row-actions button {
+  flex:
+    1 1 100%;
+}
+
+/*
+ * Seven-column view needs
+ * smaller controls.
+ */
+
+@media (
+  min-width: 1280px
+) {
+  .week-grid {
+    gap:
+      0.65rem;
+  }
+
+  .week-day {
+    padding:
+      0.8rem !important;
+  }
+
+  .week-day button {
+    font-size:
+      0.76rem;
+
+    padding-inline:
+      0.55rem !important;
+  }
+}
+
+/* =========================================================
+   STATISTICS CLEANUP
+   ========================================================= */
+
+.stats-summary {
+  display:
+    grid !important;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(210px, 1fr)
+    ) !important;
+
+  gap:
+    1rem !important;
+
+  margin-block:
+    2rem !important;
+}
+
+.stats-summary
+> .surface {
+  grid-column:
+    auto !important;
+
+  grid-row:
+    auto !important;
+
+  min-height:
+    155px;
+
+  padding:
+    1.5rem !important;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  justify-content:
+    space-between;
+}
+
+.stats-summary
+> .surface:first-child,
+
+.stats-summary
+> .surface:last-child {
+  grid-column:
+    auto !important;
+
+  grid-row:
+    auto !important;
+}
+
+.stats-summary p,
+
+.stats-summary
+> .surface:first-child p {
+  font-size:
+    clamp(
+      2rem,
+      3.5vw,
+      3.35rem
+    ) !important;
+
+  line-height:
+    1.25 !important;
+
+  margin:
+    0;
+}
+
+.stats-summary h2 {
+  font-size:
+    0.85rem;
+
+  color:
+    var(--muted);
+}
+
+.subject-stats,
+.history-card {
+  padding:
+    1.5rem !important;
+
+  border-radius:
+    26px !important;
+
+  border-top:
+    1px solid
+    var(--focusly-3d-border)
+    !important;
+}
+
+/* =========================================================
+   TOPBAR ON CUSTOM BACKGROUND
+   ========================================================= */
+
+html[
+  data-focusly-background="custom"
+]
+.study-topbar {
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 12%,
+      transparent
+    ) !important;
+
+  border-bottom-color:
+    rgb(255 255 255 / 0.1)
+    !important;
+
+  backdrop-filter:
+    blur(28px)
+    saturate(155%);
+
+  -webkit-backdrop-filter:
+    blur(28px)
+    saturate(155%);
+}
+
+/* =========================================================
+   DARK MODE
+   ========================================================= */
+
+html[
+  data-theme="dark"
+] {
+  --focusly-3d-border:
+    rgb(255 255 255 / 0.09);
+
+  --focusly-3d-surface:
+    rgb(24 27 34 / 0.38);
+
+  --focusly-3d-surface-soft:
+    rgb(24 27 34 / 0.25);
+}
+
+html[
+  data-theme="dark"
+][
+  data-focusly-background="custom"
+] {
+  --focusly-3d-surface:
+    rgb(20 23 30 / 0.17);
+
+  --focusly-3d-surface-soft:
+    rgb(20 23 30 / 0.11);
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (
+  max-width: 767px
+) {
+  .stats-summary {
+    grid-template-columns:
+      1fr !important;
+  }
+
+  .stats-summary
+  > .surface {
+    min-height:
+      130px;
+  }
+}
+
+/* FOCUSLY_3D_GLASS_V3_END */
+
+/* FOCUSLY_GLASS_CUSTOMIZATION_V4_START */
+
+/* =========================================================
+   FOCUSLY GLASS CUSTOMIZATION V4
+   ========================================================= */
+
+:root {
+  --focusly-background-overlay:
+    11%;
+
+  --focusly-user-glass-blur:
+    31px;
+
+  --focusly-user-glass-opacity:
+    14%;
+
+  --focusly-user-glass-border-alpha:
+    0.132;
+
+  --focusly-user-glass-highlight-alpha:
+    0.148;
+
+  --focusly-user-glass-shadow-alpha:
+    0.112;
+}
+
+/* =========================================================
+   CUSTOM USER BACKGROUND
+   ========================================================= */
+
+html[
+  data-focusly-background="custom"
+]
+body {
+  background-color:
+    var(--background);
+
+  background-image:
+    linear-gradient(
+      color-mix(
+        in srgb,
+        var(--background)
+          var(
+            --focusly-background-overlay
+          ),
+        transparent
+      ),
+      color-mix(
+        in srgb,
+        var(--background)
+          var(
+            --focusly-background-overlay
+          ),
+        transparent
+      )
+    ),
+    var(
+      --focusly-user-background
+    );
+
+  background-size:
+    cover;
+
+  background-position:
+    center;
+
+  background-repeat:
+    no-repeat;
+
+  background-attachment:
+    fixed;
+}
+
+/* =========================================================
+   ALL MAJOR SURFACES = TRANSPARENT 3D GLASS
+   ========================================================= */
+
+.surface:not(.card-accent),
+.card-floating,
+.week-day,
+.session-card,
+.focus-result,
+.subject-stats,
+.history-card,
+.focusly-dialog,
+.study-toast {
+  border:
+    1px solid
+    rgb(
+      255 255 255 /
+      var(
+        --focusly-user-glass-border-alpha
+      )
+    ) !important;
+
+  background:
+    radial-gradient(
+      circle at 12% 4%,
+      rgb(
+        255 255 255 /
+        var(
+          --focusly-user-glass-highlight-alpha
+        )
+      ),
+      transparent 32%
+    ),
+
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.045),
+      rgb(255 255 255 / 0.008)
+    ),
+
+    color-mix(
+      in srgb,
+      var(--surface)
+        var(
+          --focusly-user-glass-opacity
+        ),
+      transparent
+    ) !important;
+
+  box-shadow:
+    inset 1.5px 1.5px 0
+      rgb(
+        255 255 255 /
+        var(
+          --focusly-user-glass-highlight-alpha
+        )
+      ),
+
+    inset -1.5px -1.5px 0
+      rgb(0 0 0 / 0.09),
+
+    inset 0 0 24px
+      rgb(255 255 255 / 0.018),
+
+    0 18px 44px
+      rgb(
+        0 0 0 /
+        var(
+          --focusly-user-glass-shadow-alpha
+        )
+      ) !important;
+
+  backdrop-filter:
+    blur(
+      var(
+        --focusly-user-glass-blur
+      )
+    )
+    saturate(170%)
+    contrast(104%);
+
+  -webkit-backdrop-filter:
+    blur(
+      var(
+        --focusly-user-glass-blur
+      )
+    )
+    saturate(170%)
+    contrast(104%);
+}
+
+/* Custom background:
+   remove even more solid surface color */
+
+html[
+  data-focusly-background="custom"
+]
+.surface:not(.card-accent),
+
+html[
+  data-focusly-background="custom"
+]
+.card-floating,
+
+html[
+  data-focusly-background="custom"
+]
+.week-day,
+
+html[
+  data-focusly-background="custom"
+]
+.session-card,
+
+html[
+  data-focusly-background="custom"
+]
+.focus-result,
+
+html[
+  data-focusly-background="custom"
+]
+.subject-stats,
+
+html[
+  data-focusly-background="custom"
+]
+.history-card,
+
+html[
+  data-focusly-background="custom"
+]
+.focusly-dialog,
+
+html[
+  data-focusly-background="custom"
+]
+.study-toast {
+  background:
+    radial-gradient(
+      circle at 12% 4%,
+      rgb(
+        255 255 255 /
+        var(
+          --focusly-user-glass-highlight-alpha
+        )
+      ),
+      transparent 34%
+    ),
+
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.04),
+      rgb(255 255 255 / 0.005)
+    ),
+
+    color-mix(
+      in srgb,
+      var(--surface)
+        var(
+          --focusly-user-glass-opacity
+        ),
+      transparent
+    ) !important;
+}
+
+/* =========================================================
+   ACCENT CARDS
+   ========================================================= */
+
+.card-accent,
+.focus-result.is-complete,
+.stats-summary
+  > .surface:first-child {
+  color:
+    var(--foreground)
+    !important;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 14%,
+      rgb(
+        255 255 255 /
+        var(
+          --focusly-user-glass-border-alpha
+        )
+      )
+    )
+    !important;
+
+  background:
+    radial-gradient(
+      circle at 12% 4%,
+      color-mix(
+        in srgb,
+        var(--accent) 6%,
+        transparent
+      ),
+      transparent 38%
+    ),
+
+    color-mix(
+      in srgb,
+      var(--surface)
+        var(
+          --focusly-user-glass-opacity
+        ),
+      transparent
+    )
+    !important;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.study-shell
+button:not(.completion-target),
+
+.focusly-dialog button,
+
+.focusly-button,
+
+.filter-button,
+
+.duration-presets button,
+
+.row-actions button {
+  border:
+    1px solid
+    rgb(
+      255 255 255 /
+      calc(
+        var(
+          --focusly-user-glass-border-alpha
+        ) * 0.8
+      )
+    )
+    !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.055),
+      rgb(255 255 255 / 0.008)
+    ),
+
+    color-mix(
+      in srgb,
+      var(--surface)
+        calc(
+          var(
+            --focusly-user-glass-opacity
+          ) * 0.7
+        ),
+      transparent
+    )
+    !important;
+
+  box-shadow:
+    inset 1px 1px 0
+      rgb(255 255 255 / 0.11),
+
+    inset -1px -1px 0
+      rgb(0 0 0 / 0.055),
+
+    0 7px 18px
+      rgb(0 0 0 / 0.075)
+    !important;
+
+  backdrop-filter:
+    blur(
+      calc(
+        var(
+          --focusly-user-glass-blur
+        ) * 0.75
+      )
+    )
+    saturate(150%);
+
+  -webkit-backdrop-filter:
+    blur(
+      calc(
+        var(
+          --focusly-user-glass-blur
+        ) * 0.75
+      )
+    )
+    saturate(150%);
+}
+
+/* Accent remains a tint only */
+
+.study-shell
+button[aria-pressed="true"],
+
+.filter-button[
+  aria-pressed="true"
+],
+
+.duration-presets
+[aria-pressed="true"] {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 15%,
+      transparent
+    )
+    !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(
+        in srgb,
+        var(--accent) 6%,
+        rgb(255 255 255 / 0.035)
+      ),
+      transparent
+    )
+    !important;
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.field {
+  background:
+    linear-gradient(
+      145deg,
+      rgb(255 255 255 / 0.04),
+      transparent
+    ),
+
+    color-mix(
+      in srgb,
+      var(--surface)
+        calc(
+          var(
+            --focusly-user-glass-opacity
+          ) * 0.65
+        ),
+      transparent
+    )
+    !important;
+
+  backdrop-filter:
+    blur(
+      calc(
+        var(
+          --focusly-user-glass-blur
+        ) * 0.65
+      )
+    );
+
+  -webkit-backdrop-filter:
+    blur(
+      calc(
+        var(
+          --focusly-user-glass-blur
+        ) * 0.65
+      )
+    );
+}
+
+/* =========================================================
+   TOPBAR
+   ========================================================= */
+
+.study-topbar {
+  background:
+    color-mix(
+      in srgb,
+      var(--surface)
+        calc(
+          var(
+            --focusly-user-glass-opacity
+          ) * 0.65
+        ),
+      transparent
+    )
+    !important;
+
+  border-bottom-color:
+    rgb(
+      255 255 255 /
+      calc(
+        var(
+          --focusly-user-glass-border-alpha
+        ) * 0.55
+      )
+    )
+    !important;
+
+  backdrop-filter:
+    blur(
+      var(
+        --focusly-user-glass-blur
+      )
+    )
+    saturate(160%);
+
+  -webkit-backdrop-filter:
+    blur(
+      var(
+        --focusly-user-glass-blur
+      )
+    )
+    saturate(160%);
+}
+
+/* =========================================================
+   READING SUPPORT
+   Keep text readable over busy wallpapers.
+   ========================================================= */
+
+html[
+  data-focusly-background="custom"
+]
+.study-main {
+  text-shadow:
+    0 1px 10px
+      rgb(0 0 0 / 0.09);
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (
+  max-width: 767px
+) {
+  html[
+    data-focusly-background="custom"
+  ]
+  body {
+    background-attachment:
+      scroll;
+  }
+}
+
+/* FOCUSLY_GLASS_CUSTOMIZATION_V4_END */
+
+/* FOCUSLY_PROFILE_SETTINGS_V3_START */
+
+/* =========================================================
+   Shared profile/settings identity
+   ========================================================= */
+
+.settings-editorial,
+.profile-layout {
+  --profile-ease:
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    );
+}
+
+/* =========================================================
+   SETTINGS PAGE
+   ========================================================= */
+
+.settings-editorial {
+  width: 100% !important;
+
+  max-width:
+    70rem !important;
+
+  margin-inline:
+    auto !important;
+
+  display: grid !important;
+
+  gap: 18px !important;
+}
+
+.settings-editorial
+> header {
+  margin:
+    0 0 14px !important;
+
+  max-width:
+    48rem;
+}
+
+.settings-editorial
+> header h1 {
+  margin-top:
+    8px !important;
+}
+
+.settings-editorial
+> header
+> p:last-child {
+  max-width:
+    42rem;
+
+  line-height: 1.75;
+}
+
+/* Every settings section becomes a real compact card */
+
+.settings-editorial
+> .surface {
+  width: 100% !important;
+
+  min-height:
+    0 !important;
+
+  height:
+    auto !important;
+
+  margin: 0 !important;
+
+  padding:
+    clamp(
+      22px,
+      3vw,
+      30px
+    ) !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 9%,
+      transparent
+    ) !important;
+
+  border-radius:
+    28px !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(
+        in srgb,
+        var(--surface) 92%,
+        transparent
+      ),
+      color-mix(
+        in srgb,
+        var(--surface) 76%,
+        transparent
+      )
+    ) !important;
+
+  box-shadow:
+    0 14px 36px
+    rgb(
+      0 0 0 /
+      0.055
+    ) !important;
+
+  backdrop-filter:
+    blur(12px)
+    saturate(115%);
+
+  -webkit-backdrop-filter:
+    blur(12px)
+    saturate(115%);
+
+  overflow:
+    visible !important;
+
+  transition:
+    transform 220ms
+      var(--profile-ease),
+    border-color 220ms
+      var(--profile-ease),
+    box-shadow 220ms
+      var(--profile-ease) !important;
+}
+
+.settings-editorial
+> .surface:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 12%,
+      var(--foreground) 8%
+    ) !important;
+
+  box-shadow:
+    0 18px 44px
+    rgb(
+      0 0 0 /
+      0.075
+    ) !important;
+}
+
+/* Section headings */
+
+.settings-editorial
+> .surface
+> h2 {
+  margin-top:
+    0 !important;
+
+  margin-bottom:
+    20px !important;
+
+  font-size:
+    clamp(
+      1.18rem,
+      2vw,
+      1.42rem
+    ) !important;
+
+  font-weight:
+    650 !important;
+
+  letter-spacing:
+    -0.02em;
+}
+
+/* Do not keep old narrow forms */
+
+.settings-editorial
+form {
+  width: 100% !important;
+
+  max-width:
+    none !important;
+}
+
+/* Better spacing inside forms */
+
+.settings-editorial
+form.grid {
+  gap:
+    18px !important;
+}
+
+/* Fields */
+
+.settings-editorial
+.field,
+.profile-layout
+.field {
+  width: 100%;
+
+  min-height:
+    54px;
+
+  border-radius:
+    18px !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 10%,
+      transparent
+    ) !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 72%,
+      var(--background)
+    ) !important;
+
+  box-shadow:
+    inset 0 1px 0
+    rgb(
+      255 255 255 /
+      0.035
+    );
+
+  transition:
+    border-color 180ms
+      var(--profile-ease),
+    box-shadow 180ms
+      var(--profile-ease),
+    background 180ms
+      var(--profile-ease) !important;
+}
+
+.settings-editorial
+.field:hover,
+.profile-layout
+.field:hover {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 17%,
+      var(--foreground) 9%
+    ) !important;
+}
+
+.settings-editorial
+.field:focus,
+.profile-layout
+.field:focus {
+  outline: none;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 35%,
+      transparent
+    ) !important;
+
+  box-shadow:
+    0 0 0 4px
+    color-mix(
+      in srgb,
+      var(--accent) 7%,
+      transparent
+    ) !important;
+}
+
+/* Read-only account name */
+
+.settings-editorial
+.field:read-only {
+  opacity: 0.9;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 52%,
+      transparent
+    ) !important;
+}
+
+/* Native select follows dark/light theme */
+
+.settings-editorial
+select,
+.profile-layout
+select {
+  color-scheme:
+    dark;
+}
+
+html[data-theme="light"]
+.settings-editorial
+select,
+
+html[data-theme="light"]
+.profile-layout
+select {
+  color-scheme:
+    light;
+}
+
+/* Choices: accent / suggested subjects */
+
+.settings-editorial
+.choice,
+.profile-layout
+.choice {
+  min-height:
+    52px;
+
+  padding:
+    12px 15px !important;
+
+  border-radius:
+    17px !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 55%,
+      transparent
+    ) !important;
+
+  transition:
+    transform 180ms
+      var(--profile-ease),
+    border-color 180ms
+      var(--profile-ease),
+    background 180ms
+      var(--profile-ease);
+}
+
+.settings-editorial
+.choice:hover,
+.profile-layout
+.choice:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 18%,
+      transparent
+    ) !important;
+}
+
+/* Settings buttons */
+
+.settings-editorial
+form
+> button {
+  min-height:
+    48px;
+
+  justify-self:
+    start !important;
+
+  padding-inline:
+    22px !important;
+
+  border-radius:
+    999px !important;
+}
+
+/* Account section:
+   name and email do not need huge empty space */
+
+.settings-editorial
+> .surface:first-of-type {
+  display: grid;
+
+  align-content:
+    start;
+
+  gap: 0;
+}
+
+/* =========================================================
+   PROFILE PAGE
+   ========================================================= */
+
+.profile-layout {
+  width: 100%;
+
+  max-width:
+    76rem !important;
+
+  margin-inline:
+    auto;
+
+  display: grid !important;
+
+  grid-template-columns:
+    minmax(
+      0,
+      1fr
+    ) !important;
+
+  gap:
+    24px !important;
+}
+
+/*
+ * Top area:
+ * account summary + editable profile
+ */
+
+.profile-layout
+> div:first-child {
+  min-width: 0;
+
+  display: grid !important;
+
+  grid-template-columns:
+    minmax(
+      240px,
+      0.72fr
+    )
+    minmax(
+      0,
+      1.45fr
+    );
+
+  align-items:
+    start;
+
+  gap:
+    22px !important;
+}
+
+/* =========================================================
+   PROFILE CARDS
+   ========================================================= */
+
+.profile-layout
+.surface {
+  min-width: 0;
+
+  min-height:
+    0 !important;
+
+  height:
+    auto !important;
+
+  padding:
+    clamp(
+      22px,
+      3vw,
+      30px
+    ) !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 9%,
+      transparent
+    ) !important;
+
+  border-radius:
+    26px !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(
+        in srgb,
+        var(--surface) 90%,
+        transparent
+      ),
+      color-mix(
+        in srgb,
+        var(--surface) 72%,
+        transparent
+      )
+    ) !important;
+
+  box-shadow:
+    0 13px 34px
+    rgb(
+      0 0 0 /
+      0.05
+    ) !important;
+
+  backdrop-filter:
+    blur(10px)
+    saturate(112%);
+
+  -webkit-backdrop-filter:
+    blur(10px)
+    saturate(112%);
+
+  transition:
+    transform 220ms
+      var(--profile-ease),
+    border-color 220ms
+      var(--profile-ease),
+    box-shadow 220ms
+      var(--profile-ease);
+}
+
+.profile-layout
+.surface:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 11%,
+      var(--foreground) 8%
+    ) !important;
+
+  box-shadow:
+    0 17px 40px
+    rgb(
+      0 0 0 /
+      0.07
+    ) !important;
+}
+
+/* Account summary */
+
+.profile-layout
+> div:first-child
+> .surface:first-child {
+  padding:
+    28px !important;
+
+  position: relative;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at
+      15% 5%,
+      color-mix(
+        in srgb,
+        var(--accent) 7%,
+        transparent
+      ),
+      transparent 40%
+    ),
+
+    color-mix(
+      in srgb,
+      var(--surface) 82%,
+      transparent
+    ) !important;
+}
+
+.profile-layout
+> div:first-child
+> .surface:first-child
+> h2 {
+  margin-bottom:
+    24px !important;
+}
+
+.profile-layout
+> div:first-child
+> .surface:first-child
+> p.text-xl {
+  font-size:
+    clamp(
+      1.4rem,
+      3vw,
+      1.85rem
+    ) !important;
+
+  line-height: 1.25;
+}
+
+/* =========================================================
+   PROFILE STATS
+   ========================================================= */
+
+.profile-layout
+> div:last-child {
+  width: 100%;
+
+  padding-top:
+    0 !important;
+
+  border-top:
+    0 !important;
+
+  display: grid !important;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(
+        0,
+        1fr
+      )
+    ) !important;
+
+  gap:
+    14px !important;
+}
+
+.profile-layout
+> div:last-child
+.surface {
+  min-height:
+    145px !important;
+
+  padding:
+    22px !important;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content:
+    space-between;
+
+  gap: 18px;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 72%,
+      transparent
+    ) !important;
+}
+
+.profile-layout
+> div:last-child
+.surface
+h2 {
+  margin: 0 !important;
+
+  color:
+    var(--muted);
+
+  font-size:
+    0.8rem !important;
+
+  font-weight:
+    560 !important;
+
+  line-height:
+    1.5;
+}
+
+.profile-layout
+> div:last-child
+.surface
+p {
+  margin:
+    0 !important;
+
+  color:
+    var(--foreground);
+
+  font-size:
+    clamp(
+      1.25rem,
+      2vw,
+      1.65rem
+    ) !important;
+
+  font-weight:
+    650 !important;
+
+  line-height:
+    1.25;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+/* Daily goal card gets a tiny accent cue */
+
+.profile-layout
+> div:last-child
+.surface:nth-child(3) {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 14%,
+      var(--foreground) 7%
+    ) !important;
+}
+
+/* Completed focus gets a tiny accent cue */
+
+.profile-layout
+> div:last-child
+.surface:nth-child(5) {
+  background:
+    radial-gradient(
+      circle at
+      15% 0%,
+      color-mix(
+        in srgb,
+        var(--accent) 6%,
+        transparent
+      ),
+      transparent 48%
+    ),
+
+    color-mix(
+      in srgb,
+      var(--surface) 72%,
+      transparent
+    ) !important;
+}
+
+/* =========================================================
+   PAGE HEADING
+   ========================================================= */
+
+.profile-layout
+~ * {
+  min-width: 0;
+}
+
+.page-heading {
+  max-width:
+    76rem;
+
+  margin-inline:
+    auto;
+
+  margin-bottom:
+    26px !important;
+
+  align-items:
+    flex-end;
+}
+
+.page-heading h1 {
+  margin-top:
+    8px !important;
+}
+
+.page-heading
+> div
+> p:last-child {
+  max-width:
+    44rem;
+
+  line-height:
+    1.7;
+}
+
+/* =========================================================
+   RTL/LTR SAFETY
+   ========================================================= */
+
+.settings-editorial,
+.profile-layout,
+.page-heading {
+  text-align:
+    start;
+}
+
+html[dir="rtl"]
+.settings-editorial
+.field,
+
+html[dir="rtl"]
+.profile-layout
+.field {
+  text-align:
+    right;
+}
+
+html[dir="ltr"]
+.settings-editorial
+.field,
+
+html[dir="ltr"]
+.profile-layout
+.field {
+  text-align:
+    left;
+}
+
+/* Email stays readable */
+
+.settings-editorial
+.break-words,
+
+.profile-layout
+.break-words {
+  overflow-wrap:
+    anywhere;
+
+  direction:
+    ltr;
+
+  text-align:
+    start;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (
+  max-width: 1050px
+) {
+  .profile-layout
+  > div:first-child {
+    grid-template-columns:
+      minmax(
+        0,
+        1fr
+      ) !important;
+  }
+
+  .profile-layout
+  > div:last-child {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      ) !important;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (
+  max-width: 640px
+) {
+  .settings-editorial {
+    gap:
+      14px !important;
+  }
+
+  .settings-editorial
+  > .surface,
+
+  .profile-layout
+  .surface {
+    padding:
+      20px !important;
+
+    border-radius:
+      22px !important;
+  }
+
+  .profile-layout {
+    gap:
+      16px !important;
+  }
+
+  .profile-layout
+  > div:first-child {
+    gap:
+      16px !important;
+  }
+
+  .profile-layout
+  > div:last-child {
+    grid-template-columns:
+      minmax(
+        0,
+        1fr
+      ) !important;
+
+    gap:
+      12px !important;
+  }
+
+  .profile-layout
+  > div:last-child
+  .surface {
+    min-height:
+      112px !important;
+
+    padding:
+      19px !important;
+  }
+
+  .page-heading {
+    align-items:
+      stretch;
+
+    gap:
+      16px;
+  }
+
+  .page-heading
+  > a {
+    align-self:
+      flex-start;
+  }
+}
+
+/* =========================================================
+   MOTION ACCESSIBILITY
+   ========================================================= */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .settings-editorial
+  > .surface,
+
+  .profile-layout
+  .surface,
+
+  .settings-editorial
+  .field,
+
+  .profile-layout
+  .field,
+
+  .settings-editorial
+  .choice,
+
+  .profile-layout
+  .choice {
+    transition:
+      none !important;
+  }
+
+  .settings-editorial
+  > .surface:hover,
+
+  .profile-layout
+  .surface:hover,
+
+  .settings-editorial
+  .choice:hover,
+
+  .profile-layout
+  .choice:hover {
+    transform:
+      none !important;
+  }
+}
+
+/* FOCUSLY_PROFILE_SETTINGS_V3_END */
+
+/* FOCUSLY_TYPOGRAPHY_V1_START */
+
+/* =========================================================
+   FOCUSLY TYPOGRAPHY V1
+
+   English:
+   Manrope
+
+   Arabic:
+   Alexandria
+   ========================================================= */
+
+:root {
+  --font-focusly:
+    var(--font-focusly-en),
+    Arial,
+    sans-serif;
+
+  --font-focusly-arabic:
+    var(--font-focusly-ar),
+    Tahoma,
+    Arial,
+    sans-serif;
+}
+
+/* =========================================================
+   ENGLISH
+   ========================================================= */
+
+html[lang="en"] {
+  font-family:
+    var(--font-focusly-en),
+    Arial,
+    sans-serif;
+}
+
+html[lang="en"] body,
+html[lang="en"] button,
+html[lang="en"] input,
+html[lang="en"] select,
+html[lang="en"] textarea {
+  font-family:
+    var(--font-focusly-en),
+    Arial,
+    sans-serif;
+}
+
+/* =========================================================
+   ARABIC
+   ========================================================= */
+
+html[lang="ar"] {
+  font-family:
+    var(--font-focusly-ar),
+    Tahoma,
+    Arial,
+    sans-serif;
+}
+
+html[lang="ar"] body,
+html[lang="ar"] button,
+html[lang="ar"] input,
+html[lang="ar"] select,
+html[lang="ar"] textarea {
+  font-family:
+    var(--font-focusly-ar),
+    Tahoma,
+    Arial,
+    sans-serif;
+}
+
+/* =========================================================
+   HEADINGS
+
+   No more editorial serif headings.
+   The entire product now belongs to
+   one visual family.
+   ========================================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.display-type {
+  font-family:
+    inherit !important;
+
+  text-wrap:
+    balance;
+}
+
+h1,
+.display-type {
+  font-weight:
+    650 !important;
+
+  line-height:
+    1.18;
+
+  letter-spacing:
+    -0.035em;
+}
+
+h2 {
+  font-weight:
+    650;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-weight:
+    620;
+}
+
+/* Arabic requires different spacing */
+
+html[lang="ar"]
+h1,
+
+html[lang="ar"]
+h2,
+
+html[lang="ar"]
+h3,
+
+html[lang="ar"]
+h4,
+
+html[lang="ar"]
+h5,
+
+html[lang="ar"]
+h6,
+
+html[lang="ar"]
+.display-type {
+  font-family:
+    var(--font-focusly-ar),
+    Tahoma,
+    Arial,
+    sans-serif !important;
+
+  letter-spacing:
+    0 !important;
+}
+
+html[lang="ar"]
+h1,
+
+html[lang="ar"]
+.display-type {
+  line-height:
+    1.42;
+}
+
+/* =========================================================
+   ENGLISH CONTENT INSIDE ARABIC UI
+
+   Brand name and explicit English controls
+   remain Manrope.
+   ========================================================= */
+
+html[lang="ar"]
+[lang="en"] {
+  font-family:
+    var(--font-focusly-en),
+    Arial,
+    sans-serif;
+}
+
+.study-sidebar
+a[dir="ltr"],
+
+.study-topbar
+a[dir="ltr"],
+
+a[aria-label="Focusly"],
+
+a[aria-label="Focusly home"] {
+  font-family:
+    var(--font-focusly-en),
+    Arial,
+    sans-serif !important;
+}
+
+/* =========================================================
+   NUMBERS / TIMER
+
+   Preserve stable digit widths.
+   ========================================================= */
+
+.timer-digits,
+.quick-digits,
+.focus-glass-timer__digits,
+
+[role="timer"] {
+  font-family:
+    var(--font-focusly-en),
+    var(--font-focusly-ar),
+    Arial,
+    sans-serif !important;
+
+  font-variant-numeric:
+    tabular-nums;
+
+  font-feature-settings:
+    "tnum" 1;
+}
+
+/*
+ * Current redesigned Focus Timer
+ * CSS module time element also inherits
+ * through role=timer, but this keeps
+ * nested digits predictable.
+ */
+
+[role="timer"]
+[dir="ltr"] {
+  font-family:
+    var(--font-focusly-en),
+    Arial,
+    sans-serif !important;
+}
+
+/* =========================================================
+   BODY COPY
+   ========================================================= */
+
+body {
+  font-weight:
+    450;
+
+  text-rendering:
+    optimizeLegibility;
+
+  -webkit-font-smoothing:
+    antialiased;
+
+  -moz-osx-font-smoothing:
+    grayscale;
+}
+
+p,
+label,
+input,
+select,
+textarea,
+button,
+a {
+  letter-spacing:
+    normal;
+}
+
+/*
+ * English buttons and compact labels
+ * can use slight Manrope tracking.
+ */
+
+html[lang="en"]
+button,
+
+html[lang="en"]
+.eyebrow {
+  letter-spacing:
+    -0.01em;
+}
+
+/*
+ * Eyebrow Arabic should never inherit
+ * the old uppercase-style tracking.
+ */
+
+html[lang="ar"]
+.eyebrow {
+  letter-spacing:
+    0 !important;
+
+  text-transform:
+    none;
+}
+
+/* =========================================================
+   STATISTICS / GOALS
+
+   Remove old one-off Cairo/editorial
+   font overrides.
+   ========================================================= */
+
+.goal-card
+> p:first-of-type,
+
+.streak-card
+> p:first-of-type,
+
+.stats-summary p,
+
+.focus-result
+> h2 {
+  font-family:
+    inherit !important;
+}
+
+/* Numbers in statistics remain stable */
+
+.stats-summary
+p,
+
+.goal-card
+> p:first-of-type,
+
+.streak-card
+> p:first-of-type {
+  font-variant-numeric:
+    tabular-nums;
+}
+
+/* =========================================================
+   FORM CONTROLS
+   ========================================================= */
+
+.field,
+.choice,
+.focusly-button {
+  font-family:
+    inherit;
+}
+
+/* =========================================================
+   RESPONSIVE TYPOGRAPHY
+   ========================================================= */
+
+@media (
+  max-width: 640px
+) {
+  h1[class] {
+    line-height:
+      1.22;
+  }
+
+  html[lang="ar"]
+  h1[class] {
+    line-height:
+      1.42;
+  }
+}
+
+/* FOCUSLY_TYPOGRAPHY_V1_END */
+
+/* FOCUSLY_PLANNER_V4_START */
+
+/* =========================================================
+   FOCUSLY WEEKLY PLANNER V4
+   ========================================================= */
+
+/* -------------------------
+   Week controls
+   ------------------------- */
+
+.date-toolbar {
+  width: 100%;
+
+  display: flex !important;
+
+  align-items: center;
+
+  justify-content:
+    space-between;
+
+  flex-wrap: wrap;
+
+  gap: 14px;
+
+  margin-bottom:
+    18px !important;
+
+  padding:
+    14px 16px;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+
+  border-radius:
+    22px;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 58%,
+      transparent
+    );
+
+  box-shadow:
+    inset 0 1px 0
+    rgb(
+      255 255 255 /
+      0.035
+    );
+}
+
+.date-toolbar
+> div:first-child {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+.date-toolbar
+.focusly-button {
+  min-height:
+    38px;
+
+  padding-inline:
+    13px;
+
+  border-radius:
+    999px;
+}
+
+.date-toolbar
+h2 {
+  margin: 0;
+
+  font-size:
+    1rem !important;
+
+  font-weight:
+    600 !important;
+
+  color:
+    var(--muted);
+}
+
+/* -------------------------
+   Day tabs
+   ------------------------- */
+
+.planner-day-tabs {
+  width: 100%;
+
+  display: flex !important;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin:
+    0 0 18px;
+
+  padding:
+    3px 2px 8px;
+
+  overflow-x: auto;
+
+  overflow-y: hidden;
+
+  scrollbar-width:
+    none;
+
+  scroll-snap-type:
+    x proximity;
+}
+
+.planner-day-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.planner-day-tabs
+.filter-button {
+  flex:
+    0 0 auto;
+
+  min-width:
+    82px;
+
+  min-height:
+    42px;
+
+  padding:
+    0 14px;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+
+  border-radius:
+    999px;
+
+  scroll-snap-align:
+    start;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 48%,
+      transparent
+    );
+
+  color:
+    var(--muted);
+
+  font-size:
+    0.82rem;
+
+  font-weight:
+    580;
+
+  white-space:
+    nowrap;
+
+  transition:
+    transform 180ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    border-color 180ms,
+    background 180ms,
+    color 180ms;
+}
+
+.planner-day-tabs
+.filter-button:hover {
+  transform:
+    translateY(-1px);
+
+  color:
+    var(--foreground);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 18%,
+      var(--foreground) 8%
+    );
+}
+
+.planner-day-tabs
+.filter-button[
+  aria-pressed="true"
+] {
+  color:
+    var(--foreground);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 30%,
+      transparent
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 10%,
+      var(--surface)
+    );
+
+  box-shadow:
+    inset 0 0 0 1px
+    color-mix(
+      in srgb,
+      var(--accent) 6%,
+      transparent
+    );
+}
+
+/* =========================================================
+   WEEK GRID
+
+   No more seven tiny columns.
+   ========================================================= */
+
+.week-grid {
+  width: 100%;
+
+  display: grid !important;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(
+        0,
+        1fr
+      )
+    ) !important;
+
+  align-items:
+    start;
+
+  gap:
+    18px !important;
+}
+
+/* =========================================================
+   DAY CARD
+   ========================================================= */
+
+.week-day {
+  position:
+    relative;
+
+  min-width: 0;
+
+  min-height:
+    300px;
+
+  padding:
+    20px !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  border-inline-start:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  border-radius:
+    25px !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(
+        in srgb,
+        var(--surface) 79%,
+        transparent
+      ),
+      color-mix(
+        in srgb,
+        var(--surface) 58%,
+        transparent
+      )
+    ) !important;
+
+  box-shadow:
+    0 12px 34px
+    rgb(
+      0 0 0 /
+      0.045
+    );
+
+  overflow:
+    hidden;
+
+  transition:
+    transform 220ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    border-color 220ms,
+    box-shadow 220ms;
+}
+
+.week-day::before {
+  content: "";
+
+  position:
+    absolute;
+
+  inset:
+    0 0 auto;
+
+  height:
+    1px;
+
+  pointer-events:
+    none;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgb(
+        255 255 255 /
+        0.12
+      ),
+      transparent
+    );
+}
+
+.week-day:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 12%,
+      var(--foreground) 8%
+    ) !important;
+
+  box-shadow:
+    0 17px 38px
+    rgb(
+      0 0 0 /
+      0.065
+    );
+}
+
+/* Selected day */
+
+.week-day.is-selected {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 36%,
+      transparent
+    ) !important;
+
+  box-shadow:
+    0 0 0 1px
+    color-mix(
+      in srgb,
+      var(--accent) 7%,
+      transparent
+    ),
+
+    0 16px 40px
+    color-mix(
+      in srgb,
+      var(--accent) 4%,
+      transparent
+    );
+}
+
+/* =========================================================
+   DAY HEADER
+   ========================================================= */
+
+.week-day
+> div:first-child {
+  width: 100%;
+
+  margin-bottom:
+    18px !important;
+
+  align-items:
+    flex-start !important;
+
+  gap:
+    12px;
+}
+
+.week-day
+> div:first-child
+h2 {
+  flex:
+    0 0 auto;
+
+  margin:
+    0;
+
+  line-height:
+    1.2;
+}
+
+.week-day
+> div:first-child
+h2
+.muted {
+  font-size:
+    0.77rem !important;
+
+  font-weight:
+    570;
+
+  line-height:
+    1.4;
+}
+
+/* Day number */
+
+.week-day
+> div:first-child
+h2
+span:last-child {
+  width:
+    38px !important;
+
+  height:
+    38px !important;
+
+  margin-top:
+    7px !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    );
+
+  font-size:
+    1rem !important;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+/* =========================================================
+   ADD TASK / SESSION BUTTONS
+   ========================================================= */
+
+.week-day
+> div:first-child
+> div:last-child {
+  display: flex;
+
+  justify-content:
+    flex-end;
+
+  flex-wrap:
+    wrap;
+
+  gap:
+    6px !important;
+}
+
+.week-day
+> div:first-child
+.focusly-button {
+  min-width:
+    0 !important;
+
+  min-height:
+    34px !important;
+
+  height:
+    34px;
+
+  padding:
+    0 11px !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  border-radius:
+    999px !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 65%,
+      transparent
+    );
+
+  font-size:
+    0.72rem;
+
+  font-weight:
+    580;
+
+  white-space:
+    nowrap;
+}
+
+.week-day
+> div:first-child
+.focusly-button:hover {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 20%,
+      transparent
+    ) !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 7%,
+      var(--surface)
+    );
+}
+
+/* =========================================================
+   TASKS / PLANNED SECTION LABELS
+   ========================================================= */
+
+.week-day
+> div:nth-child(2)
+> div
+> p:first-child {
+  margin-bottom:
+    10px !important;
+
+  color:
+    var(--muted);
+
+  font-size:
+    0.72rem !important;
+
+  font-weight:
+    650 !important;
+
+  letter-spacing:
+    0.01em;
+}
+
+html[lang="ar"]
+.week-day
+> div:nth-child(2)
+> div
+> p:first-child {
+  letter-spacing:
+    0;
+}
+
+/* Separator */
+
+.week-day
+.border-t {
+  margin-top:
+    2px;
+
+  padding-top:
+    16px !important;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    ) !important;
+}
+
+/* =========================================================
+   TASK ITEMS
+   ========================================================= */
+
+.week-day
+ul.grid {
+  gap:
+    8px !important;
+}
+
+.week-day
+ul.grid
+> li {
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    ) !important;
+
+  border-radius:
+    17px !important;
+
+  padding:
+    11px 12px !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--background) 37%,
+      transparent
+    );
+
+  transition:
+    border-color 180ms,
+    background 180ms,
+    transform 180ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+}
+
+.week-day
+ul.grid
+> li:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 12%,
+      var(--foreground) 7%
+    ) !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 75%,
+      transparent
+    );
+}
+
+/* =========================================================
+   STUDY SESSION CARDS
+   ========================================================= */
+
+.week-day
+.session-card {
+  padding:
+    13px !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    ) !important;
+
+  border-inline-start:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    ) !important;
+
+  border-radius:
+    17px !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 58%,
+      transparent
+    ) !important;
+
+  line-height:
+    1.55;
+}
+
+/* =========================================================
+   EMPTY DAY
+   ========================================================= */
+
+.week-day
+.empty-small {
+  margin:
+    0;
+
+  padding:
+    12px;
+
+  border:
+    1px dashed
+    color-mix(
+      in srgb,
+      var(--foreground) 9%,
+      transparent
+    );
+
+  border-radius:
+    15px;
+
+  color:
+    var(--muted);
+
+  text-align:
+    center;
+
+  font-size:
+    0.78rem;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (
+  max-width: 1180px
+) {
+  .week-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      ) !important;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (
+  max-width: 680px
+) {
+  .date-toolbar {
+    align-items:
+      stretch;
+
+    padding:
+      12px;
+  }
+
+  .date-toolbar
+  h2 {
+    width:
+      100%;
+
+    text-align:
+      center;
+
+    order:
+      -1;
+  }
+
+  .date-toolbar
+  > div:first-child {
+    width:
+      100%;
+
+    justify-content:
+      center;
+  }
+
+  .planner-day-tabs {
+    margin-inline:
+      -2px;
+  }
+
+  .planner-day-tabs
+  .filter-button {
+    min-width:
+      74px;
+  }
+
+  .week-grid {
+    grid-template-columns:
+      minmax(
+        0,
+        1fr
+      ) !important;
+
+    gap:
+      14px !important;
+  }
+
+  .week-day {
+    min-height:
+      0;
+
+    padding:
+      18px !important;
+
+    border-radius:
+      22px !important;
+  }
+}
+
+/* =========================================================
+   EXTRA WIDE
+
+   Only on very wide displays do we allow
+   more days on one row.
+   ========================================================= */
+
+@media (
+  min-width: 1650px
+) {
+  .week-grid {
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(
+          0,
+          1fr
+        )
+      ) !important;
+  }
+}
+
+@media (
+  min-width: 2250px
+) {
+  .week-grid {
+    grid-template-columns:
+      repeat(
+        7,
+        minmax(
+          0,
+          1fr
+        )
+      ) !important;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .week-day,
+  .week-day ul.grid > li,
+  .planner-day-tabs
+  .filter-button {
+    transition:
+      none !important;
+  }
+
+  .week-day:hover,
+  .week-day
+  ul.grid
+  > li:hover,
+
+  .planner-day-tabs
+  .filter-button:hover {
+    transform:
+      none !important;
+  }
+}
+
+/* FOCUSLY_PLANNER_V4_END */
+
+/* FOCUSLY_STATISTICS_V4_START */
+
+/* =========================================================
+   FOCUSLY STATISTICS V4
+   ========================================================= */
+
+/* =========================================================
+   SUMMARY CARDS
+   ========================================================= */
+
+.stats-summary {
+  width: 100%;
+
+  display: grid !important;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(
+        0,
+        1fr
+      )
+    ) !important;
+
+  align-items:
+    stretch !important;
+
+  gap:
+    14px !important;
+
+  margin:
+    28px 0 14px !important;
+}
+
+.stats-summary
+> .surface {
+  position:
+    relative;
+
+  min-width: 0;
+
+  min-height:
+    150px;
+
+  padding:
+    22px !important;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  justify-content:
+    space-between;
+
+  gap:
+    20px;
+
+  grid-column:
+    auto !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  border-radius:
+    24px !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(
+        in srgb,
+        var(--surface) 82%,
+        transparent
+      ),
+      color-mix(
+        in srgb,
+        var(--surface) 62%,
+        transparent
+      )
+    ) !important;
+
+  color:
+    var(--foreground) !important;
+
+  box-shadow:
+    0 12px 32px
+    rgb(
+      0 0 0 /
+      0.045
+    );
+
+  overflow:
+    hidden;
+
+  transition:
+    transform 200ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      ),
+    border-color 200ms,
+    box-shadow 200ms;
+}
+
+.stats-summary
+> .surface:hover {
+  transform:
+    translateY(-2px);
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 13%,
+      var(--foreground) 7%
+    ) !important;
+
+  box-shadow:
+    0 17px 38px
+    rgb(
+      0 0 0 /
+      0.065
+    );
+}
+
+/* First card no longer becomes giant */
+
+.stats-summary
+> .surface:first-child {
+  grid-column:
+    auto !important;
+
+  padding:
+    22px !important;
+
+  background:
+    radial-gradient(
+      circle at
+      18% 0%,
+      color-mix(
+        in srgb,
+        var(--accent) 8%,
+        transparent
+      ),
+      transparent 55%
+    ),
+    linear-gradient(
+      145deg,
+      color-mix(
+        in srgb,
+        var(--surface) 84%,
+        transparent
+      ),
+      color-mix(
+        in srgb,
+        var(--surface) 62%,
+        transparent
+      )
+    ) !important;
+
+  color:
+    var(--foreground) !important;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 15%,
+      var(--foreground) 7%
+    ) !important;
+}
+
+.stats-summary
+> .surface:first-child
+.muted {
+  color:
+    var(--muted) !important;
+}
+
+/* Labels */
+
+.stats-summary
+h2 {
+  margin:
+    0 !important;
+
+  color:
+    var(--muted) !important;
+
+  font-size:
+    0.79rem !important;
+
+  font-weight:
+    600 !important;
+
+  line-height:
+    1.5;
+}
+
+/* Values */
+
+.stats-summary
+p {
+  margin:
+    0 !important;
+
+  font-family:
+    inherit !important;
+
+  font-size:
+    clamp(
+      1.45rem,
+      2.7vw,
+      2rem
+    ) !important;
+
+  font-weight:
+    680 !important;
+
+  line-height:
+    1.15 !important;
+
+  letter-spacing:
+    -0.03em;
+
+  font-variant-numeric:
+    tabular-nums;
+
+  overflow-wrap:
+    anywhere;
+}
+
+html[lang="ar"]
+.stats-summary
+p {
+  letter-spacing:
+    0;
+}
+
+/* Kill the old giant number */
+
+.stats-summary
+> .surface:first-child
+p {
+  font-size:
+    clamp(
+      1.55rem,
+      3vw,
+      2.15rem
+    ) !important;
+}
+
+/* =========================================================
+   AVERAGE HINT
+   ========================================================= */
+
+.stats-summary
++ .muted {
+  max-width:
+    48rem;
+
+  margin-top:
+    12px !important;
+
+  line-height:
+    1.7;
+}
+
+/* =========================================================
+   WEEKLY CHART CARD
+   ========================================================= */
+
+.weekly-card {
+  width:
+    100%;
+
+  margin-top:
+    26px;
+
+  padding:
+    clamp(
+      22px,
+      3vw,
+      28px
+    ) !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  border-radius:
+    26px !important;
+
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(
+        in srgb,
+        var(--surface) 78%,
+        transparent
+      ),
+      color-mix(
+        in srgb,
+        var(--surface) 58%,
+        transparent
+      )
+    ) !important;
+
+  box-shadow:
+    0 12px 34px
+    rgb(
+      0 0 0 /
+      0.045
+    );
+}
+
+.weekly-card
+> div:first-child {
+  align-items:
+    center;
+}
+
+.weekly-card
+> div:first-child
+h2 {
+  font-size:
+    1.05rem;
+
+  font-weight:
+    650;
+}
+
+.weekly-card
+> div:first-child
+p {
+  font-size:
+    0.86rem;
+}
+
+/* =========================================================
+   WEEKLY CHART
+   ========================================================= */
+
+.study-chart {
+  width:
+    100%;
+
+  display:
+    grid !important;
+
+  grid-template-columns:
+    repeat(
+      7,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap:
+    clamp(
+      5px,
+      1.5vw,
+      12px
+    ) !important;
+
+  margin-top:
+    26px !important;
+}
+
+.chart-day {
+  min-width:
+    0;
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  align-items:
+    center;
+
+  gap:
+    9px !important;
+
+  color:
+    var(--muted);
+
+  font-size:
+    0.72rem;
+
+  text-align:
+    center;
+}
+
+.chart-bar-area {
+  position:
+    relative;
+
+  width:
+    100%;
+
+  height:
+    155px !important;
+
+  display:
+    flex;
+
+  align-items:
+    flex-end;
+
+  justify-content:
+    center;
+
+  padding-inline:
+    4px;
+
+  border:
+    0 !important;
+
+  border-radius:
+    14px;
+
+  background:
+    linear-gradient(
+      to top,
+      color-mix(
+        in srgb,
+        var(--foreground) 3.5%,
+        transparent
+      ),
+      transparent
+    );
+}
+
+.chart-bar {
+  width:
+    min(
+      56%,
+      30px
+    ) !important;
+
+  min-height:
+    3px;
+
+  border-radius:
+    8px 8px 3px 3px !important;
+
+  background:
+    linear-gradient(
+      to top,
+      color-mix(
+        in srgb,
+        var(--accent) 72%,
+        var(--foreground)
+      ),
+      var(--accent)
+    ) !important;
+
+  box-shadow:
+    0 0 14px
+    color-mix(
+      in srgb,
+      var(--accent) 11%,
+      transparent
+    );
+
+  transition:
+    opacity 180ms,
+    transform 180ms
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      );
+}
+
+.chart-day:hover
+.chart-bar {
+  transform:
+    scaleX(1.08);
+
+  opacity:
+    0.9;
+}
+
+.chart-value {
+  font-size:
+    0.68rem !important;
+
+  color:
+    var(--muted);
+
+  font-variant-numeric:
+    tabular-nums;
+
+  overflow-wrap:
+    anywhere;
+}
+
+/* =========================================================
+   SUBJECT STATISTICS
+   ========================================================= */
+
+.subject-stats {
+  width:
+    100%;
+
+  margin-top:
+    18px;
+
+  padding:
+    clamp(
+      22px,
+      3vw,
+      28px
+    ) !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  border-top:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  border-radius:
+    26px !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 68%,
+      transparent
+    ) !important;
+}
+
+.subject-stats
+h2 {
+  font-size:
+    1.05rem;
+
+  font-weight:
+    650;
+}
+
+.subject-stats
+ul {
+  gap:
+    20px !important;
+}
+
+.subject-stats
+li {
+  padding:
+    2px 0;
+}
+
+.subject-stats
+li
+> div:first-child {
+  align-items:
+    center;
+}
+
+.subject-stats
+li
+> div:first-child
+span:last-child {
+  color:
+    var(--muted);
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+/* Track */
+
+.subject-track {
+  position:
+    relative;
+
+  width:
+    100%;
+
+  height:
+    8px !important;
+
+  border-radius:
+    999px;
+
+  overflow:
+    hidden;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--foreground) 6%,
+      transparent
+    ) !important;
+}
+
+.subject-track
+> div {
+  height:
+    100%;
+
+  border-radius:
+    inherit;
+
+  background:
+    var(--accent) !important;
+
+  opacity:
+    0.78 !important;
+
+  box-shadow:
+    0 0 10px
+    color-mix(
+      in srgb,
+      var(--accent) 11%,
+      transparent
+    );
+}
+
+/* Most studied section */
+
+.subject-stats
+> div:last-child {
+  margin-top:
+    25px !important;
+
+  padding-top:
+    18px !important;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    ) !important;
+}
+
+/* =========================================================
+   HISTORY CARD
+   ========================================================= */
+
+.history-card {
+  width:
+    100%;
+
+  margin-top:
+    18px;
+
+  padding:
+    clamp(
+      22px,
+      3vw,
+      28px
+    ) !important;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  border-top:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    ) !important;
+
+  border-radius:
+    26px !important;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 68%,
+      transparent
+    ) !important;
+}
+
+/* Total study / total sessions */
+
+.history-card
+> div:first-child {
+  margin-bottom:
+    26px !important;
+
+  display:
+    grid !important;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap:
+    12px !important;
+}
+
+.history-card
+> div:first-child
+> div {
+  padding:
+    16px;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    );
+
+  border-radius:
+    18px;
+
+  background:
+    color-mix(
+      in srgb,
+      var(--background) 35%,
+      transparent
+    );
+}
+
+.history-card
+> div:first-child
+p:last-child {
+  margin-top:
+    8px !important;
+
+  font-size:
+    clamp(
+      1.35rem,
+      2.5vw,
+      1.8rem
+    ) !important;
+
+  font-weight:
+    680;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+/* Recent history list */
+
+.history-card
+> h2 {
+  margin-top:
+    4px;
+
+  font-size:
+    1.05rem;
+
+  font-weight:
+    650;
+}
+
+.history-card
+ul {
+  margin-top:
+    14px !important;
+}
+
+.history-card
+li {
+  padding-block:
+    14px;
+
+  border-bottom:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 6%,
+      transparent
+    );
+}
+
+.history-card
+li:last-child {
+  border-bottom:
+    0;
+}
+
+/* =========================================================
+   DESKTOP / TABLET
+   ========================================================= */
+
+@media (
+  max-width: 1100px
+) {
+  .stats-summary {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      ) !important;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (
+  max-width: 620px
+) {
+  .stats-summary {
+    grid-template-columns:
+      minmax(
+        0,
+        1fr
+      ) !important;
+
+    gap:
+      10px !important;
+  }
+
+  .stats-summary
+  > .surface {
+    min-height:
+      112px;
+
+    padding:
+      18px !important;
+
+    border-radius:
+      21px !important;
+  }
+
+  .stats-summary
+  p,
+
+  .stats-summary
+  > .surface:first-child
+  p {
+    font-size:
+      1.45rem !important;
+  }
+
+  .weekly-card,
+  .subject-stats,
+  .history-card {
+    padding:
+      19px !important;
+
+    border-radius:
+      22px !important;
+  }
+
+  .study-chart {
+    gap:
+      4px !important;
+  }
+
+  .chart-bar-area {
+    height:
+      120px !important;
+
+    padding-inline:
+      1px;
+  }
+
+  .chart-day {
+    font-size:
+      0.64rem;
+  }
+
+  .chart-value {
+    font-size:
+      0.59rem !important;
+  }
+
+  .history-card
+  > div:first-child {
+    grid-template-columns:
+      minmax(
+        0,
+        1fr
+      );
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .stats-summary
+  > .surface,
+
+  .chart-bar {
+    transition:
+      none !important;
+  }
+
+  .stats-summary
+  > .surface:hover,
+
+  .chart-day:hover
+  .chart-bar {
+    transform:
+      none !important;
+  }
+}
+
+/* FOCUSLY_STATISTICS_V4_END */

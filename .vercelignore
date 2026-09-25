@@ -1,15 +1,30 @@
-# Local configuration and credentials are never deployment sources.
+# Local secrets
 .env
-.env.*
-.vercel
-.supabase
-.npm-cache
-node_modules
-.next
-coverage
-out
-*.tsbuildinfo
+.env.local
+.env.*.local
+
+# Development patch/helper scripts
+**/*.cjs
+**/*.ps1
+
+# Backups
+**/*.bak
+**/*.before-*.ts
+**/*.before-*.tsx
+**/*.before-*.js
+**/*.before-*.jsx
+**/*.before-*.css
+
+# Old experiments/archive
+focusly-dev-archive/
+study-schedule-context.txt
+
+# Local/generated folders
+.next/
+coverage/
+out/
+
+# Misc local junk
 *.log
-# Development-only checks and migrations are not needed by the web runtime.
-/tests/
-/supabase/
+.DS_Store
+Thumbs.db

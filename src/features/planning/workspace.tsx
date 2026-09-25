@@ -38,6 +38,65 @@ import {
   type Occurrence,
 } from "./logic";
 const subscribe = () => () => {};
+
+const FOCUSLY_DAILY_MOTIVATION = {
+  ar: [
+    "ابدأ بالقليل، والاستمرار سيصنع الفرق.",
+    "ساعة مركزة اليوم أفضل من خطة مثالية لم تبدأ.",
+    "كل جلسة مذاكرة تقرّبك خطوة من هدفك.",
+    "ركز على المهمة التي أمامك الآن، والباقي يأتي بعد ذلك.",
+    "التقدم الهادئ ما زال تقدمًا.",
+    "لا تحتاج إلى إنجاز كل شيء اليوم، فقط ابدأ بالأهم.",
+    "اجعل هدف اليوم واضحًا، ثم ابدأ.",
+    "الاستمرارية أقوى من الحماس المؤقت.",
+    "مجهود صغير ومتكرر يصنع نتيجة كبيرة.",
+    "ابدأ حتى لو لم تشعر أنك مستعد تمامًا.",
+    "كل خطوة صغيرة اليوم تسهّل عليك الغد.",
+    "مهمتك ليست أن تكون مثاليًا، بل أن تتقدم.",
+  ],
+
+  en: [
+    "Start small. Consistency will do the heavy lifting.",
+    "One focused hour beats a perfect plan you never start.",
+    "Every study session moves you closer to your goal.",
+    "Focus on the task in front of you; the rest can wait.",
+    "Quiet progress is still progress.",
+    "You do not need to finish everything today, just start with what matters most.",
+    "Make today's goal clear, then begin.",
+    "Consistency beats temporary motivation.",
+    "Small repeated effort becomes a big result.",
+    "Start even if you do not feel completely ready.",
+    "Every small step today makes tomorrow easier.",
+    "Your job is not to be perfect; it is to make progress.",
+  ],
+} as const;
+
+
+function dailyMotivation(
+  day: string,
+  locale: "ar" | "en",
+) {
+
+  const list =
+    FOCUSLY_DAILY_MOTIVATION[
+      locale
+    ];
+
+
+  const key =
+    Number(
+      day.replaceAll(
+        "-",
+        "",
+      ),
+    );
+
+
+  return list[
+    key %
+    list.length
+  ];
+}
 export function Workspace({ data, view }: { data: PlanningData; view: View }) {
   const { locale } = useLocale(),
     t = phase3[locale],
@@ -434,6 +493,18 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
       )}
       {view === "home" && (
         <>
+          <Card className="mb-5">
+            <p className="eyebrow mb-2">
+              {locale === "ar"
+                ? "رسالة اليوم"
+                : "Today's note"}
+            </p>
+
+            <p className="text-lg font-semibold leading-8">
+              {dailyMotivation(today, locale)}
+            </p>
+          </Card>
+
           <div className="mb-8 flex flex-wrap gap-2" aria-label={t.quick}>
             <Button onClick={() => setEditor({ entity: "tasks" })}>
               + {t.addTask}
@@ -443,6 +514,14 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
             </Button>
             <ButtonLink variant="ghost" href="/app/subjects">
               {t.manageSubjects}
+            </ButtonLink>
+            <ButtonLink
+              variant="ghost"
+              href="/app/schedule"
+            >
+              {locale === "ar"
+                ? "مواعيد الدروس"
+                : "Lessons schedule"}
             </ButtonLink>
           </div>
           <div className="home-grid">

@@ -1,34 +1,106 @@
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
+# =========================
+# Dependencies
+# =========================
+node_modules/
 
-# testing and builds
-/coverage
-/.next/
-/out/
 
-# local tools
-/.npm-cache/
-/.supabase/
-/supabase/.temp/
-/.vercel/
+# =========================
+# NPM local cache
+# =========================
+.npm-cache/
 
-# environment files (the template is committed)
-.env*
-!.env.example
 
-# editor and OS files
-.DS_Store
-Thumbs.db
-*.pem
+# =========================
+# Next.js
+# =========================
+.next/
+out/
 
-# logs
+
+# =========================
+# Production / build
+# =========================
+build/
+dist/
+coverage/
+
+
+# =========================
+# Environment files
+# =========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+
+# =========================
+# Vercel local metadata
+# =========================
+.vercel/
+
+
+# =========================
+# Logs
+# =========================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+*.log
 
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+
+# =========================
+# Editor / IDE
+# =========================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+
+# =========================
 # TypeScript
+# =========================
 *.tsbuildinfo
 next-env.d.ts
+
+
+# =========================
+# Focusly local helper scripts
+# =========================
+**/*.cjs
+**/*.ps1
+
+
+# =========================
+# Focusly backups
+# =========================
+**/*.bak
+**/*.before-*.ts
+**/*.before-*.tsx
+**/*.before-*.js
+**/*.before-*.jsx
+**/*.before-*.css
+
+
+# =========================
+# Focusly local archives
+# =========================
+focusly-dev-archive/
+study-schedule-context.txt
+
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp

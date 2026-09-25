@@ -103,6 +103,26 @@ export type Database = {
         },
         { user_id: string; title: string; starts_at: string; ends_at: string }
       >;
+      study_schedule_items: Table<
+        OwnedRow & {
+          subject_id: string | null;
+          title: string;
+          kind: "lesson" | "lecture_release";
+          weekday: number;
+          local_time: string | null;
+          time_zone: string;
+          remind_before_minutes: number | null;
+          notifications_enabled: boolean;
+          enabled: boolean;
+        },
+        {
+          user_id: string;
+          title: string;
+          kind: "lesson" | "lecture_release";
+          weekday: number;
+          time_zone: string;
+        }
+      >;
       focus_sessions: Table<
         OwnedRow & {
           subject_id: string | null;
@@ -137,6 +157,15 @@ export type Database = {
         Returns: Json;
       };
       focus_progress: { Args: Record<string, never>; Returns: Json };
+      claim_study_push_subscription: {
+        Args: {
+          p_endpoint: string;
+          p_p256dh: string;
+          p_auth: string;
+          p_user_agent: string;
+        };
+        Returns: undefined;
+      };
       remove_subject: { Args: { p_id: string }; Returns: boolean };
       save_onboarding_step: {
         Args: { p_step: number; p_value: Json };

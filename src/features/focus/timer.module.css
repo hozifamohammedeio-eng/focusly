@@ -1,0 +1,1662 @@
+.page {
+  --focus-ease:
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    );
+
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+
+  padding-bottom: 72px;
+}
+
+.header {
+  max-width: 660px;
+
+  margin-inline: auto;
+
+  text-align: center;
+
+  transition:
+    opacity 320ms
+      var(--focus-ease),
+    transform 320ms
+      var(--focus-ease);
+}
+
+.immersive .header {
+  opacity: 0.58;
+
+  transform:
+    translateY(-4px);
+}
+
+.title {
+  margin-top: 10px;
+
+  font-size:
+    clamp(
+      1.75rem,
+      4vw,
+      2.6rem
+    );
+
+  font-weight: 650;
+
+  letter-spacing:
+    -0.035em;
+}
+
+.subtitle {
+  margin-top: 12px;
+
+  line-height: 1.7;
+}
+
+.errorCard {
+  max-width: 620px;
+
+  margin:
+    24px auto 0;
+
+  padding: 20px;
+
+  border-radius: 24px;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      #ef4444 18%,
+      transparent
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 72%,
+      transparent
+    );
+}
+
+.retryButton {
+  margin-top: 12px;
+}
+
+.loading {
+  min-height: 460px;
+
+  display: grid;
+
+  place-items: center;
+
+  align-content: center;
+
+  gap: 18px;
+}
+
+.loadingOrb {
+  width: 38px;
+  height: 38px;
+
+  border-radius: 50%;
+
+  border:
+    2px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 10%,
+      transparent
+    );
+
+  border-top-color:
+    color-mix(
+      in srgb,
+      var(--accent) 75%,
+      var(--foreground)
+    );
+
+  animation:
+    focusSpin 900ms
+    linear infinite;
+}
+
+.stage {
+  min-height: 590px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: flex-start;
+
+  padding-top: 32px;
+
+  animation:
+    focusEnter 420ms
+    var(--focus-ease)
+    both;
+}
+
+.sessionPill {
+  min-height: 38px;
+
+  padding:
+    0 16px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border-radius: 999px;
+
+  color: var(--muted);
+
+  font-size: 0.78rem;
+  font-weight: 650;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 68%,
+      transparent
+    );
+
+  transition:
+    transform 180ms
+      var(--focus-ease),
+    background 180ms
+      var(--focus-ease);
+}
+
+.sessionPillActive {
+  color:
+    color-mix(
+      in srgb,
+      var(--accent) 70%,
+      var(--foreground)
+    );
+}
+
+.pillDot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background:
+    currentColor;
+
+  box-shadow:
+    0 0 14px
+    color-mix(
+      in srgb,
+      currentColor 55%,
+      transparent
+    );
+}
+
+.dial {
+  width:
+    min(
+      380px,
+      calc(
+        100vw - 48px
+      )
+    );
+
+  aspect-ratio: 1;
+
+  position: relative;
+
+  display: grid;
+
+  place-items: center;
+
+  margin-top: 22px;
+
+  isolation: isolate;
+}
+
+.ring {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: visible;
+
+  transform:
+    rotate(-90deg);
+
+  filter:
+    drop-shadow(
+      0 7px 22px
+      color-mix(
+        in srgb,
+        var(--accent) 10%,
+        transparent
+      )
+    );
+}
+
+.ringTrack,
+.ringProgress {
+  fill: none;
+
+  stroke-width: 5.5;
+
+  vector-effect:
+    non-scaling-stroke;
+}
+
+.ringTrack {
+  stroke:
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+}
+
+.ringProgress {
+  stroke:
+    color-mix(
+      in srgb,
+      var(--accent) 78%,
+      var(--foreground)
+    );
+
+  stroke-linecap:
+    round;
+
+  transition:
+    stroke-dashoffset
+    780ms linear;
+}
+
+.ringIdle {
+  opacity: 0.48;
+
+  stroke-dasharray:
+    150 880;
+
+  animation:
+    focusIdleRing
+    16s linear
+    infinite;
+}
+
+.glassCore {
+  width: 88%;
+  height: 88%;
+
+  position: relative;
+
+  overflow: hidden;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 36px;
+
+  border-radius: 50%;
+
+  text-align: center;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      white 26%,
+      var(--foreground) 4%
+    );
+
+  background:
+    radial-gradient(
+      circle at
+      29% 18%,
+      rgb(
+        255 255 255 /
+        0.17
+      ),
+      transparent 31%
+    ),
+    linear-gradient(
+      145deg,
+      rgb(
+        255 255 255 /
+        0.09
+      ),
+      rgb(
+        255 255 255 /
+        0.018
+      )
+    ),
+    color-mix(
+      in srgb,
+      var(--surface) 36%,
+      transparent
+    );
+
+  box-shadow:
+    inset
+    1px 1px 0
+    rgb(
+      255 255 255 /
+      0.22
+    ),
+
+    inset
+    -1px -1px 0
+    rgb(
+      0 0 0 /
+      0.05
+    ),
+
+    0 26px 70px
+    rgb(
+      0 0 0 /
+      0.10
+    );
+
+  backdrop-filter:
+    blur(18px)
+    saturate(128%);
+
+  -webkit-backdrop-filter:
+    blur(18px)
+    saturate(128%);
+
+  transition:
+    transform 260ms
+      var(--focus-ease),
+    box-shadow 260ms
+      var(--focus-ease);
+}
+
+.glassCore:hover {
+  transform:
+    translateY(-2px)
+    scale(1.008);
+
+  box-shadow:
+    inset
+    1px 1px 0
+    rgb(
+      255 255 255 /
+      0.28
+    ),
+
+    inset
+    -1px -1px 0
+    rgb(
+      0 0 0 /
+      0.05
+    ),
+
+    0 30px 78px
+    rgb(
+      0 0 0 /
+      0.12
+    );
+}
+
+.glassShine {
+  position: absolute;
+
+  top: 4%;
+  left: 18%;
+  right: 18%;
+
+  height: 23%;
+
+  pointer-events: none;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgb(
+        255 255 255 /
+        0.19
+      ),
+      transparent 70%
+    );
+
+  filter:
+    blur(7px);
+
+  opacity: 0.9;
+}
+
+.time {
+  position: relative;
+
+  z-index: 2;
+
+  margin: 0;
+
+  font-variant-numeric:
+    tabular-nums;
+
+  font-size:
+    clamp(
+      3.5rem,
+      9vw,
+      5.35rem
+    );
+
+  line-height: 0.95;
+
+  font-weight: 570;
+
+  letter-spacing:
+    -0.055em;
+}
+
+.subject {
+  position: relative;
+
+  z-index: 2;
+
+  margin-top: 23px;
+
+  max-width: 80%;
+
+  font-size:
+    clamp(
+      1rem,
+      2.5vw,
+      1.18rem
+    );
+
+  font-weight: 650;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  text-overflow:
+    ellipsis;
+}
+
+.task {
+  position: relative;
+
+  z-index: 2;
+
+  margin-top: 6px;
+
+  max-width: 78%;
+
+  color: var(--muted);
+
+  font-size: 0.82rem;
+
+  overflow: hidden;
+
+  white-space: nowrap;
+
+  text-overflow:
+    ellipsis;
+}
+
+.status {
+  position: relative;
+
+  z-index: 2;
+
+  margin-top: 12px;
+
+  color: var(--muted);
+
+  font-size: 0.76rem;
+
+  font-weight: 560;
+}
+
+.controls {
+  margin-top: 25px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+}
+
+.primaryControl,
+.secondaryControl {
+  min-height: 50px !important;
+
+  border-radius:
+    999px !important;
+
+  transition:
+    transform 180ms
+      var(--focus-ease),
+    opacity 180ms
+      var(--focus-ease),
+    box-shadow 180ms
+      var(--focus-ease) !important;
+}
+
+.primaryControl {
+  min-width: 154px;
+}
+
+.secondaryControl {
+  min-width: 106px;
+}
+
+.primaryControl:hover,
+.secondaryControl:hover {
+  transform:
+    translateY(-2px);
+}
+
+.helper {
+  width:
+    min(
+      460px,
+      90%
+    );
+
+  margin-top: 14px;
+
+  color: var(--muted);
+
+  text-align: center;
+
+  font-size: 0.8rem;
+
+  line-height: 1.65;
+}
+
+.soundNote {
+  margin-top: 18px;
+
+  color: var(--muted);
+
+  font-size: 0.72rem;
+}
+
+.setupLayout {
+  margin-top: 32px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(
+      360px,
+      1fr
+    )
+    minmax(
+      320px,
+      430px
+    );
+
+  align-items: center;
+
+  gap:
+    clamp(
+      34px,
+      6vw,
+      84px
+    );
+
+  animation:
+    focusEnter 420ms
+    var(--focus-ease)
+    both;
+}
+
+.previewColumn {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+}
+
+.modeTabs {
+  padding: 4px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 3px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 70%,
+      transparent
+    );
+}
+
+.modeTab {
+  min-height: 38px;
+
+  padding:
+    0 17px;
+
+  border: 0;
+
+  border-radius: 999px;
+
+  color: var(--muted);
+
+  background:
+    transparent;
+
+  cursor: pointer;
+
+  font: inherit;
+
+  font-size: 0.78rem;
+  font-weight: 620;
+
+  transition:
+    color 220ms
+      var(--focus-ease),
+    background 220ms
+      var(--focus-ease),
+    transform 220ms
+      var(--focus-ease),
+    box-shadow 220ms
+      var(--focus-ease);
+}
+
+.modeTab:hover {
+  color:
+    var(--foreground);
+}
+
+.modeTabActive {
+  color:
+    var(--foreground);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 92%,
+      transparent
+    );
+
+  box-shadow:
+    0 5px 18px
+    rgb(
+      0 0 0 /
+      0.07
+    );
+}
+
+.setupCard {
+  padding:
+    clamp(
+      22px,
+      3vw,
+      30px
+    );
+
+  display: grid;
+
+  gap: 22px;
+
+  border-radius: 30px;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 78%,
+      transparent
+    );
+
+  box-shadow:
+    0 20px 50px
+    rgb(
+      0 0 0 /
+      0.055
+    );
+}
+
+.fieldset {
+  min-width: 0;
+
+  margin: 0;
+
+  padding: 0;
+
+  border: 0;
+
+  display: grid;
+
+  gap: 15px;
+}
+
+.legend {
+  margin-bottom: 2px;
+
+  font-size: 0.86rem;
+
+  font-weight: 650;
+}
+
+.presets {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(
+        0,
+        1fr
+      )
+    );
+
+  gap: 7px;
+}
+
+.preset {
+  min-height: 48px;
+
+  padding: 0 8px;
+
+  display: flex;
+
+  align-items: baseline;
+  justify-content: center;
+
+  gap: 4px;
+
+  border-radius: 16px;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+
+  color: var(--foreground);
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 58%,
+      transparent
+    );
+
+  cursor: pointer;
+
+  font: inherit;
+
+  font-size: 0.92rem;
+
+  transition:
+    transform 180ms
+      var(--focus-ease),
+    background 180ms
+      var(--focus-ease),
+    border-color 180ms
+      var(--focus-ease);
+}
+
+.preset span {
+  color: var(--muted);
+
+  font-size: 0.68rem;
+}
+
+.preset:hover {
+  transform:
+    translateY(-1px);
+}
+
+.presetActive {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 20%,
+      transparent
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 8%,
+      var(--surface)
+    );
+}
+
+.openStudyInfo {
+  padding: 18px;
+
+  display: grid;
+
+  gap: 6px;
+
+  border-radius: 20px;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 7%,
+      transparent
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 55%,
+      transparent
+    );
+
+  line-height: 1.6;
+}
+
+.openStudyInfo strong {
+  font-size: 0.88rem;
+}
+
+.openStudyInfo p {
+  font-size: 0.78rem;
+}
+
+.selectLabel {
+  display: grid;
+
+  gap: 8px;
+
+  font-size: 0.84rem;
+
+  font-weight: 650;
+}
+
+.fieldHint {
+  color: var(--muted);
+
+  font-size: 0.68rem;
+
+  font-weight: 450;
+
+  line-height: 1.5;
+}
+
+.startButton {
+  width: 100%;
+
+  min-height: 52px !important;
+
+  border-radius:
+    999px !important;
+
+  transition:
+    transform 180ms
+      var(--focus-ease),
+    box-shadow 180ms
+      var(--focus-ease) !important;
+}
+
+.startButton:hover {
+  transform:
+    translateY(-2px);
+}
+
+.ready {
+  margin: -7px 0 0;
+
+  color: var(--muted);
+
+  text-align: center;
+
+  font-size: 0.7rem;
+}
+
+.result {
+  width:
+    min(
+      600px,
+      100%
+    );
+
+  margin:
+    46px auto 0;
+
+  padding:
+    clamp(
+      26px,
+      5vw,
+      40px
+    );
+
+  display: grid;
+
+  justify-items: center;
+
+  gap: 17px;
+
+  text-align: center;
+
+  border-radius: 32px;
+
+  border:
+    1px solid
+    color-mix(
+      in srgb,
+      var(--foreground) 8%,
+      transparent
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--surface) 78%,
+      transparent
+    );
+
+  animation:
+    focusEnter 420ms
+    var(--focus-ease)
+    both;
+}
+
+.resultComplete {
+  box-shadow:
+    0 24px 70px
+    color-mix(
+      in srgb,
+      var(--accent) 7%,
+      transparent
+    );
+}
+
+.resultIcon {
+  width: 56px;
+  height: 56px;
+
+  display: grid;
+
+  place-items: center;
+
+  border-radius: 50%;
+
+  color:
+    color-mix(
+      in srgb,
+      var(--accent) 70%,
+      var(--foreground)
+    );
+
+  background:
+    color-mix(
+      in srgb,
+      var(--accent) 9%,
+      transparent
+    );
+
+  font-size: 1.4rem;
+}
+
+.resultTitle {
+  font-size:
+    clamp(
+      1.7rem,
+      4vw,
+      2.2rem
+    );
+
+  font-weight: 650;
+}
+
+.resultTime {
+  font-size:
+    1.35rem;
+
+  font-weight: 600;
+}
+
+.synced {
+  color: var(--muted);
+
+  font-size: 0.78rem;
+}
+
+.resultActions {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+}
+
+@keyframes focusEnter {
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(
+        9px
+      );
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(
+        0
+      );
+  }
+}
+
+@keyframes focusSpin {
+  to {
+    transform:
+      rotate(
+        360deg
+      );
+  }
+}
+
+@keyframes focusIdleRing {
+  to {
+    transform-origin:
+      center;
+
+    transform:
+      rotate(
+        360deg
+      );
+  }
+}
+
+@media (
+  max-width: 900px
+) {
+  .setupLayout {
+    grid-template-columns:
+      minmax(
+        0,
+        1fr
+      );
+
+    gap: 28px;
+  }
+
+  .setupCard {
+    width:
+      min(
+        560px,
+        100%
+      );
+
+    margin-inline:
+      auto;
+  }
+}
+
+@media (
+  max-width: 520px
+) {
+  .page {
+    padding-bottom:
+      48px;
+  }
+
+  .stage {
+    min-height:
+      520px;
+
+    padding-top:
+      24px;
+  }
+
+  .dial {
+    width:
+      min(
+        310px,
+        calc(
+          100vw -
+          34px
+        )
+      );
+
+    margin-top:
+      18px;
+  }
+
+  .glassCore {
+    padding:
+      28px;
+  }
+
+  .time {
+    font-size:
+      clamp(
+        3.1rem,
+        17vw,
+        4.35rem
+      );
+  }
+
+  .subject {
+    margin-top:
+      17px;
+
+    font-size:
+      0.96rem;
+  }
+
+  .controls {
+    width: 100%;
+
+    padding-inline:
+      10px;
+  }
+
+  .primaryControl,
+  .secondaryControl {
+    flex: 1;
+
+    min-width: 0;
+  }
+
+  .modeTabs {
+    width: 100%;
+
+    max-width:
+      340px;
+  }
+
+  .modeTab {
+    flex: 1;
+
+    padding-inline:
+      10px;
+  }
+
+  .presets {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      );
+  }
+
+  .setupCard {
+    border-radius:
+      24px;
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .header,
+  .ringProgress,
+  .glassCore,
+  .modeTab,
+  .preset,
+  .primaryControl,
+  .secondaryControl,
+  .startButton {
+    transition:
+      none !important;
+  }
+
+  .stage,
+  .setupLayout,
+  .result {
+    animation:
+      none !important;
+  }
+
+  .loadingOrb,
+  .ringIdle {
+    animation:
+      none !important;
+  }
+}
+
+/* FOCUSLY_CONTROLS_POLISH_V2_START */
+
+/* =========================================================
+   Duration presets
+   Keep Arabic RTL layout while numbers themselves stay LTR.
+   ========================================================= */
+
+.preset {
+  direction: ltr;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  text-align: center;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.preset > span {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 18px;
+
+  direction: rtl;
+
+  line-height: 1;
+}
+
+.presetActive {
+  box-shadow:
+    inset 0 0 0 1px
+    color-mix(
+      in srgb,
+      var(--accent) 8%,
+      transparent
+    ),
+
+    0 5px 18px
+    color-mix(
+      in srgb,
+      var(--accent) 6%,
+      transparent
+    );
+}
+
+/* Custom duration number */
+
+.setupCard
+input[name="duration"] {
+  direction: ltr;
+
+  text-align: center;
+
+  font-variant-numeric:
+    tabular-nums;
+
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* =========================================================
+   Subject / task selects
+   ========================================================= */
+
+.selectLabel {
+  position: relative;
+}
+
+.selectLabel select {
+  min-height: 56px;
+
+  padding-inline:
+    18px 46px !important;
+
+  border-radius:
+    18px !important;
+
+  cursor: pointer;
+
+  font-weight: 580;
+
+  background-color:
+    color-mix(
+      in srgb,
+      var(--surface) 92%,
+      var(--background)
+    ) !important;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--foreground) 10%,
+      transparent
+    ) !important;
+
+  transition:
+    border-color 180ms
+      var(--focus-ease),
+    box-shadow 180ms
+      var(--focus-ease),
+    background 180ms
+      var(--focus-ease);
+}
+
+.selectLabel select:hover {
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 18%,
+      var(--foreground) 8%
+    ) !important;
+}
+
+.selectLabel select:focus {
+  outline: none;
+
+  border-color:
+    color-mix(
+      in srgb,
+      var(--accent) 35%,
+      transparent
+    ) !important;
+
+  box-shadow:
+    0 0 0 4px
+    color-mix(
+      in srgb,
+      var(--accent) 8%,
+      transparent
+    ) !important;
+}
+
+/*
+ * Chromium/Windows native option panel.
+ * This removes the bright white popup.
+ */
+
+.selectLabel select,
+.selectLabel select option {
+  color-scheme: dark;
+}
+
+.selectLabel select option {
+  color: #f4f5f7;
+
+  background-color:
+    #1c1f24;
+
+  font-size: 0.95rem;
+
+  padding:
+    12px;
+}
+
+.selectLabel select option:checked {
+  color:
+    #101216;
+
+  background:
+    #9ecbff;
+}
+
+/* Light theme gets its own native menu palette */
+
+:global(
+  html[data-theme="light"]
+)
+.selectLabel select,
+
+:global(
+  html[data-theme="light"]
+)
+.selectLabel select option {
+  color-scheme: light;
+}
+
+:global(
+  html[data-theme="light"]
+)
+.selectLabel select option {
+  color:
+    #17191d;
+
+  background-color:
+    #f7f8fa;
+}
+
+/* System theme light fallback */
+
+@media (
+  prefers-color-scheme: light
+) {
+  :global(
+    html[data-theme="system"]
+  )
+  .selectLabel select,
+
+  :global(
+    html[data-theme="system"]
+  )
+  .selectLabel select option {
+    color-scheme: light;
+  }
+
+  :global(
+    html[data-theme="system"]
+  )
+  .selectLabel select option {
+    color:
+      #17191d;
+
+    background-color:
+      #f7f8fa;
+  }
+}
+
+/* Small screens */
+
+@media (
+  max-width: 520px
+) {
+  .preset {
+    min-height: 52px;
+  }
+
+  .selectLabel select {
+    min-height: 54px;
+  }
+}
+
+/* FOCUSLY_CONTROLS_POLISH_V2_END */
+
+/* FOCUSLY_RING_V3_START */
+
+/* =========================================================
+   FOCUSLY TIMER RING V3
+
+   Full circle at session start.
+   Smoothly shrinks as time runs out.
+   ========================================================= */
+
+.ring {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: visible;
+
+  /*
+   * Start progress from 12 o'clock.
+   */
+  transform:
+    rotate(-90deg);
+
+  filter:
+    drop-shadow(
+      0 0 7px
+      color-mix(
+        in srgb,
+        var(--accent) 20%,
+        transparent
+      )
+    );
+}
+
+.ringTrack,
+.ringProgress {
+  fill: none;
+
+  /*
+   * Refined thin Focusly ring.
+   */
+  stroke-width: 6;
+
+  vector-effect:
+    non-scaling-stroke;
+}
+
+.ringTrack {
+  stroke:
+    color-mix(
+      in srgb,
+      var(--foreground) 9%,
+      transparent
+    );
+}
+
+.ringProgress {
+  stroke:
+    color-mix(
+      in srgb,
+      var(--accent) 82%,
+      white 8%
+    );
+
+  stroke-linecap:
+    round;
+
+  /*
+   * The timer updates every second.
+   * 980ms means the visual movement
+   * nearly fills the gap between ticks,
+   * making the ring appear continuous.
+   */
+  transition:
+    stroke-dashoffset
+    980ms linear;
+
+  will-change:
+    stroke-dashoffset;
+
+  filter:
+    drop-shadow(
+      0 0 5px
+      color-mix(
+        in srgb,
+        var(--accent) 36%,
+        transparent
+      )
+    )
+
+    drop-shadow(
+      0 0 12px
+      color-mix(
+        in srgb,
+        var(--accent) 14%,
+        transparent
+      )
+    );
+}
+
+/*
+ * Open Study has no fixed ending,
+ * so its ring remains a calm
+ * decorative animated indicator.
+ */
+
+.ringIdle {
+  opacity: 0.55;
+
+  stroke-dasharray:
+    150 880;
+
+  animation:
+    focusIdleRing
+    16s linear
+    infinite;
+
+  transition:
+    none;
+}
+
+/*
+ * Keep progress visually smooth
+ * during pause:
+ * React simply stops changing
+ * strokeDashoffset.
+ */
+
+@media (
+  prefers-reduced-motion:
+  reduce
+) {
+  .ringProgress {
+    transition:
+      none !important;
+  }
+
+  .ringIdle {
+    animation:
+      none !important;
+  }
+}
+
+/* FOCUSLY_RING_V3_END */
