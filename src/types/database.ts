@@ -18,6 +18,15 @@ type Table<Row, RequiredInsert extends object> = {
 export type Database = {
   public: {
     Tables: {
+      challenge_catalog: Table<{
+        key: string; kind: "daily" | "weekly";
+        metric: "focus_minutes" | "completed_tasks" | "studied_subjects";
+        target: number; xp: number; coins: number;
+      }, { key: string; kind: "daily" | "weekly"; metric: string; target: number; xp: number; coins: number }>;
+      user_challenges: Table<{
+        id: string; user_id: string; challenge_key: string; time_zone: string;
+        starts_at: string; ends_at: string; completed_at: string | null; reward_event_id: string | null;
+      }, { user_id: string; challenge_key: string; time_zone: string; starts_at: string; ends_at: string }>;
       city_building_catalog: Table<{
         key: string; max_level: number; coins: number; construction_points: number; auto_priority: number;
         metric: string; threshold: number;
@@ -214,6 +223,7 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      evaluate_progression_challenges: { Args: Record<string, never>; Returns: Json };
       city_transaction: {
         Args: { p_action: string; p_building_key: string; p_request_id: string; p_building_id?: string; p_expected_level?: number };
         Returns: Json;
