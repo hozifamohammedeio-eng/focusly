@@ -18,6 +18,18 @@ type Table<Row, RequiredInsert extends object> = {
 export type Database = {
   public: {
     Tables: {
+      city_building_catalog: Table<{
+        key: string; max_level: number; coins: number; construction_points: number;
+        metric: string; threshold: number;
+      }, { key: string }>;
+      user_city_buildings: Table<{
+        id: string; user_id: string; building_key: string; level: number;
+        built_at: string; upgraded_at: string | null;
+      }, { user_id: string; building_key: string; level: number }>;
+      city_transactions: Table<{
+        user_id: string; request_id: string; building_key: string; target_level: number;
+        coins: number; construction_points: number; request: Json; result: Json; created_at: string;
+      }, { user_id: string; request_id: string }>;
       profiles: Table<
         {
           onboarding_step: number;
@@ -198,6 +210,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      city_transaction: {
+        Args: { p_action: string; p_building_key: string; p_request_id: string; p_building_id?: string; p_expected_level?: number };
+        Returns: Json;
+      };
       save_education: {
         Args: { p_value: Json; p_subjects?: string[] };
         Returns: undefined;

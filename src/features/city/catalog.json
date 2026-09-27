@@ -1,0 +1,8 @@
+[
+  { "key": "knowledge_center", "maxLevel": 3, "coins": 10, "constructionPoints": 5, "metric": "global_xp", "threshold": 100 },
+  { "key": "focus_tower", "maxLevel": 3, "coins": 5, "constructionPoints": 5, "metric": "focus_minutes", "threshold": 25 },
+  { "key": "library_district", "maxLevel": 3, "coins": 10, "constructionPoints": 5, "metric": "subject_xp", "threshold": 100 },
+  { "key": "science_lab", "maxLevel": 3, "coins": 15, "constructionPoints": 10, "metric": "subject_xp", "threshold": 225 },
+  { "key": "language_academy", "maxLevel": 3, "coins": 15, "constructionPoints": 10, "metric": "subject_xp", "threshold": 225 },
+  { "key": "planner_hall", "maxLevel": 3, "coins": 5, "constructionPoints": 2, "metric": "completed_tasks", "threshold": 5 }
+]

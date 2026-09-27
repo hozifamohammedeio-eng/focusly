@@ -5,6 +5,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import assert from "node:assert/strict";
+import { testCity } from "./city-database.mjs";
 
 const { PGlite } = await import(pathToFileURL(resolve(process.argv[2])).href);
 const db = new PGlite();
@@ -522,6 +523,7 @@ try {
   await db.query("update public.profiles set school_year='secondary_3'");
   equal((await profile()).education_system,null,'legacy year edit clears incompatible dependent answers');
   await assert.rejects(db.query('select public.save_education($1::jsonb)',[JSON.stringify({...engineering,education_system:null})]),e=>e.code==='22023');checks++;
+  await testCity({ db, equal, rejects, asUser });
   console.log(
     `PASS: ${checks} PostgreSQL migration, transaction, and ownership assertions.`,
   );
