@@ -91,7 +91,7 @@ export async function testCity({ db, equal, rejects, asUser }) {
   await fund(100,100);
   await db.exec("reset role");
   await db.query("insert into public.focus_sessions(user_id,started_at,ended_at,duration_seconds,completed) values ($1,now()-interval '30 minutes',now(),1800,true)", [owner]);
-  await db.exec("alter table public.city_transactions add constraint city_test_failure check (building_key <> 'focus_tower')");
+  await db.exec(`alter table public.city_transactions add constraint city_test_failure check (user_id <> '${owner}' or building_key <> 'focus_tower')`);
   await asUser(owner);
   await deny("build", "focus_tower", null, null, "23514");
   equal(await balances(), { coins:100, construction_points:100 }, "late failure rolls back debit");

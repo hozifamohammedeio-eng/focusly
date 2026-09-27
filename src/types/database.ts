@@ -19,7 +19,7 @@ export type Database = {
   public: {
     Tables: {
       city_building_catalog: Table<{
-        key: string; max_level: number; coins: number; construction_points: number;
+        key: string; max_level: number; coins: number; construction_points: number; auto_priority: number;
         metric: string; threshold: number;
       }, { key: string }>;
       user_city_buildings: Table<{
@@ -29,7 +29,11 @@ export type Database = {
       city_transactions: Table<{
         user_id: string; request_id: string; building_key: string; target_level: number;
         coins: number; construction_points: number; request: Json; result: Json; created_at: string;
+        source_reward_event_id: string | null;
       }, { user_id: string; request_id: string }>;
+      city_auto_events: Table<{
+        reward_event_id: string; user_id: string; construction: Json; processed_at: string;
+      }, { reward_event_id: string; user_id: string; construction: Json }>;
       profiles: Table<
         {
           onboarding_step: number;

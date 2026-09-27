@@ -69,6 +69,45 @@ uses an empty search path and fully qualified application objects, and explicitl
 revokes public/anonymous execution. This follows the project's existing secure RPC
 pattern and [Supabase function guidance](https://supabase.com/docs/guides/database/functions).
 
+## Automatic construction (local migration only)
+
+New successful `claim_focus_progression_reward` and `claim_task_progression_reward`
+calls now run automatic construction inside the reward transaction. Their tested
+reward implementations are moved into the inaccessible `focusly_city_internal`
+schema and invoked by public wrappers. Invalid sources fail before construction;
+starting or discarding Focus never calls this orchestrator. No City visit or
+additional browser City request is needed.
+
+The wrappers lock the owner's progression row before reward creation, then pass
+the new owner-scoped reward event to the private orchestrator. The orchestrator
+calls the existing `city_transaction` authority for every proposed change. It
+skips only unmet requirements and insufficient balances. All other errors abort
+the complete claim, including its reward, spending, buildings and processing log.
+The existing costs, requirements and maximum level remain unchanged.
+
+The single policy is **level first, then catalog priority**: try level 1 for
+Knowledge Center, Focus Tower, Library District, Science Lab, Language Academy,
+Planner Hall; then try levels 2 and 3 in that order. `auto_priority` in the SQL
+catalog is authoritative. Each step is attempted once per new event, for at most
+18 successful operations with the current catalog. Skipped steps are reconsidered
+only on a later new study reward. This gives foundations priority over upgrades;
+it does not reserve funds for an unaffordable higher-priority building.
+
+`city_auto_events` records each processed reward once, including empty passes.
+It has owner-only reads, RLS and no direct API writes. Automatic spending receipts
+carry `source_reward_event_id`. A repeated claim returns `awarded: false` and an
+empty `cityConstruction` array; it never runs another construction pass, even if
+balances or eligibility have since changed. Successful responses contain the
+construction receipts and **post-spending** balances. There is no backfill of old
+reward events. Independently evaluated achievement rewards are not a new auto
+trigger in this phase; their balances/XP can help on the next new Focus/Task claim.
+
+This remains local infrastructure. Active production completion routes do not yet
+call these local-only reward RPCs, and the City page still has no new dependency.
+Connecting live completion flows and City reads requires a later migration rollout
+and explicitly authorized application integration. No live automatic growth is
+claimed by this foundation.
+
 ## Validation and remaining rollout gates
 
 - Existing `test:progression` now also runs pure City domain tests.

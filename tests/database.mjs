@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import assert from "node:assert/strict";
 import { testCity } from "./city-database.mjs";
+import { testAutomaticCity } from "./city-auto-database.mjs";
 
 const { PGlite } = await import(pathToFileURL(resolve(process.argv[2])).href);
 const db = new PGlite();
@@ -390,8 +391,8 @@ try {
   equal((await db.query("select subject_id from public.progression_reward_events where user_id=$1 and source_id=$2", [first, unassignedTask])).rows[0].subject_id, null, "unassigned task has no fake subject attribution");
   await db.query("insert into public.tasks(user_id,subject_id,title) values ($1,$2,'Incomplete Mastery Task')", [first, masterySubject]);
   const balances = (await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0];
-  equal(balances, { total_xp: 80, coins: 13, construction_points: 10 }, "cached balances match claimed ledger");
-  equal((await db.query("select sum(xp)::integer as total_xp,sum(coins)::integer as coins,sum(construction_points)::integer as construction_points from public.progression_reward_events where user_id=$1", [first])).rows[0], balances, "balances match reward ledger");
+  equal(balances, { total_xp: 80, coins: 8, construction_points: 5 }, "cached balances include automatic Focus Tower build");
+  equal((await db.query("select sum(xp)::integer as total_xp,(sum(coins)-(select coalesce(sum(coins),0) from public.city_transactions where user_id=$1))::integer as coins,(sum(construction_points)-(select coalesce(sum(construction_points),0) from public.city_transactions where user_id=$1))::integer as construction_points from public.progression_reward_events where user_id=$1", [first])).rows[0], balances, "balances match earned rewards minus City spending");
   const masteryRows = (await db.query("select public.get_subject_mastery() as value")).rows[0].value;
   const masteryById = Object.fromEntries(masteryRows.map((row) => [row.subjectId, row]));
   equal(masteryById[masterySubject], {
@@ -438,7 +439,7 @@ try {
   equal(finalAchievementEvaluation.map((row) => row.achievementKey).sort(), ["focus_300_minutes"], "long-term focus achievement unlocks");
   equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1", [first])).rows[0].count, 9, "all catalog achievements unlock exactly once");
   equal((await db.query("select count(*)::integer as count from public.progression_reward_events where user_id=$1 and event_type='achievement_unlocked'", [first])).rows[0].count, 9, "achievement and reward ledgers stay consistent");
-  equal((await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0], (await db.query("select sum(xp)::integer as total_xp,sum(coins)::integer as coins,sum(construction_points)::integer as construction_points from public.progression_reward_events where user_id=$1", [first])).rows[0], "achievement rewards reconcile with cached balances");
+  equal((await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0], (await db.query("select sum(xp)::integer as total_xp,(sum(coins)-(select coalesce(sum(coins),0) from public.city_transactions where user_id=$1))::integer as coins,(sum(construction_points)-(select coalesce(sum(construction_points),0) from public.city_transactions where user_id=$1))::integer as construction_points from public.progression_reward_events where user_id=$1", [first])).rows[0], "achievement rewards minus City spending reconcile with cached balances");
   await asUser(second);
   await rejects(`select public.claim_task_progression_reward('${taskid}')`, "P0002", "cross-user task reward denied");
   for (const table of progressionTables)
@@ -524,6 +525,7 @@ try {
   equal((await profile()).education_system,null,'legacy year edit clears incompatible dependent answers');
   await assert.rejects(db.query('select public.save_education($1::jsonb)',[JSON.stringify({...engineering,education_system:null})]),e=>e.code==='22023');checks++;
   await testCity({ db, equal, rejects, asUser });
+  await testAutomaticCity({ db, equal, rejects, asUser });
   console.log(
     `PASS: ${checks} PostgreSQL migration, transaction, and ownership assertions.`,
   );
