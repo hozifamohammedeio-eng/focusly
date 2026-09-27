@@ -25,6 +25,7 @@ type NavigationKey =
   | "schedule"
   | "planner"
   | "calendar"
+  | "city"
   | "statistics"
   | "subjects"
   | "profile"
@@ -36,6 +37,7 @@ const navigation = [
     key: "home",
     url: "/app",
   },
+  { key: "city", url: "/app/city" },
   {
     key: "tasks",
     url: "/app/tasks",
@@ -196,6 +198,8 @@ function NavigationIcon({
         </svg>
       );
 
+    case "city":
+      return <svg {...commonProps}><path d="M3 21V10h5V4h8v9h5v8H3ZM11 8h2m-2 4h2m-2 4h2M6 14v3m12 0v2" /></svg>;
     case "subjects":
       return (
         <svg {...commonProps}>
@@ -275,6 +279,7 @@ export function PlanningShell({
   }, [settings, setLocale, setTheme, setAccent]);
 
   function navigationLabel(key: NavigationKey) {
+    if (key === "city") return locale === "ar" ? "المدينة" : "City";
     if (key === "schedule") {
       return locale === "ar" ? "جدول الدروس" : "Schedule";
     }

@@ -12,6 +12,7 @@ export function MoreNavigation() {
     <main id="main" className="study-main">
       <h1 className="mb-8 text-3xl font-semibold">{t.more}</h1>
       <nav className="grid max-w-xl gap-4">
+        <ButtonLink href="/app/city" variant="ghost">{locale === "ar" ? "المدينة" : "City"}</ButtonLink>
         {(["calendar", "statistics", "subjects", "profile", "settings"] as const).map(
           (k) => (
             <ButtonLink key={k} href={"/app/" + k} variant="ghost">
