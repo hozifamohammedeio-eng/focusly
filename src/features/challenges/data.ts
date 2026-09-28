@@ -4,15 +4,19 @@ import { getIdentity } from "@/features/auth/session";
 import type { Database } from "@/types/database";
 
 export type UserChallenge = Database["public"]["Tables"]["user_challenges"]["Row"];
+export type ChallengeProgress = Database["public"]["Functions"]["get_challenge_progress"]["Returns"][number];
 
-/** Local-only foundation. No rendered route imports this module. Reads never award. */
+/** Read-only server snapshot. Missing local migrations report unavailable, never fake zero. */
 export async function getChallenges() {
   const identity = await getIdentity();
   if (identity.kind !== "authenticated") return identity;
-  const result = await identity.client.from("user_challenges").select("*")
-    .eq("user_id", identity.user.id).order("starts_at", { ascending: false });
-  if (result.error) return { kind: "unavailable" as const };
-  return { kind: "authenticated" as const, challenges: result.data };
+  try {
+    const result = await identity.client.rpc("get_challenge_progress");
+    if (result.error || !result.data) return { kind: "unavailable" as const };
+    return { kind: "authenticated" as const, challenges: result.data };
+  } catch {
+    return { kind: "unavailable" as const };
+  }
 }
 
 /** No caller-controlled owner, clock, target, reward or construction parameters. */

@@ -7,6 +7,7 @@ import {
   type ChallengeKey,
 } from "@/features/challenges/catalog";
 import { useLocale } from "@/features/i18n/locale-provider";
+import type { ChallengeProgress } from "@/features/challenges/data";
 
 type ChallengeKind = "daily" | "weekly";
 
@@ -101,6 +102,11 @@ const copy = {
     weeklyDescription: "تحديات أعمق خلال أسبوع السبت–الجمعة",
 
     challengeCount: "تحديان",
+    progress: "التقدم",
+    completed: "مكتمل",
+    pending: "تم بلوغ الهدف — في انتظار تسجيل الإكمال",
+    unavailable: "تعذر تحميل تقدم التحديات الآن. حاول تحديث الصفحة لاحقًا.",
+    inactive: "لا توجد فترة نشطة لهذا التحدي حاليًا.",
     target: "الهدف",
     reward: "المكافأة",
 
@@ -131,6 +137,11 @@ const copy = {
     weeklyDescription: "Deeper challenges across the Saturday–Friday week",
 
     challengeCount: "2 challenges",
+    progress: "Progress",
+    completed: "Completed",
+    pending: "Target reached — completion pending",
+    unavailable: "Challenge progress is unavailable right now. Try refreshing later.",
+    inactive: "There is no active period for this challenge right now.",
     target: "Target",
     reward: "Reward",
 
@@ -149,9 +160,10 @@ const copy = {
   },
 } as const;
 
-export function ChallengesExperience() {
+export function ChallengesExperience({ challenges }: { challenges: readonly ChallengeProgress[] | null }) {
   const { locale } = useLocale();
   const t = copy[locale];
+  const number = new Intl.NumberFormat(locale);
 
   const [kind, setKind] =
     useState<ChallengeKind>("daily");
@@ -260,10 +272,13 @@ export function ChallengesExperience() {
         </div>
       </section>
 
+      {challenges === null && <p role="status" className="muted mb-4 text-sm">{t.unavailable}</p>}
+
       <section className="grid gap-4 lg:grid-cols-2">
         {visibleChallenges.map((challenge) => {
           const content =
             challengeCopy[challenge.key];
+          const current = challenges?.find(row => row.challenge_key === challenge.key);
 
           return (
             <article
@@ -317,6 +332,27 @@ export function ChallengesExperience() {
                   </div>
                 </div>
               </div>
+
+              {current ? (
+                <div className="mt-5">
+                  <div className="mb-2 flex items-center justify-between gap-3 text-sm font-semibold">
+                    <span>{current.completed ? t.completed : t.progress}</span>
+                    <bdi dir="ltr">{number.format(current.progress)} / {number.format(current.target)}</bdi>
+                  </div>
+                  <div
+                    role="progressbar"
+                    aria-label={`${content.title[locale]} — ${t.progress}`}
+                    aria-valuemin={0}
+                    aria-valuemax={current.target}
+                    aria-valuenow={current.progress}
+                    aria-valuetext={current.completed ? t.completed : `${number.format(current.progress)} / ${number.format(current.target)}`}
+                    className="h-2 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)]"
+                  >
+                    <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${current.progress / current.target * 100}%` }} />
+                  </div>
+                  {!current.completed && current.progress >= current.target && <p className="muted mt-2 text-xs">{t.pending}</p>}
+                </div>
+              ) : challenges !== null ? <p className="muted mt-5 text-sm">{t.inactive}</p> : null}
 
               <div className="mt-5 rounded-2xl border border-white/[0.06] bg-white/[0.018] px-4 py-3">
                 <div className="flex items-start gap-3">

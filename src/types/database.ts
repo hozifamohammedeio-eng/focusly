@@ -223,6 +223,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      get_challenge_progress: {
+        Args: Record<string, never>;
+        Returns: { challenge_key: string; progress: number; target: number; completed: boolean; starts_at: string; ends_at: string }[];
+      };
       evaluate_progression_challenges: { Args: Record<string, never>; Returns: Json };
       city_transaction: {
         Args: { p_action: string; p_building_key: string; p_request_id: string; p_building_id?: string; p_expected_level?: number };
