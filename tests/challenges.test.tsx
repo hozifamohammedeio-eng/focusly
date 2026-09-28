@@ -6,6 +6,38 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { LocaleProvider } from "../src/features/i18n/locale-provider";
 import { ChallengesExperience } from "../src/app/app/challenges/challenges-experience";
 import type { ChallengeProgress } from "../src/features/challenges/data";
+import { DailyChallengesWidget, consumeChallengeCompletions } from "../src/features/challenges/summary";
+
+test("dashboard shows daily server progress and links to Challenges in both languages", () => {
+  for (const locale of ["en", "ar"] as const) {
+    const html = renderToStaticMarkup(<LocaleProvider initial={locale}><DailyChallengesWidget snapshot={{ userId: "owner", challenges: [progressRow, { ...progressRow, challenge_key: "weekly_focus_180", progress: 90, target: 180 }] }} /></LocaleProvider>);
+    assert.match(html, /href="\/app\/challenges"/);
+    assert.match(html, /aria-valuenow="12"/);
+    assert.doesNotMatch(html, /aria-valuenow="90"/);
+    const unavailable = renderToStaticMarkup(<LocaleProvider initial={locale}><DailyChallengesWidget snapshot={null} /></LocaleProvider>);
+    assert.doesNotMatch(unavailable, /role="progressbar"/);
+    assert.ok(unavailable.includes(locale === "ar" ? "غير متاح" : "unavailable"));
+  }
+});
+
+test("completion feedback suppresses repeated receipts across mounts and isolates users and periods", () => {
+  const saved = new Map<string,string>();
+  const storage = { getItem: (key: string) => saved.get(key) ?? null, setItem: (key: string, value: string) => { saved.set(key,value); } };
+  const completed = { ...progressRow, progress: 25, completed: true };
+  assert.equal(consumeChallengeCompletions("a",[progressRow],storage,new Set()),0);
+  assert.equal(consumeChallengeCompletions("a",[completed,completed],storage,new Set()),1);
+  assert.equal(consumeChallengeCompletions("a",[completed],storage,new Set()),0);
+  assert.equal(consumeChallengeCompletions("b",[completed],storage,new Set()),1);
+  assert.equal(consumeChallengeCompletions("a",[{ ...completed, starts_at: "2026-09-29T00:00:00Z" }],storage,new Set()),1);
+});
+
+test("completion feedback remains usable without browser storage", () => {
+  const blocked = { getItem: (): string | null => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } };
+  const seen = new Set<string>();
+  const completed = { ...progressRow, completed: true };
+  assert.equal(consumeChallengeCompletions("a",[completed],blocked,seen),1);
+  assert.equal(consumeChallengeCompletions("a",[completed],blocked,seen),0);
+});
 
 function renderChallenges(locale: "ar" | "en", challenges: ChallengeProgress[] | null) {
   return renderToStaticMarkup(

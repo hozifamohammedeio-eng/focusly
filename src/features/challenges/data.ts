@@ -13,7 +13,7 @@ export async function getChallenges() {
   try {
     const result = await identity.client.rpc("get_challenge_progress");
     if (result.error || !result.data) return { kind: "unavailable" as const };
-    return { kind: "authenticated" as const, challenges: result.data };
+    return { kind: "authenticated" as const, userId: identity.user.id, challenges: result.data };
   } catch {
     return { kind: "unavailable" as const };
   }

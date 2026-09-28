@@ -160,7 +160,7 @@ const copy = {
   },
 } as const;
 
-export function ChallengesExperience({ challenges }: { challenges: readonly ChallengeProgress[] | null }) {
+export function ChallengesExperience({ challenges, feedback }: { challenges: readonly ChallengeProgress[] | null; feedback?: React.ReactNode }) {
   const { locale } = useLocale();
   const t = copy[locale];
   const number = new Intl.NumberFormat(locale);
@@ -188,6 +188,7 @@ export function ChallengesExperience({ challenges }: { challenges: readonly Chal
       id="main"
       className="study-main"
     >
+      {feedback}
       <section className="mb-9">
         <p className="eyebrow mb-3">
           {t.eyebrow}

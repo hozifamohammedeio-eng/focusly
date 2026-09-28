@@ -1,5 +1,7 @@
 import { planningData } from "@/features/planning/data";
 import { progressData } from "@/features/focus/data";
+import { getChallenges } from "@/features/challenges/data";
+import { ChallengeCompletionFeedback, DailyChallengesWidget } from "@/features/challenges/summary";
 
 import {
   ProgressHeading,
@@ -67,10 +69,12 @@ function dailyMotivation(
 }
 
 export default async function Page() {
-  const [data, stats] = await Promise.all([
+  const [data, stats, challenges] = await Promise.all([
     planningData(),
     progressData(),
+    getChallenges(),
   ]);
+  const challengeSnapshot = challenges.kind === "authenticated" ? { userId: challenges.userId, challenges: challenges.challenges } : null;
 
   const {
     progress,
@@ -122,6 +126,7 @@ export default async function Page() {
       id="main"
       className="study-main"
     >
+      <ChallengeCompletionFeedback snapshot={challengeSnapshot} />
       <ProgressHeading
         name={
           profile.display_name ?? ""
@@ -183,6 +188,7 @@ export default async function Page() {
           }
         />
       </div>
+      <DailyChallengesWidget snapshot={challengeSnapshot} />
     </main>
   );
 }
