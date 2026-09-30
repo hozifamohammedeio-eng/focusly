@@ -1,5 +1,6 @@
 "use client";
 import {
+  useCallback,
   useEffect,
   useState,
   useSyncExternalStore,
@@ -18,6 +19,8 @@ import { subjectLabel } from "@/features/i18n/phase2";
 import { phase3 } from "@/features/i18n/phase3";
 import type { PlanningData } from "./data";
 import { mutate } from "./actions";
+import { ChallengeRewardToast } from "@/features/challenges/reward-toast";
+import type { ChallengeAward } from "@/features/challenges/receipt";
 import type { EditorState } from "./editor";
 const Editor = dynamic(() => import("./editor").then((module) => module.Editor));
 const DeleteDialog = dynamic(() => import("./editor").then((module) => module.DeleteDialog));
@@ -131,6 +134,8 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
   const [message, setMessage] = useState(""),
     [error, setError] = useState(""),
     [pending, start] = useTransition();
+  const [challengeAwards, setChallengeAwards] = useState<ChallengeAward[]>([]);
+  const dismissChallengeAwards = useCallback(() => setChallengeAwards([]), []);
   useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => setMessage(""), 4500);
@@ -189,6 +194,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
         const r = await mutate(f);
         if (r.error) setError(t[r.error]);
         else {
+          if (r.challengeAwards?.length) setChallengeAwards(r.challengeAwards);
           setError("");
           router.refresh();
         }
@@ -471,6 +477,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
           <Button onClick={() => plan()}>+ {t.newSession}</Button>
         ) : null}
       </div>
+      <ChallengeRewardToast awards={challengeAwards} onDismiss={dismissChallengeAwards} />
       {message && (
         <div className="study-toast" role="status">
           <span>{message}</span>

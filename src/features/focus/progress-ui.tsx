@@ -1,5 +1,5 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/features/i18n/locale-provider";
 import { useCopy } from "@/features/i18n/use-copy";
@@ -8,6 +8,8 @@ import { phase4 } from "@/features/i18n/phase4";
 import { Card } from "@/components/ui/card";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { mutate } from "@/features/planning/actions";
+import { ChallengeRewardToast } from "@/features/challenges/reward-toast";
+import type { ChallengeAward } from "@/features/challenges/receipt";
 import {
   type Subject,
   type Task,
@@ -153,9 +155,12 @@ export function DashboardTasks({ tasks }: { tasks: Task[] }) {
     t = phase4[locale],
     router = useRouter(),
     [pending, start] = useTransition(),
-    [error, setError] = useState(false);
+    [error, setError] = useState(false),
+    [challengeAwards, setChallengeAwards] = useState<ChallengeAward[]>([]);
+  const dismissChallengeAwards = useCallback(() => setChallengeAwards([]), []);
   return (
     <Card className="dashboard-tasks">
+      <ChallengeRewardToast awards={challengeAwards} onDismiss={dismissChallengeAwards} />
       <div className="flex justify-between gap-3">
         <h2 className="font-semibold">{t.todayTasks}</h2>
         <ButtonLink href="/app/tasks" variant="ghost">
@@ -181,6 +186,7 @@ export function DashboardTasks({ tasks }: { tasks: Task[] }) {
                     f.set("completed", "true");
                     const r = await mutate(f);
                     setError(!!r.error);
+                    if (r.challengeAwards?.length) setChallengeAwards(r.challengeAwards);
                     if (!r.error) router.refresh();
                   })
                 }

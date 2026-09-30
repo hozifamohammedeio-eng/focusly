@@ -35,6 +35,8 @@ import type {
 } from "@/features/planning/logic";
 
 import { focusAction } from "./actions";
+import { ChallengeRewardToast } from "@/features/challenges/reward-toast";
+import type { ChallengeAward } from "@/features/challenges/receipt";
 
 import {
   elapsedSeconds,
@@ -88,6 +90,8 @@ export function FocusTimer({
 
   const router =
     useRouter();
+  const [challengeAwards, setChallengeAwards] = useState<ChallengeAward[]>([]);
+  const dismissChallengeAwards = useCallback(() => setChallengeAwards([]), []);
 
   const [
     session,
@@ -245,6 +249,7 @@ export function FocusTimer({
               ?.completed &&
             !current.current
               ?.completed;
+          if (result.challengeAwards?.length) setChallengeAwards(result.challengeAwards);
 
           offset.current =
             Date.parse(
@@ -510,6 +515,7 @@ export function FocusTimer({
         .filter(Boolean)
         .join(" ")}
     >
+      <ChallengeRewardToast awards={challengeAwards} onDismiss={dismissChallengeAwards} />
       <header
         className={
           styles.header

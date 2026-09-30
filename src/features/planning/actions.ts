@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { challengeAwardsFromClaim, type ChallengeAward } from "@/features/challenges/receipt";
 import {
   UUID,
   overlaps,
@@ -13,6 +14,7 @@ import {
   type Task,
 } from "./logic";
 export type MutationResult = {
+  challengeAwards?: ChallengeAward[];
   error?:
     | "invalid"
     | "expired"
@@ -39,6 +41,7 @@ export async function mutate(form: FormData): Promise<MutationResult> {
     const { data: auth, error: authError } = await client.auth.getUser();
     if (authError || !auth.user) return { error: "expired" };
     const owner = auth.user.id;
+    let challengeAwards: ChallengeAward[] = [];
     const profile = await client
       .from("profiles")
       .select("onboarding_completed")
@@ -143,6 +146,15 @@ export async function mutate(form: FormData): Promise<MutationResult> {
         .select("id")
         .single();
       if (r.error) return fail(r.error.code);
+      if (complete === "true" && process.env.FOCUSLY2_REWARDS_ENABLED === "true") {
+        try {
+          const reward = await client.rpc("claim_task_progression_reward", { p_task_id: id });
+          if (reward.error) console.error("task_reward_failed", { code: reward.error.code });
+          else challengeAwards = challengeAwardsFromClaim(reward.data);
+        } catch {
+          console.error("task_reward_request_failed");
+        }
+      }
     } else if (action === "save") {
       const subject_id = field("subject_id") || null;
       if (subject_id) {
@@ -271,7 +283,8 @@ export async function mutate(form: FormData): Promise<MutationResult> {
       }
     } else return { error: "invalid" };
     revalidatePath("/app", "layout");
-    return { success: action === "delete" ? "deleted" : "saved" };
+    if (entity === "tasks" && action === "complete") revalidatePath("/app/challenges");
+    return { success: action === "delete" ? "deleted" : "saved", challengeAwards };
   } catch {
     console.error("planning_request_failed", { entity, action });
     return { error: "saveError" };

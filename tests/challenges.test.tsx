@@ -6,7 +6,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { LocaleProvider } from "../src/features/i18n/locale-provider";
 import { ChallengesExperience } from "../src/app/app/challenges/challenges-experience";
 import type { ChallengeProgress } from "../src/features/challenges/data";
-import { DailyChallengesWidget, consumeChallengeCompletions } from "../src/features/challenges/summary";
+import { DailyChallengesWidget } from "../src/features/challenges/summary";
+import { challengeAwardsFromClaim } from "../src/features/challenges/receipt";
+import { ChallengeRewardToast } from "../src/features/challenges/reward-toast";
 
 test("dashboard shows daily server progress and links to Challenges in both languages", () => {
   for (const locale of ["en", "ar"] as const) {
@@ -19,30 +21,49 @@ test("dashboard shows daily server progress and links to Challenges in both lang
     assert.ok(unavailable.includes(locale === "ar" ? "غير متاح" : "unavailable"));
   }
 });
-
-test("completion feedback suppresses repeated receipts across mounts and isolates users and periods", () => {
-  const saved = new Map<string,string>();
-  const storage = { getItem: (key: string) => saved.get(key) ?? null, setItem: (key: string, value: string) => { saved.set(key,value); } };
-  const completed = { ...progressRow, progress: 25, completed: true };
-  assert.equal(consumeChallengeCompletions("a",[progressRow],storage,new Set()),0);
-  assert.equal(consumeChallengeCompletions("a",[completed,completed],storage,new Set()),1);
-  assert.equal(consumeChallengeCompletions("a",[completed],storage,new Set()),0);
-  assert.equal(consumeChallengeCompletions("b",[completed],storage,new Set()),1);
-  assert.equal(consumeChallengeCompletions("a",[{ ...completed, starts_at: "2026-09-29T00:00:00Z" }],storage,new Set()),1);
+test("dashboard summarizes only the two active Daily challenges", () => {
+  const daily = [
+    { ...progressRow, completed: true, progress: 25 },
+    { ...progressRow, challenge_key: "daily_tasks_2", target: 2, progress: 1 },
+  ];
+  for (const locale of ["en", "ar"] as const) {
+    const html = renderToStaticMarkup(<LocaleProvider initial={locale}><DailyChallengesWidget snapshot={{ userId: "owner", challenges: daily }} /></LocaleProvider>);
+    assert.ok(html.includes(locale === "ar" ? "مكتمل" : "complete"));
+    const all = renderToStaticMarkup(<LocaleProvider initial={locale}><DailyChallengesWidget snapshot={{ userId: "owner", challenges: daily.map(row => ({ ...row, completed: true })) }} /></LocaleProvider>);
+    assert.ok(all.includes(locale === "ar" ? "اكتملت تحديات اليوم" : "challenges complete"));
+  }
 });
 
-test("completion feedback remains usable without browser storage", () => {
-  const blocked = { getItem: (): string | null => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } };
-  const seen = new Set<string>();
-  const completed = { ...progressRow, completed: true };
-  assert.equal(consumeChallengeCompletions("a",[completed],blocked,seen),1);
-  assert.equal(consumeChallengeCompletions("a",[completed],blocked,seen),0);
+test("only newly awarded trusted claim receipts yield challenge notices", () => {
+  const challenge = { eventId: "event-1", challengeKey: "daily_focus_25", xp: 50, coins: 10, cityConstruction: [] };
+  assert.deepEqual(challengeAwardsFromClaim({ awarded: false, challenges: [challenge] }), []);
+  assert.deepEqual(challengeAwardsFromClaim({ awarded: true, challenges: [challenge, challenge] }), [
+    { eventId: "event-1", challengeKey: "daily_focus_25", xp: 50, coins: 10, cityGrew: false },
+  ]);
+  assert.deepEqual(challengeAwardsFromClaim({ awarded: true, challenges: [{ ...challenge, xp: 5000 }] }), []);
+  assert.deepEqual(challengeAwardsFromClaim({ awarded: true, challenges: [{ ...challenge, challengeKey: "unknown" }] }), []);
+  assert.deepEqual(challengeAwardsFromClaim({ awarded: true, challenges: [] }), []);
+});
+
+test("receipt toast is accessible, localized and shows only actual reward values", () => {
+  const awards = challengeAwardsFromClaim({ awarded: true, challenges: [
+    { eventId: "a", challengeKey: "daily_focus_25", xp: 50, coins: 10, cityConstruction: [] },
+    { eventId: "b", challengeKey: "weekly_focus_180", xp: 150, coins: 30, cityConstruction: [{ level: 1 }] },
+  ] });
+  for (const locale of ["en", "ar"] as const) {
+    const html = renderToStaticMarkup(<LocaleProvider initial={locale}><ChallengeRewardToast awards={awards} onDismiss={() => {}} /></LocaleProvider>);
+    assert.match(html, /role="status"/);
+    assert.match(html, /aria-live="polite"/);
+    assert.match(html, /\+200 XP/);
+    assert.match(html, /\+40/);
+    assert.ok(html.includes(locale === "ar" ? "مدينتك تطورت" : "Your city grew"));
+  }
 });
 
 function renderChallenges(locale: "ar" | "en", challenges: ChallengeProgress[] | null) {
   return renderToStaticMarkup(
     <LocaleProvider initial={locale}>
-      <ChallengesExperience challenges={challenges} />
+      <ChallengesExperience challenges={challenges} timeZone="Africa/Cairo" />
     </LocaleProvider>,
   );
 }
@@ -61,6 +82,8 @@ test("challenge cards render server progress accessibly in both languages", () =
     const number = new Intl.NumberFormat(locale);
     assert.ok(html.includes(`<bdi dir="ltr">${number.format(12)} / ${number.format(25)}</bdi>`));
     assert.ok(html.includes(locale === "ar" ? "التقدم" : "Progress"));
+    assert.match(html, /dateTime="2026-09-29T00:00:00Z"/);
+    assert.match(html, /Africa\/Cairo/);
   }
 });
 

@@ -25,7 +25,50 @@ test("timer recovery preserves auth checks without invalidating the app layout",
   assert.deepEqual(await exports.focusAction(f), { error: true }); assert.equal(calls, 1);
   authenticated = true; state = "completed";
   await exports.focusAction(f);
-  assert.deepEqual(invalidated, [["/app"], ["/app/statistics"], ["/app/profile"]]);
+  assert.deepEqual(invalidated, [["/app"], ["/app/statistics"], ["/app/profile"], ["/app/challenges"]]);
+});
+test("Focus claim consumes one trusted receipt and replay cannot announce completion", async () => {
+  const source = fs.readFileSync(new URL("../src/features/focus/actions.ts", import.meta.url), "utf8");
+  const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+  const calls = [];
+  let awarded = true;
+  let fail = false;
+  const exports = {};
+  const prior = process.env.FOCUSLY2_REWARDS_ENABLED;
+  process.env.FOCUSLY2_REWARDS_ENABLED = "true";
+  try {
+    new Function("require", "exports", code)((name) => {
+      if (name === "next/cache") return { revalidatePath: () => {} };
+      if (name === "@/lib/supabase/server") return { createClient: async () => ({
+        auth: { getUser: async () => ({ data: { user: { id: "owner" } } }) },
+        rpc: async (rpc) => {
+          calls.push(rpc);
+          if (rpc === "claim_focus_progression_reward" && fail) throw new Error("network");
+          return rpc === "focus_transition"
+            ? { data: { session: { id: "session", completed: true, timer_state: "completed" }, serverNow: new Date().toISOString() } }
+            : { data: { awarded, challenges: awarded ? [{ eventId: "event" }] : [] } };
+        },
+      }) };
+      if (name === "@/features/challenges/receipt") return { challengeAwardsFromClaim: (value) => value.awarded ? value.challenges : [] };
+      if (name === "@/features/planning/logic") return { UUID: /^[0-9a-f-]{36}$/ };
+      return {};
+    }, exports);
+    const form = new FormData(); form.set("action", "finish");
+    const first = await exports.focusAction(form);
+    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward"]);
+    assert.equal(first.challengeAwards.length, 1);
+    awarded = false;
+    const replay = await exports.focusAction(form);
+    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward", "focus_transition", "claim_focus_progression_reward"]);
+    assert.deepEqual(replay.challengeAwards, []);
+    fail = true;
+    const saved = await exports.focusAction(form);
+    assert.equal(saved.session.completed, true);
+    assert.deepEqual(saved.challengeAwards, []);
+  } finally {
+    if (prior === undefined) delete process.env.FOCUSLY2_REWARDS_ENABLED;
+    else process.env.FOCUSLY2_REWARDS_ENABLED = prior;
+  }
 });
 import {
   elapsedSeconds,

@@ -1,7 +1,7 @@
 import { planningData } from "@/features/planning/data";
 import { progressData } from "@/features/focus/data";
 import { getChallenges } from "@/features/challenges/data";
-import { ChallengeCompletionFeedback, DailyChallengesWidget } from "@/features/challenges/summary";
+import { DailyChallengesWidget } from "@/features/challenges/summary";
 
 import {
   ProgressHeading,
@@ -126,7 +126,6 @@ export default async function Page() {
       id="main"
       className="study-main"
     >
-      <ChallengeCompletionFeedback snapshot={challengeSnapshot} />
       <ProgressHeading
         name={
           profile.display_name ?? ""

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import {
   challengeCatalog,
+  challengeRewards,
   type ChallengeKey,
 } from "@/features/challenges/catalog";
 import { useLocale } from "@/features/i18n/locale-provider";
@@ -109,6 +110,7 @@ const copy = {
     inactive: "لا توجد فترة نشطة لهذا التحدي حاليًا.",
     target: "الهدف",
     reward: "المكافأة",
+    resets: "يتجدد",
 
     tracking: "تتبع تلقائي",
     trackingDescription:
@@ -144,6 +146,7 @@ const copy = {
     inactive: "There is no active period for this challenge right now.",
     target: "Target",
     reward: "Reward",
+    resets: "Resets",
 
     tracking: "Automatic tracking",
     trackingDescription:
@@ -160,7 +163,7 @@ const copy = {
   },
 } as const;
 
-export function ChallengesExperience({ challenges, feedback }: { challenges: readonly ChallengeProgress[] | null; feedback?: React.ReactNode }) {
+export function ChallengesExperience({ challenges, timeZone = "UTC" }: { challenges: readonly ChallengeProgress[] | null; timeZone?: string }) {
   const { locale } = useLocale();
   const t = copy[locale];
   const number = new Intl.NumberFormat(locale);
@@ -172,23 +175,14 @@ export function ChallengesExperience({ challenges, feedback }: { challenges: rea
     (challenge) => challenge.kind === kind,
   );
 
-  const reward =
-    kind === "daily"
-      ? {
-          xp: 50,
-          coins: 10,
-        }
-      : {
-          xp: 150,
-          coins: 30,
-        };
+  const reward = challengeRewards(kind);
+  const dailyReward = challengeRewards("daily");
 
   return (
     <main
       id="main"
       className="study-main"
     >
-      {feedback}
       <section className="mb-9">
         <p className="eyebrow mb-3">
           {t.eyebrow}
@@ -207,11 +201,11 @@ export function ChallengesExperience({ challenges, feedback }: { challenges: rea
 
           <div className="flex flex-wrap gap-2">
             <RewardChip
-              value="+50 XP"
+              value={`+${dailyReward.xp} XP`}
             />
 
             <RewardChip
-              value={`+10 ${t.coins}`}
+              value={`+${dailyReward.coins} ${t.coins}`}
             />
 
             <span className="muted flex min-h-10 items-center rounded-full border border-white/10 bg-white/[0.025] px-4 text-xs font-semibold">
@@ -337,7 +331,7 @@ export function ChallengesExperience({ challenges, feedback }: { challenges: rea
               {current ? (
                 <div className="mt-5">
                   <div className="mb-2 flex items-center justify-between gap-3 text-sm font-semibold">
-                    <span>{current.completed ? t.completed : t.progress}</span>
+                    <span>{current.completed ? `${t.completed} ✓` : t.progress}</span>
                     <bdi dir="ltr">{number.format(current.progress)} / {number.format(current.target)}</bdi>
                   </div>
                   <div
@@ -352,6 +346,9 @@ export function ChallengesExperience({ challenges, feedback }: { challenges: rea
                     <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${current.progress / current.target * 100}%` }} />
                   </div>
                   {!current.completed && current.progress >= current.target && <p className="muted mt-2 text-xs">{t.pending}</p>}
+                  <p className="muted mt-3 text-xs">
+                    {t.resets}: <time dateTime={current.ends_at}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone }).format(new Date(current.ends_at))}</time> <bdi dir="ltr">({timeZone})</bdi>
+                  </p>
                 </div>
               ) : challenges !== null ? <p className="muted mt-5 text-sm">{t.inactive}</p> : null}
 

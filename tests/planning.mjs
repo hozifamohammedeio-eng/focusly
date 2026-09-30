@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import ts from "typescript";
 import {
   validSubject,
   validTask,
@@ -13,6 +15,57 @@ import {
   weekStart,
   formatRange,
 } from "../src/features/planning/logic.ts";
+test("Task completion claims once and only announces newly awarded challenges", async () => {
+  const source = fs.readFileSync(new URL("../src/features/planning/actions.ts", import.meta.url), "utf8");
+  const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+  const rpcCalls = [];
+  let awarded = true;
+  let fail = false;
+  const chain = { update: () => chain, select: () => chain, eq: () => chain, single: async () => ({ data: { id: "task" }, error: null }) };
+  const exports = {};
+  const prior = process.env.FOCUSLY2_REWARDS_ENABLED;
+  process.env.FOCUSLY2_REWARDS_ENABLED = "true";
+  try {
+    new Function("require", "exports", code)((name) => {
+      if (name === "next/cache") return { revalidatePath: () => {} };
+      if (name === "@/lib/supabase/server") return { createClient: async () => ({
+        auth: { getUser: async () => ({ data: { user: { id: "owner" } } }) },
+        from: (table) => table === "profiles"
+          ? { select: () => ({ eq: () => ({ single: async () => ({ data: { onboarding_completed: true } }) }) }) }
+          : chain,
+        rpc: async (rpc) => { rpcCalls.push(rpc); if (fail) throw new Error("network"); return { data: { awarded, challenges: awarded ? [{ eventId: "event" }] : [] } }; },
+      }) };
+      if (name === "@/features/challenges/receipt") return { challengeAwardsFromClaim: (value) => value.awarded ? value.challenges : [] };
+      if (name === "./logic") return { UUID: /^[a-z]+$/ };
+      return {};
+    }, exports);
+    const form = new FormData();
+    form.set("entity", "tasks"); form.set("action", "complete"); form.set("id", "task"); form.set("completed", "true");
+    const first = await exports.mutate(form);
+    assert.deepEqual(rpcCalls, ["claim_task_progression_reward"]);
+    assert.equal(first.challengeAwards.length, 1);
+    awarded = false;
+    const replay = await exports.mutate(form);
+    assert.deepEqual(rpcCalls, ["claim_task_progression_reward", "claim_task_progression_reward"]);
+    assert.deepEqual(replay.challengeAwards, []);
+    fail = true;
+    const saved = await exports.mutate(form);
+    assert.equal(saved.success, "saved");
+    assert.deepEqual(saved.challengeAwards, []);
+    fail = false;
+    form.set("completed", "false");
+    await exports.mutate(form);
+    assert.equal(rpcCalls.length, 3);
+    process.env.FOCUSLY2_REWARDS_ENABLED = "false";
+    form.set("completed", "true");
+    const disabled = await exports.mutate(form);
+    assert.equal(rpcCalls.length, 3);
+    assert.deepEqual(disabled.challengeAwards, []);
+  } finally {
+    if (prior === undefined) delete process.env.FOCUSLY2_REWARDS_ENABLED;
+    else process.env.FOCUSLY2_REWARDS_ENABLED = prior;
+  }
+});
 test("planner date ranges use stable spaces across server/browser ICU versions", () => {
   assert.equal(formatRange("2026-09-19", "2026-09-25", "en"), "Sep 19 – 25, 2026");
   for (const locale of ["en", "ar"]) {

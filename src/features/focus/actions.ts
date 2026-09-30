@@ -5,9 +5,10 @@ import { validName } from "@/features/auth/validation";
 import { educationFrom, validEducation } from "@/features/education/config";
 import { UUID, validZone } from "@/features/planning/logic";
 import type { TimerReply } from "./logic";
+import { challengeAwardsFromClaim, type ChallengeAward } from "@/features/challenges/receipt";
 export async function focusAction(
   form: FormData,
-): Promise<TimerReply | { error: true }> {
+): Promise<(TimerReply & { challengeAwards?: ChallengeAward[] }) | { error: true }> {
   try {
     const action = String(form.get("action") ?? ""),
       id = String(form.get("id") ?? ""),
@@ -40,12 +41,27 @@ export async function focusAction(
     // Recovery/pause/resume return authoritative timer state directly. Only a
     // terminal session can change dashboard/statistics aggregates.
     const reply = r.data as unknown as TimerReply;
+    let challengeAwards: ChallengeAward[] = [];
+    // The existing production database does not yet have Focusly 2 reward RPCs.
+    // Enable only after the reviewed migration chain is deployed.
+    if (process.env.FOCUSLY2_REWARDS_ENABLED === "true" && reply.session?.completed) {
+      try {
+        const reward = await client.rpc("claim_focus_progression_reward", {
+          p_session_id: reply.session.id,
+        });
+        if (reward.error) console.error("focus_reward_failed", { code: reward.error.code });
+        else challengeAwards = challengeAwardsFromClaim(reward.data);
+      } catch {
+        console.error("focus_reward_request_failed");
+      }
+    }
     if (reply.session?.timer_state === "completed" || reply.session?.timer_state === "discarded") {
       revalidatePath("/app");
       revalidatePath("/app/statistics");
       revalidatePath("/app/profile");
+      revalidatePath("/app/challenges");
     }
-    return r.data as unknown as TimerReply;
+    return { ...reply, challengeAwards };
   } catch {
     return { error: true };
   }

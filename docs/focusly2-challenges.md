@@ -1,7 +1,7 @@
 # Local Daily and Weekly Challenges Engine
 
-This is local infrastructure only. No active routes import the challenges data
-module, no hosted migration has been applied, and no Challenges UI is included.
+The Challenges read model, page, and Home widget are implemented locally. This
+work does not apply migrations to hosted Supabase or deploy to Vercel.
 
 ## Catalog and rewards
 
@@ -63,6 +63,31 @@ another trusted source; it does not change costs, priorities or construction log
 There is no backfill during migration application, and independent achievement
 evaluations are not challenge triggers.
 
+## Read model and UI
+
+`get_challenge_progress()` is a stable, owner-scoped read-only RPC. It uses the
+same private canonical evidence helper as the evaluator, previews current
+zero-progress assignments without writing them, and returns authoritative
+period boundaries. Reads never evaluate rewards or mutate balances, assignments,
+or City state. Overlap after a timezone change can leave an intentionally
+inactive gap. RPC failure is unavailable, never fabricated zero progress.
+
+`/app/challenges` renders Daily/Weekly progress, completed state, and reset time
+from the server period end in the saved timezone. Home uses the same read model
+for its two Daily challenges. There is no manual Claim control.
+
+After the complete Focusly 2 migration chain has been deployed and verified,
+set the server-only `FOCUSLY2_REWARDS_ENABLED=true`. Focus and Task actions then
+call their existing trusted reward RPC once per accepted completion. The RPC
+performs challenge evaluation and City progression within its reward transaction.
+Only newly awarded challenge receipts create a localized, accessible,
+auto-dismissing toast. Replay responses (`awarded=false`) cannot create a toast,
+and opening a read route never shows a stale completion notice. Keep the flag
+unset on the current hosted backend until rollout is complete. The canonical
+completion and reward claim are separate requests; a transient claim failure
+can leave a completed activity awaiting an idempotent retry, but never shows an
+unconfirmed reward.
+
 ## Security and validation
 
 Both new public tables have RLS. Authenticated users can read the catalog and their
@@ -77,8 +102,8 @@ final-schema suite covers grants/RLS, source eligibility, exact reward accountin
 replays, City effects, rollback, daily/weekly boundaries, Cairo and DST behavior.
 Pure tests cover catalog uniqueness, reward parity and invalid progress/targets.
 
-Remaining rollout gates: real multi-connection PostgreSQL concurrency tests and
+Remaining rollout gates: hosted migration-chain rollout and verification,
+real multi-connection PostgreSQL concurrency tests and
 query plans at realistic activity volumes. PGlite serializes requests and cannot
 prove those properties. Actual study trust remains bounded by the existing
-Focus/Task completion and reward model. Active production flows must remain
-disconnected until separately authorized migration rollout and integration.
+Focus/Task completion and reward model.
