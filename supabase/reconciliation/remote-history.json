@@ -49,6 +49,51 @@
       "name": "egypt_education",
       "source": "migrations/20260920183348_egypt_education.sql",
       "normalizedSqlMatches": true
+    },
+    {
+      "version": "20260930195003",
+      "name": "focusly2_progression_foundation",
+      "source": "migrations/20260925191000_focusly2_progression_foundation.sql"
+    },
+    {
+      "version": "20260930202531",
+      "name": "focusly2_focus_rewards",
+      "source": "migrations/20260925192000_focusly2_focus_rewards.sql"
+    },
+    {
+      "version": "20260930205341",
+      "name": "focusly2_task_rewards",
+      "source": "migrations/20260925193000_focusly2_task_rewards.sql"
+    },
+    {
+      "version": "20260930211905",
+      "name": "focusly2_subject_mastery",
+      "source": "migrations/20260925194000_focusly2_subject_mastery.sql"
+    },
+    {
+      "version": "20260930211913",
+      "name": "focusly2_achievements",
+      "source": "migrations/20260925195000_focusly2_achievements.sql"
+    },
+    {
+      "version": "20260930211917",
+      "name": "focusly2_city_foundation",
+      "source": "migrations/20260927083312_focusly2_city_foundation.sql"
+    },
+    {
+      "version": "20260930211922",
+      "name": "focusly2_automatic_city_progression",
+      "source": "migrations/20260927141739_focusly2_automatic_city_progression.sql"
+    },
+    {
+      "version": "20260930211930",
+      "name": "focusly2_challenges_engine",
+      "source": "migrations/20260927143741_focusly2_challenges_engine.sql"
+    },
+    {
+      "version": "20260930211933",
+      "name": "challenges_read_model",
+      "source": "migrations/20260928071806_challenges_read_model.sql"
     }
   ]
 }
