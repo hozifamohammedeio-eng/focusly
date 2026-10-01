@@ -9,6 +9,7 @@ import { testCity } from "./city-database.mjs";
 import { testAutomaticCity } from "./city-auto-database.mjs";
 import { testChallenges } from "./challenges-database.mjs";
 import { testChallengeReadModel } from "./challenge-read-model-database.mjs";
+import { testImmediateAchievements } from "./immediate-achievements-database.mjs";
 
 const { PGlite } = await import(pathToFileURL(resolve(process.argv[2])).href);
 const db = new PGlite();
@@ -52,7 +53,7 @@ try {
   for (const migration of (await readdir(new URL('../supabase/migrations/', import.meta.url))).filter(name => name.endsWith('.sql')).sort()) {
     // Verify the previous reward/City contract, then upgrade with existing data.
     // Challenge rewards intentionally change balances; their final-schema tests run below.
-    if (migration.endsWith('_challenges_engine.sql') || migration.endsWith('_challenges_read_model.sql')) continue;
+    if (migration.endsWith('_challenges_engine.sql') || migration.endsWith('_challenges_read_model.sql') || migration.endsWith('_immediate_achievement_evaluation.sql')) continue;
     if (migration.endsWith('_egypt_education.sql')) {
       await db.exec("insert into auth.users(id) values ('33333333-3333-4333-8333-333333333333'); update public.profiles set school_stage='secondary',school_year='secondary_3',onboarding_completed=true where id='33333333-3333-4333-8333-333333333333';");
     }
@@ -607,6 +608,9 @@ try {
   equal((await db.query("select user_id,total_xp,coins,construction_points from public.progression_profiles order by user_id")).rows, beforeChallenges, "challenge migration preserves existing balances without backfill");
   await testChallenges({ db, equal, rejects, asUser });
   await testChallengeReadModel({ db, equal, rejects, asUser });
+  await db.exec("reset role");
+  await db.exec(await readFile(new URL('../supabase/migrations/20261001105230_immediate_achievement_evaluation.sql', import.meta.url), "utf8"));
+  await testImmediateAchievements({ db, equal, rejects, asUser });
   console.log(
     `PASS: ${checks} PostgreSQL migration, transaction, and ownership assertions.`,
   );

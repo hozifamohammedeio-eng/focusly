@@ -99,6 +99,11 @@
       "version": "20261001102615",
       "name": "achievements_read_model",
       "source": "migrations/20261001094453_achievements_read_model.sql"
+    },
+    {
+      "version": "20261001151802",
+      "name": "immediate_achievement_evaluation",
+      "source": "migrations/20261001105230_immediate_achievement_evaluation.sql"
     }
   ]
 }

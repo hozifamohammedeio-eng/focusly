@@ -42,7 +42,7 @@ test("Task completion evaluates achievements only for a new trusted reward", asy
         from: (table) => table === "profiles"
           ? { select: () => ({ eq: () => ({ single: async () => ({ data: { onboarding_completed: true } }) }) }) }
           : chain,
-        rpc: async (rpc) => { rpcCalls.push(rpc); if (fail) throw new Error("network"); return rpc === "evaluate_progression_achievements" ? { data: [{ achievementKey: "first_task" }] } : { data: { awarded, challenges: awarded ? [{ eventId: "event" }] : [] } }; },
+        rpc: async (rpc) => { rpcCalls.push(rpc); if (fail) throw new Error("network"); return { data: { awarded, achievements: awarded ? [{ achievementKey: "first_task", reward: { xp: 1, coins: 0 } }] : [], challenges: awarded ? [{ eventId: "event" }] : [] } }; },
       }) };
       if (name === "@/features/challenges/receipt") return { challengeAwardsFromClaim: (value) => value.awarded ? value.challenges : [] };
       if (name === "@/features/city/receipt") return { cityGrowthFromClaim: () => null };
@@ -53,12 +53,12 @@ test("Task completion evaluates achievements only for a new trusted reward", asy
     const form = new FormData();
     form.set("entity", "tasks"); form.set("action", "complete"); form.set("id", "task"); form.set("completed", "true");
     const first = await exports.mutate(form);
-    assert.deepEqual(rpcCalls, ["claim_task_progression_reward", "evaluate_progression_achievements"]);
+    assert.deepEqual(rpcCalls, ["claim_task_progression_reward"]);
     assert.equal(first.challengeAwards.length, 1);
     assert.equal(first.achievementAwards.length, 1);
     awarded = false;
     const replay = await exports.mutate(form);
-    assert.deepEqual(rpcCalls, ["claim_task_progression_reward", "evaluate_progression_achievements", "claim_task_progression_reward"]);
+    assert.deepEqual(rpcCalls, ["claim_task_progression_reward", "claim_task_progression_reward"]);
     assert.deepEqual(replay.challengeAwards, []);
     assert.deepEqual(replay.achievementAwards, []);
     fail = true;
@@ -68,11 +68,11 @@ test("Task completion evaluates achievements only for a new trusted reward", asy
     fail = false;
     form.set("completed", "false");
     await exports.mutate(form);
-    assert.equal(rpcCalls.length, 4);
+    assert.equal(rpcCalls.length, 3);
     process.env.FOCUSLY2_REWARDS_ENABLED = "false";
     form.set("completed", "true");
     const disabled = await exports.mutate(form);
-    assert.equal(rpcCalls.length, 4);
+    assert.equal(rpcCalls.length, 3);
     assert.deepEqual(disabled.challengeAwards, []);
   } finally {
     if (prior === undefined) delete process.env.FOCUSLY2_REWARDS_ENABLED;

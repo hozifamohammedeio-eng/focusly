@@ -44,10 +44,9 @@ test("Focus claim evaluates achievements only for a new trusted reward", async (
         rpc: async (rpc) => {
           calls.push(rpc);
           if (rpc === "claim_focus_progression_reward" && fail) throw new Error("network");
-          if (rpc === "evaluate_progression_achievements") return { data: [{ achievementKey: "first_focus" }] };
           return rpc === "focus_transition"
             ? { data: { session: { id: "session", completed: true, timer_state: "completed" }, serverNow: new Date().toISOString() } }
-            : { data: { awarded, challenges: awarded ? [{ eventId: "event" }] : [] } };
+            : { data: { awarded, achievements: awarded ? [{ achievementKey: "first_focus", reward: { xp: 1, coins: 0 } }] : [], challenges: awarded ? [{ eventId: "event" }] : [] } };
         },
       }) };
       if (name === "@/features/challenges/receipt") return { challengeAwardsFromClaim: (value) => value.awarded ? value.challenges : [] };
@@ -58,12 +57,12 @@ test("Focus claim evaluates achievements only for a new trusted reward", async (
     }, exports);
     const form = new FormData(); form.set("action", "finish");
     const first = await exports.focusAction(form);
-    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward", "evaluate_progression_achievements"]);
+    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward"]);
     assert.equal(first.challengeAwards.length, 1);
     assert.equal(first.achievementAwards.length, 1);
     awarded = false;
     const replay = await exports.focusAction(form);
-    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward", "evaluate_progression_achievements", "focus_transition", "claim_focus_progression_reward"]);
+    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward", "focus_transition", "claim_focus_progression_reward"]);
     assert.deepEqual(replay.challengeAwards, []);
     assert.deepEqual(replay.achievementAwards, []);
     fail = true;

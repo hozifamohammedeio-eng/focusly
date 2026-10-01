@@ -56,11 +56,8 @@ export async function focusAction(
         else {
           challengeAwards = challengeAwardsFromClaim(reward.data);
           cityGrowth = cityGrowthFromClaim(reward.data);
-          if (reward.data && typeof reward.data === "object" && !Array.isArray(reward.data) && reward.data.awarded === true) {
-            const achievements = await client.rpc("evaluate_progression_achievements");
-            if (achievements.error) console.error("achievement_evaluation_failed", { code: achievements.error.code });
-            else achievementAwards = achievementAwardsFromEvaluation(reward.data, achievements.data);
-          }
+          if (reward.data && typeof reward.data === "object" && !Array.isArray(reward.data) && reward.data.awarded === true)
+            achievementAwards = achievementAwardsFromEvaluation(reward.data, reward.data.achievements);
         }
       } catch {
         console.error("focus_reward_request_failed");
