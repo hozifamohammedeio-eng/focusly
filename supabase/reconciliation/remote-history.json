@@ -94,6 +94,11 @@
       "version": "20260930211933",
       "name": "challenges_read_model",
       "source": "migrations/20260928071806_challenges_read_model.sql"
+    },
+    {
+      "version": "20261001102615",
+      "name": "achievements_read_model",
+      "source": "migrations/20261001094453_achievements_read_model.sql"
     }
   ]
 }
