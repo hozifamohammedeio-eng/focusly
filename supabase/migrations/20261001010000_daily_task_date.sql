@@ -1,6 +1,11 @@
 -- One stable calendar day per task. Existing scheduling fields and reward rows stay intact.
 alter table public.tasks add column task_date date;
 
+-- The existing generic update trigger would rewrite historical updated_at
+-- during the one-time backfill. DDL takes a table lock; restore the trigger
+-- before releasing it so normal application writes keep their timestamps.
+alter table public.tasks disable trigger tasks_set_updated_at;
+
 -- A date-only deadline is authoritative. Timed deadlines and otherwise undated
 -- legacy rows use the user's saved zone at migration time (UTC when unset).
 -- That one-time fallback is frozen; later zone changes do not rewrite history.
@@ -18,6 +23,8 @@ where s.user_id = t.user_id;
 update public.tasks
 set task_date = coalesce(due_on, due_at::date, created_at::date)
 where task_date is null;
+
+alter table public.tasks enable trigger tasks_set_updated_at;
 
 alter table public.tasks alter column task_date set not null;
 create index tasks_user_task_date_idx on public.tasks (user_id, task_date);

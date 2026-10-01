@@ -64,8 +64,8 @@ try {
           ('44444444-4444-4444-8444-444444444444','Legacy date','2026-09-30','completed');
         insert into public.tasks(user_id,title,due_at) values
           ('44444444-4444-4444-8444-444444444444','Legacy timed','2026-10-01T02:00:00Z');
-        insert into public.tasks(user_id,title,created_at) values
-          ('44444444-4444-4444-8444-444444444444','Legacy undated','2026-10-01T02:00:00Z');
+        insert into public.tasks(user_id,title,created_at,updated_at) values
+          ('44444444-4444-4444-8444-444444444444','Legacy undated','2026-10-01T02:00:00Z','2026-10-01T02:00:00Z');
       `);
     }
     await db.exec(
@@ -75,11 +75,11 @@ try {
       ),
     );
     if (migration.endsWith('_daily_task_date.sql')) {
-      const legacy = (await db.query("select title,task_date::text as task_date,status from public.tasks where user_id='44444444-4444-4444-8444-444444444444' order by title")).rows;
-      equal(legacy.map(x => [x.title,x.task_date,x.status]), [
-        ['Legacy date','2026-09-30','completed'],
-        ['Legacy timed','2026-09-30','todo'],
-        ['Legacy undated','2026-09-30','todo'],
+      const legacy = (await db.query("select title,task_date::text as task_date,status,updated_at=created_at as timestamp_preserved from public.tasks where user_id='44444444-4444-4444-8444-444444444444' order by title")).rows;
+      equal(legacy.map(x => [x.title,x.task_date,x.status,x.timestamp_preserved]), [
+        ['Legacy date','2026-09-30','completed',true],
+        ['Legacy timed','2026-09-30','todo',true],
+        ['Legacy undated','2026-09-30','todo',true],
       ], 'legacy rows retain state and receive deterministic local dates');
       await db.exec("insert into public.tasks(user_id,title,due_on) values ('44444444-4444-4444-8444-444444444444','Old client','2026-10-02')");
       equal((await db.query("select task_date::text as task_date from public.tasks where title='Old client'")).rows[0].task_date, '2026-10-02', 'old client writes receive a canonical date');
