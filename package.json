@@ -14,7 +14,7 @@
     "lint": "eslint . --max-warnings=0",
     "test": "node --test tests/validation.mjs tests/planning.mjs tests/focus.mjs tests/education.mjs tests/auth-flows.mjs",
     "test:db": "node tests/database.mjs",
-    "test:progression": "tsx --test tests/progression.test.ts tests/city.test.ts tests/city-experience.test.tsx tests/challenges.test.tsx tests/achievements.test.tsx tests/dashboard.test.tsx"
+    "test:progression": "tsx --test tests/progression.test.ts tests/city.test.ts tests/city-experience.test.tsx tests/challenges.test.tsx tests/achievements.test.tsx tests/dashboard.test.tsx tests/statistics.test.tsx"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
