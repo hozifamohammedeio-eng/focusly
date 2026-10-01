@@ -2,11 +2,37 @@ import "server-only";
 import { getIdentity } from "@/features/auth/session";
 import { getSubjectMastery } from "@/features/progression/data";
 import { buildingCatalog, type BuildingKey, type RequirementMetric } from "./domain";
-import type { CityActivity, CityBuilding, CityOverview } from "./overview";
+import { citySummary, type CityActivity, type CityBuilding, type CityOverview } from "./overview";
 
 const keys = new Set<string>(buildingCatalog.map(building => building.key));
 const metrics = new Set<string>(["global_xp", "focus_minutes", "subject_xp", "completed_tasks"]);
 const validNumber = (value: number) => Number.isSafeInteger(value) && value >= 0;
+
+/** Compact owner-scoped City read for Home; uses the same catalog and summary as City. */
+export async function getCityDashboardProgress() {
+  const identity = await getIdentity();
+  if (identity.kind !== "authenticated") return null;
+  try {
+    const [catalog, owned, profile] = await Promise.all([
+      identity.client.from("city_building_catalog").select("key,max_level"),
+      identity.client.from("user_city_buildings").select("building_key,level").eq("user_id", identity.user.id),
+      identity.client.from("progression_profiles").select("user_id").eq("user_id", identity.user.id).maybeSingle(),
+    ]);
+    if (catalog.error || owned.error || profile.error || (!profile.data && owned.data.length) ||
+      catalog.data.length !== buildingCatalog.length ||
+      new Set(catalog.data.map(row => row.key)).size !== buildingCatalog.length ||
+      new Set(owned.data.map(row => row.building_key)).size !== owned.data.length ||
+      owned.data.some(row => !keys.has(row.building_key) || !validNumber(row.level))) return null;
+    const levels = new Map(owned.data.map(row => [row.building_key, row.level]));
+    if (catalog.data.some(row => !keys.has(row.key) || row.max_level !== 3 ||
+      (levels.get(row.key) ?? 0) > row.max_level)) return null;
+    return citySummary({ buildings: catalog.data.map(row => ({
+      level: levels.get(row.key) ?? 0, maxLevel: row.max_level,
+    })) });
+  } catch {
+    return null;
+  }
+}
 
 /** Owner-scoped SELECTs only. A failed read is unavailable, never fabricated as zero. */
 export async function getCityOverview(): Promise<CityOverview | null> {

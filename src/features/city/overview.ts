@@ -46,7 +46,7 @@ export function buildingView(building: CityBuilding, overview: CityOverview): {
   };
 }
 
-export function citySummary(overview: CityOverview) {
+export function citySummary(overview: { buildings: readonly Pick<CityBuilding, "level" | "maxLevel">[] }) {
   const completedLevels = overview.buildings.reduce((sum, building) => sum + building.level, 0);
   const totalLevels = overview.buildings.reduce((sum, building) => sum + building.maxLevel, 0);
   return {

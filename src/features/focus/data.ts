@@ -12,17 +12,24 @@ export const focusStudent = cache(async () => {
 });
 export const progressData = cache(async () => {
   const s = await focusStudent();
-  const [result, subjects] = await Promise.all([
-    s.client.rpc("focus_progress"),
+  const [progress, subjects] = await Promise.all([
+    getFocusProgress(),
     ownedRows("subjects"),
   ]);
-  if (result.error) throw new Error("Progress unavailable");
   return {
-    progress: result.data as unknown as Progress,
+    progress,
     subjects: [...subjects].sort((a, b) => a.name.localeCompare(b.name)),
     settings: s.settings,
     profile: s.profile,
   };
+});
+
+/** The Focus and Statistics source-of-truth RPC, shared with Dashboard. */
+export const getFocusProgress = cache(async (): Promise<Progress> => {
+  const s = await focusStudent();
+  const result = await s.client.rpc("focus_progress");
+  if (result.error || !result.data) throw new Error("Progress unavailable");
+  return result.data as unknown as Progress;
 });
 
 export const profileData = cache(async () => {
