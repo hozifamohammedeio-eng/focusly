@@ -1,463 +1,153 @@
 "use client";
 
-import { useState } from "react";
-
-import {
-  challengeCatalog,
-  challengeRewards,
-  type ChallengeKey,
-} from "@/features/challenges/catalog";
-import { useLocale } from "@/features/i18n/locale-provider";
+import Link from "next/link";
+import { useState, type CSSProperties } from "react";
+import { Dialog } from "@/components/ui/dialog";
+import { challengeCatalog, challengeRewards, type ChallengeKey } from "@/features/challenges/catalog";
 import type { ChallengeProgress } from "@/features/challenges/data";
+import { challengeViews, nextChallenge, type ChallengeView } from "@/features/challenges/overview";
+import { challengesCopy } from "@/features/i18n/challenges";
+import { useLocale } from "@/features/i18n/locale-provider";
+import styles from "./challenges.module.css";
 
 type ChallengeKind = "daily" | "weekly";
 
-type ChallengeCopy = {
-  title: {
-    ar: string;
-    en: string;
-  };
-  description: {
-    ar: string;
-    en: string;
-  };
-  target: {
-    ar: string;
-    en: string;
-  };
+const destination: Record<ChallengeKey, string> = {
+  daily_focus_25: "/app/focus",
+  daily_tasks_2: "/app/tasks",
+  weekly_focus_180: "/app/focus",
+  weekly_subjects_2: "/app/subjects",
 };
 
-const challengeCopy: Record<ChallengeKey, ChallengeCopy> = {
-  daily_focus_25: {
-    title: {
-      ar: "25 دقيقة تركيز",
-      en: "Focused 25",
-    },
-    description: {
-      ar: "أكمل 25 دقيقة من المذاكرة المركزة خلال اليوم.",
-      en: "Complete 25 minutes of focused study during the day.",
-    },
-    target: {
-      ar: "25 دقيقة تركيز",
-      en: "25 Focus minutes",
-    },
-  },
-
-  daily_tasks_2: {
-    title: {
-      ar: "أنجز مهامك",
-      en: "Get Things Done",
-    },
-    description: {
-      ar: "أكمل مهمتين حقيقيتين من مهامك خلال اليوم.",
-      en: "Complete two real study tasks during the day.",
-    },
-    target: {
-      ar: "مهمتان مكتملتان",
-      en: "2 completed tasks",
-    },
-  },
-
-  weekly_focus_180: {
-    title: {
-      ar: "أسبوع عميق",
-      en: "Deep Week",
-    },
-    description: {
-      ar: "اجمع 180 دقيقة من المذاكرة المركزة خلال الأسبوع.",
-      en: "Build up 180 minutes of focused study during the week.",
-    },
-    target: {
-      ar: "180 دقيقة تركيز",
-      en: "180 Focus minutes",
-    },
-  },
-
-  weekly_subjects_2: {
-    title: {
-      ar: "مذاكرة متوازنة",
-      en: "Balanced Study",
-    },
-    description: {
-      ar: "حقق تقدمًا حقيقيًا في مادتين مختلفتين خلال الأسبوع.",
-      en: "Make real study progress in two different subjects this week.",
-    },
-    target: {
-      ar: "مادتان مختلفتان",
-      en: "2 different subjects",
-    },
-  },
-};
-
-const copy = {
-  ar: {
-    eyebrow: "FOCUSLY CHALLENGES",
-    title: "تحدياتك",
-    description:
-      "ذاكر بشكل طبيعي. Focusly يتابع نشاطك الموثوق ويكافئك تلقائيًا عند إكمال التحديات.",
-
-    daily: "اليومية",
-    weekly: "الأسبوعية",
-
-    dailyDescription: "تحديات قصيرة تتجدد كل يوم",
-    weeklyDescription: "تحديات أعمق خلال أسبوع السبت–الجمعة",
-
-    challengeCount: "تحديان",
-    progress: "التقدم",
-    completed: "مكتمل",
-    pending: "تم بلوغ الهدف — في انتظار تسجيل الإكمال",
-    unavailable: "تعذر تحميل تقدم التحديات الآن. حاول تحديث الصفحة لاحقًا.",
-    inactive: "لا توجد فترة نشطة لهذا التحدي حاليًا.",
-    target: "الهدف",
-    reward: "المكافأة",
-    resets: "يتجدد",
-
-    tracking: "تتبع تلقائي",
-    trackingDescription:
-      "يتم احتساب التقدم من جلسات التركيز والمهام الحقيقية تلقائيًا.",
-
-    automaticTitle: "مكافآت تلقائية",
-    automaticDescription:
-      "لا يوجد زر Claim. عند إكمال التحدي، تضاف XP والعملات تلقائيًا ويمكن أن تؤثر المكافأة في تقدم مدينتك.",
-
-    dailyReward: "مكافأة التحدي اليومي",
-    weeklyReward: "مكافأة التحدي الأسبوعي",
-
-    coins: "عملات",
-  },
-
-  en: {
-    eyebrow: "FOCUSLY CHALLENGES",
-    title: "Your challenges",
-    description:
-      "Study normally. Focusly tracks trusted activity and rewards completed challenges automatically.",
-
-    daily: "Daily",
-    weekly: "Weekly",
-
-    dailyDescription: "Short challenges that reset every day",
-    weeklyDescription: "Deeper challenges across the Saturday–Friday week",
-
-    challengeCount: "2 challenges",
-    progress: "Progress",
-    completed: "Completed",
-    pending: "Target reached — completion pending",
-    unavailable: "Challenge progress is unavailable right now. Try refreshing later.",
-    inactive: "There is no active period for this challenge right now.",
-    target: "Target",
-    reward: "Reward",
-    resets: "Resets",
-
-    tracking: "Automatic tracking",
-    trackingDescription:
-      "Progress is derived automatically from real Focus sessions and completed tasks.",
-
-    automaticTitle: "Automatic rewards",
-    automaticDescription:
-      "There is no Claim button. Completing a challenge automatically awards XP and Coins and may contribute to City growth.",
-
-    dailyReward: "Daily challenge reward",
-    weeklyReward: "Weekly challenge reward",
-
-    coins: "Coins",
-  },
-} as const;
+function ChallengeIcon({ keyName }: { keyName: ChallengeKey }) {
+  return <span className={styles.icon} aria-hidden="true"><svg viewBox="0 0 64 64" fill="none">
+    <circle cx="32" cy="32" r="26" className={styles.iconRing} />
+    {(keyName === "daily_focus_25" || keyName === "weekly_focus_180")
+      ? <><circle cx="32" cy="32" r="13" /><circle cx="32" cy="32" r="4" /><path d="M32 12v7m0 26v7M12 32h7m26 0h7" /></>
+      : keyName === "daily_tasks_2"
+        ? <><path d="M21 18h23v29H21zM26 27l3 3 5-6m-8 15 3 3 5-6M38 27h3m-3 12h3" /></>
+        : <><path d="M32 47c-6-4-12-5-18-3V21c7-2 13-1 18 3 5-4 11-5 18-3v23c-6-2-12-1-18 3Zm0-23v23" /><path d="M21 30h5m-5 6h5m12-6h5m-5 6h5" /></>}
+  </svg></span>;
+}
 
 export function ChallengesExperience({ challenges, timeZone = "UTC" }: { challenges: readonly ChallengeProgress[] | null; timeZone?: string }) {
   const { locale } = useLocale();
-  const t = copy[locale];
-  const number = new Intl.NumberFormat(locale);
-
-  const [kind, setKind] =
-    useState<ChallengeKind>("daily");
-
-  const visibleChallenges = challengeCatalog.filter(
-    (challenge) => challenge.kind === kind,
-  );
-
+  const t = challengesCopy[locale];
+  const number = (value: number) => new Intl.NumberFormat(locale).format(value);
+  const date = (value: string) => new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone }).format(new Date(value));
+  const [kind, setKind] = useState<ChallengeKind>("daily");
+  const [selectedKey, setSelectedKey] = useState<ChallengeKey | null>(null);
+  const views = challengeViews(challenges);
+  const visible = views.filter((view) => challengeCatalog.find((entry) => entry.key === view.key)?.kind === kind);
+  const active = visible.filter((view) => view.current !== null);
+  const completed = active.filter((view) => view.state === "completed").length;
+  const periodPercent = active.length === visible.length ? Math.round(active.reduce((sum, view) => sum + (view.percent ?? 0), 0) / visible.length) : null;
+  const next = nextChallenge(views, kind);
+  const selected = views.find((view) => view.key === selectedKey) ?? null;
   const reward = challengeRewards(kind);
-  const dailyReward = challengeRewards("daily");
 
-  return (
-    <main
-      id="main"
-      className="study-main"
-    >
-      <section className="mb-9">
-        <p className="eyebrow mb-3">
-          {t.eyebrow}
-        </p>
+  const progressText = (view: ChallengeView) => view.current
+    ? `${number(view.current.progress)} / ${number(view.current.target)} ${t.entries[view.key].unit}` : null;
+  const stateText = (view: ChallengeView) => view.state === "completed" ? t.completed
+    : view.state === "pending" ? t.pending : view.state === "in_progress" ? t.inProgress
+      : view.state === "unavailable" ? t.unavailable : t.inactive;
 
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <h1 className="max-w-4xl text-4xl font-bold tracking-tight sm:text-5xl">
-              {t.title}
-            </h1>
+  return <main id="main" className={`study-main ${styles.page}`} dir={locale === "ar" ? "rtl" : "ltr"}>
+    <header className={styles.header}>
+      <div><p className="eyebrow">{t.eyebrow}</p><h1>{t.title}</h1><p>{t.intro}</p></div>
+      <span className={styles.autoMark}>{t.automatic}</span>
+    </header>
 
-            <p className="muted mt-4 max-w-3xl text-base leading-8 sm:text-lg">
-              {t.description}
-            </p>
-          </div>
+    <section className={styles.hero} aria-label={t.periodProgress}>
+      <div className={styles.heroCopy}>
+        <p className={styles.kicker}>{t.periodProgress}</p>
+        <h2>{kind === "daily" ? t.dailyDescription : t.weeklyDescription}</h2>
+        <p>{challenges === null ? t.unavailable : periodPercent === null ? t.inactive
+          : completed === visible.length ? t.allDone : completed === 0 && periodPercent === 0 ? t.start : t.nextDescription}</p>
+        {periodPercent !== null && <div className={styles.heroTrack} role="progressbar" aria-label={t.periodProgress}
+          aria-valuemin={0} aria-valuemax={100} aria-valuenow={periodPercent}>
+          <i style={{ width: `${periodPercent}%` }} />
+        </div>}
+      </div>
+      <div className={styles.heroFigure} aria-hidden="true">
+        <span className={styles.heroOrb} style={{ "--period-progress": `${periodPercent ?? 0}%` } as CSSProperties}>
+          <strong>{periodPercent === null ? "—" : `${number(periodPercent)}%`}</strong>
+          <small>{periodPercent === null ? t.unavailable : `${number(completed)} / ${number(visible.length)} ${t.completed}`}</small>
+        </span>
+      </div>
+    </section>
 
-          <div className="flex flex-wrap gap-2">
-            <RewardChip
-              value={`+${dailyReward.xp} XP`}
-            />
-
-            <RewardChip
-              value={`+${dailyReward.coins} ${t.coins}`}
-            />
-
-            <span className="muted flex min-h-10 items-center rounded-full border border-white/10 bg-white/[0.025] px-4 text-xs font-semibold">
-              {t.dailyReward}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      <section
-        className="mb-8 grid max-w-lg grid-cols-2 rounded-[1.4rem] border border-white/10 bg-white/[0.025] p-1"
-        aria-label={t.title}
-      >
-        <TabButton
-          active={kind === "daily"}
-          onClick={() => setKind("daily")}
-        >
-          {t.daily}
-        </TabButton>
-
-        <TabButton
-          active={kind === "weekly"}
-          onClick={() => setKind("weekly")}
-        >
-          {t.weekly}
-        </TabButton>
-      </section>
-
-      <section className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-2xl font-bold">
-              {kind === "daily"
-                ? t.daily
-                : t.weekly}
-            </h2>
-
-            <span className="rounded-full border border-white/10 bg-white/[0.025] px-3 py-1 text-xs font-semibold">
-              {t.challengeCount}
-            </span>
-          </div>
-
-          <p className="muted mt-2 text-sm">
-            {kind === "daily"
-              ? t.dailyDescription
-              : t.weeklyDescription}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.025] px-4 py-2">
-          <span
-            className="h-2 w-2 rounded-full bg-[var(--accent)]"
-            aria-hidden="true"
-          />
-
-          <span className="text-xs font-semibold">
-            {t.tracking}
-          </span>
-        </div>
-      </section>
-
-      {challenges === null && <p role="status" className="muted mb-4 text-sm">{t.unavailable}</p>}
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        {visibleChallenges.map((challenge) => {
-          const content =
-            challengeCopy[challenge.key];
-          const current = challenges?.find(row => row.challenge_key === challenge.key);
-
-          return (
-            <article
-              key={challenge.key}
-              className="group rounded-[1.8rem] border border-white/10 bg-white/[0.035] p-5 shadow-lg backdrop-blur-xl transition hover:border-white/15 hover:bg-white/[0.045] sm:p-6"
-            >
-              <div className="flex items-start justify-between gap-5">
-                <div>
-                  <h3 className="text-xl font-bold">
-                    {content.title[locale]}
-                  </h3>
-
-                  <p className="muted mt-2 max-w-xl leading-7">
-                    {
-                      content.description[
-                        locale
-                      ]
-                    }
-                  </p>
-                </div>
-
-                <span
-                  className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.035]"
-                  aria-hidden="true"
-                >
-                  <span className="h-2.5 w-2.5 rounded-full bg-[var(--accent)]" />
-                </span>
-              </div>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                <InfoBox
-                  label={t.target}
-                  value={
-                    content.target[locale]
-                  }
-                />
-
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
-                  <p className="muted text-xs font-semibold">
-                    {t.reward}
-                  </p>
-
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <RewardChip
-                      value={`+${reward.xp} XP`}
-                    />
-
-                    <RewardChip
-                      value={`+${reward.coins} ${t.coins}`}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {current ? (
-                <div className="mt-5">
-                  <div className="mb-2 flex items-center justify-between gap-3 text-sm font-semibold">
-                    <span>{current.completed ? `${t.completed} ✓` : t.progress}</span>
-                    <bdi dir="ltr">{number.format(current.progress)} / {number.format(current.target)}</bdi>
-                  </div>
-                  <div
-                    role="progressbar"
-                    aria-label={`${content.title[locale]} — ${t.progress}`}
-                    aria-valuemin={0}
-                    aria-valuemax={current.target}
-                    aria-valuenow={current.progress}
-                    aria-valuetext={current.completed ? t.completed : `${number.format(current.progress)} / ${number.format(current.target)}`}
-                    className="h-2 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)]"
-                  >
-                    <div className="h-full rounded-full bg-[var(--accent)]" style={{ width: `${current.progress / current.target * 100}%` }} />
-                  </div>
-                  {!current.completed && current.progress >= current.target && <p className="muted mt-2 text-xs">{t.pending}</p>}
-                  <p className="muted mt-3 text-xs">
-                    {t.resets}: <time dateTime={current.ends_at}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone }).format(new Date(current.ends_at))}</time> <bdi dir="ltr">({timeZone})</bdi>
-                  </p>
-                </div>
-              ) : challenges !== null ? <p className="muted mt-5 text-sm">{t.inactive}</p> : null}
-
-              <div className="mt-5 rounded-2xl border border-white/[0.06] bg-white/[0.018] px-4 py-3">
-                <div className="flex items-start gap-3">
-                  <span
-                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[var(--accent)]"
-                    aria-hidden="true"
-                  />
-
-                  <div>
-                    <p className="text-sm font-semibold">
-                      {t.tracking}
-                    </p>
-
-                    <p className="muted mt-1 text-xs leading-5">
-                      {
-                        t.trackingDescription
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </section>
-
-      <section className="mt-7 rounded-[1.8rem] border border-white/10 bg-white/[0.025] p-5 sm:p-6">
-        <div className="flex items-start gap-4">
-          <div
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.035]"
-            aria-hidden="true"
-          >
-            <span className="h-3 w-3 rounded-full bg-[var(--accent)]" />
-          </div>
-
-          <div>
-            <h2 className="font-bold">
-              {t.automaticTitle}
-            </h2>
-
-            <p className="muted mt-2 max-w-4xl text-sm leading-6">
-              {t.automaticDescription}
-            </p>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
-}
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={[
-        "min-h-11 rounded-[1.1rem] px-5 text-sm font-bold transition",
-        active
-          ? "bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--foreground)] shadow-sm"
-          : "muted hover:bg-white/[0.04]",
-      ].join(" ")}
-    >
-      {children}
-    </button>
-  );
-}
-
-function InfoBox({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4">
-      <p className="muted text-xs font-semibold">
-        {label}
-      </p>
-
-      <p className="mt-2 text-sm font-bold leading-6">
-        {value}
-      </p>
+    <div className={styles.tabs} role="group" aria-label={t.activeWindow}>
+      {(["daily", "weekly"] as const).map((item) => <button key={item} type="button" aria-pressed={kind === item}
+        onClick={() => { setKind(item); setSelectedKey(null); }}>
+        <span>{item === "daily" ? t.daily : t.weekly}</span>
+        <small>{item === "daily" ? t.dailyDescription : t.saturdayFriday}</small>
+      </button>)}
     </div>
-  );
-}
 
-function RewardChip({
-  value,
-}: {
-  value: string;
-}) {
-  return (
-    <span
-      dir="ltr"
-      className="inline-flex min-h-8 items-center rounded-full border border-[color-mix(in_srgb,var(--accent)_20%,transparent)] bg-[color-mix(in_srgb,var(--accent)_8%,transparent)] px-3 text-xs font-bold"
-    >
-      {value}
-    </span>
-  );
+    {challenges === null && <p role="status" className={styles.notice}>{t.unavailable}</p>}
+
+    <section className={styles.feature} aria-labelledby="challenge-next-title">
+      <div><p className={styles.kicker}>{t.next}</p><h2 id="challenge-next-title">{next ? t.entries[next.key].name : completed === visible.length && active.length === visible.length ? t.allDone : t.noNext}</h2>
+        {next && <p>{t.nextDescription} <bdi dir="ltr">{number(next.remaining ?? 0)}</bdi> {t.entries[next.key].unit}.</p>}
+      </div>
+      {next && <Link href={destination[next.key]} className={styles.action}>{t.goTo} {t.entries[next.key].action}<span aria-hidden="true">↗</span></Link>}
+    </section>
+
+    <section aria-labelledby="challenge-list-title">
+      <div className={styles.sectionHead}>
+        <div><p className={styles.kicker}>{t.activeWindow}</p><h2 id="challenge-list-title">{kind === "daily" ? t.daily : t.weekly}</h2></div>
+        <span className={styles.periodNote}>{kind === "daily" ? t.dailyDescription : t.saturdayFriday}</span>
+      </div>
+      <div className={styles.grid}>{visible.map((view) => {
+        const entry = t.entries[view.key];
+        const definition = challengeCatalog.find((item) => item.key === view.key)!;
+        const ownReward = challengeRewards(definition.kind);
+        return <article key={view.key} className={styles.card} data-state={view.state}>
+          <div className={styles.cardTop}><ChallengeIcon keyName={view.key} /><span className={styles.state}>{stateText(view)}</span></div>
+          <h3>{entry.name}</h3><p className={styles.description}>{entry.description}</p>
+          {view.current ? <div className={styles.progressBlock}>
+            <div className={styles.progressLabel}><span>{t.progress}</span><bdi dir="ltr">{number(view.current.progress)} / {number(view.current.target)}</bdi></div>
+            <div className={styles.track} role="progressbar" aria-label={`${entry.name} — ${t.progress}`}
+              aria-valuemin={0} aria-valuemax={view.current.target} aria-valuenow={Math.min(view.current.progress, view.current.target)}
+              aria-valuetext={view.state === "completed" ? t.completed : progressText(view) ?? undefined}>
+              <i style={{ width: `${view.percent}%` }} />
+            </div>
+            {view.state === "pending" && <p className={styles.pending}>{t.pending}</p>}
+          </div> : <p className={styles.missing}>{stateText(view)}</p>}
+          <div className={styles.cardFooter}>
+            <span className={styles.reward}><bdi dir="ltr">+{number(ownReward.xp)} XP · +{number(ownReward.coins)}</bdi> {t.coins}</span>
+            <button type="button" onClick={() => setSelectedKey(view.key)} aria-label={`${t.open}: ${entry.name}`}>{t.open}<span aria-hidden="true">↗</span></button>
+          </div>
+          {view.current && <p className={styles.deadline}>{t.ends}: <time dateTime={view.current.ends_at}>{date(view.current.ends_at)}</time> <bdi dir="ltr">({timeZone})</bdi></p>}
+        </article>;
+      })}</div>
+    </section>
+
+    <aside className={styles.explainer}><span className={styles.explainerIcon} aria-hidden="true">✦</span><div>
+      <h2>{t.automatic}</h2><p>{t.automaticDetail}</p>
+      <span><bdi dir="ltr">+{number(reward.xp)} XP · +{number(reward.coins)}</bdi> {t.coins} · {kind === "daily" ? t.daily : t.weekly}</span>
+    </div></aside>
+
+    {selected && <Dialog title={t.details} closeLabel={t.close} onClose={() => setSelectedKey(null)}>
+      <div className={styles.detail} dir={locale === "ar" ? "rtl" : "ltr"}>
+        <ChallengeIcon keyName={selected.key} />
+        <h3>{t.entries[selected.key].name}</h3><p>{t.entries[selected.key].description}</p>
+        <span className={styles.state} data-state={selected.state}>{stateText(selected)}</span>
+        <h4>{t.requirement}</h4><p>{t.entries[selected.key].requirement}</p>
+        {selected.current && <><h4>{t.progress}</h4>
+          <p><bdi dir="ltr">{progressText(selected)}</bdi></p>
+          <div className={styles.track} role="progressbar" aria-label={`${t.entries[selected.key].name} — ${t.progress}`}
+            aria-valuemin={0} aria-valuemax={selected.current.target} aria-valuenow={Math.min(selected.current.progress, selected.current.target)}>
+            <i style={{ width: `${selected.percent}%` }} /></div>
+          <h4>{t.activeWindow}</h4>
+          <p>{t.starts}: <time dateTime={selected.current.starts_at}>{date(selected.current.starts_at)}</time><br />
+            {t.ends}: <time dateTime={selected.current.ends_at}>{date(selected.current.ends_at)}</time> <bdi dir="ltr">({timeZone})</bdi></p>
+        </>}
+        {!selected.current && <p>{stateText(selected)}</p>}
+        <h4>{t.reward}</h4><p><bdi dir="ltr">+{number(challengeRewards(challengeCatalog.find((item) => item.key === selected.key)!.kind).xp)} XP · +{number(challengeRewards(challengeCatalog.find((item) => item.key === selected.key)!.kind).coins)}</bdi> {t.coins}</p>
+        {selected.state === "in_progress" && <Link href={destination[selected.key]} className={styles.detailAction}>{t.goTo} {t.entries[selected.key].action}<span aria-hidden="true">↗</span></Link>}
+      </div>
+    </Dialog>}
+  </main>;
 }
