@@ -27,29 +27,9 @@
 .mapHeader > p { color: var(--muted); font-size: .78rem; text-align: end; }
 .map { height: clamp(570px,53vw,690px); position: relative; isolation: isolate; direction: ltr; }
 .roads { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.terrain { fill: var(--accent); fill-opacity: .035; stroke: var(--accent); stroke-opacity: .12; stroke-dasharray: 3 9; }
-.road { fill: none; stroke: var(--surface-subtle); stroke-width: 24; stroke-linecap: round; stroke-linejoin: round; }
-.roadLine { fill: none; stroke: var(--border); stroke-width: 1.4; stroke-dasharray: 4 7; }
-.building { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%,-50%); width: 154px; min-height: 154px; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 22px; cursor: pointer; color: var(--foreground); transition: background .18s, box-shadow .18s, transform .18s; }
-.building:hover { background: color-mix(in srgb,var(--accent) 7%,transparent); transform: translate(-50%,-50%) scale(1.03); }
-.building[aria-pressed="true"] { background: color-mix(in srgb,var(--accent) 9%,transparent); box-shadow: inset 0 0 0 1.5px color-mix(in srgb,var(--accent) 40%,transparent); }
-.building[data-state="max"] { box-shadow: inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent); }
-.building[data-state="locked"] { opacity: .68; }
-.justGrew { animation: city-grow .85s ease-out both; }
+.building { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; color: var(--foreground); }
 @keyframes city-grow { 0% { filter: drop-shadow(0 0 0 transparent); } 45% { filter: drop-shadow(0 0 16px var(--accent)); } 100% { filter: drop-shadow(0 0 0 transparent); } }
 .building:focus-visible, .links a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-.buildingShape { display: block; width: 123px; height: 116px; flex-shrink: 0; overflow: visible; }
-.shadow { fill: var(--foreground); opacity: .08; }
-.plot { fill: var(--surface-subtle); stroke: var(--border); stroke-width: 1.5; }
-.front { fill: var(--surface); stroke: currentColor; stroke-opacity: .52; stroke-width: 1.5; }
-.side { fill: color-mix(in srgb,var(--accent) 16%,var(--surface-subtle)); stroke: currentColor; stroke-opacity: .42; stroke-width: 1.5; }
-.roof { fill: var(--surface-subtle); stroke: currentColor; stroke-opacity: .55; stroke-width: 1.5; }
-.accentShape { fill: color-mix(in srgb,var(--accent) 22%,var(--surface)); stroke: var(--accent); stroke-width: 1.6; }
-.line, .wing { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; opacity: .7; }
-.windows { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; opacity: .55; }
-.crown { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.level0 .buildingShape { filter: grayscale(.65); opacity: .6; }
-.level2 .buildingShape, .level3 .buildingShape { filter: drop-shadow(0 7px 6px color-mix(in srgb,var(--accent) 17%,transparent)); }
 .buildingName { max-width: 100%; padding: 3px 7px; color: var(--foreground); background: color-mix(in srgb,var(--surface) 93%,transparent); border-radius: 8px; text-align: center; font-size: .77rem; font-weight: 680; line-height: 1.2; }
 .buildingLevel { font-size: .69rem; color: var(--muted); margin-block-start: 3px; }
 .details { border: 1px solid var(--border); border-radius: 28px; padding: 22px; background: var(--surface); min-width: 0; }
@@ -85,3 +65,65 @@
 @media (max-width: 720px) { .header { flex-direction: column; gap: 12px; } .autoBadge { max-width: none; } .topline { grid-template-columns: 1fr; } .details { display: block; } .links { flex-direction: row; } .mapHeader { padding: 19px 18px 0; align-items: start; flex-direction: column; gap: 3px; } .mapHeader > p { text-align: start; } .map { height: 620px; } .building { width: 44%; min-height: 132px; } .building:nth-of-type(1) { left: 25%; top: 17%; } .building:nth-of-type(2) { left: 75%; top: 17%; } .building:nth-of-type(3) { left: 25%; top: 48%; } .building:nth-of-type(4) { left: 75%; top: 48%; } .building:nth-of-type(5) { left: 25%; top: 79%; } .building:nth-of-type(6) { left: 75%; top: 79%; } .buildingShape { width: min(110px,75%); height: 95px; } }
 @media (max-width: 440px) { .resources > div { padding: 12px 10px; } .resources dt { font-size: .68rem; letter-spacing: 0; } .resources dd { font-size: 1.22rem; } .summary, .milestone, .activity { padding: 17px; } .map { height: 610px; } .building { padding-inline: 2px; } .buildingShape { height: 88px; } .buildingName { font-size: .76rem; } .buildingLevel { font-size: .7rem; } .details { padding: 18px; } }
 @media (prefers-reduced-motion: reduce) { .building, .progressTrack i { transition: none; } .building:hover { transform: translate(-50%,-50%); } .justGrew { animation: none; } }
+
+/* The map is one shared neighborhood plane. Buildings are stationary hit targets;
+   only their inner artwork moves, so selecting a different one never moves layout. */
+.city { max-width: 1500px; }
+.title { font-size: clamp(2rem, 3.3vw, 3.2rem); font-weight: 720; }
+.intro { max-width: 55ch; line-height: 1.6; }
+.mapPanel { background: radial-gradient(ellipse at 50% 35%, color-mix(in srgb,var(--accent) 11%,var(--surface)),var(--surface) 72%); }
+.map { height: clamp(520px,48vw,620px); overflow: hidden; }
+.districtShadow { fill: #102b2d; opacity: .12; transform: translateY(8px); }
+.districtSide { fill: color-mix(in srgb,var(--accent) 18%,var(--surface-subtle)); }
+.districtGround { fill: color-mix(in srgb,var(--accent) 13%,var(--surface-subtle)); stroke: color-mix(in srgb,var(--accent) 25%,var(--border)); stroke-width: 2; }
+.districtRoad { fill: none; stroke: color-mix(in srgb,var(--accent) 19%,var(--border)); stroke-width: 17; opacity: .82; }
+.districtLane { fill: none; stroke: #f8fbf5; stroke-width: 2; stroke-dasharray: 13 14; opacity: .55; }
+.districtGarden { fill: color-mix(in srgb,var(--accent) 25%,#597b65); opacity: .55; }
+.districtTrees { fill: color-mix(in srgb,var(--accent) 28%,#5a966c); stroke: #e3f0d7; stroke-width: 4; }
+.building { width: 31%; min-height: 215px; padding: 0 3px 8px; justify-content: end; border: 0; background: transparent; box-shadow: none; transition: none; -webkit-tap-highlight-color: transparent; }
+.building:hover { background: transparent; transform: translate(-50%,-50%); }
+.building[aria-pressed="true"], .building[data-state="max"] { background: transparent; box-shadow: none; }
+.building::before { content: ""; position: absolute; inset: 8% 3% 2%; border: 2px solid transparent; border-radius: 22px; pointer-events: none; transition: border-color .18s ease, background-color .18s ease; }
+.building:hover::before { background: color-mix(in srgb,var(--accent) 5%,transparent); }
+.building[aria-pressed="true"]::before { border-color: color-mix(in srgb,var(--accent) 60%,transparent); background: color-mix(in srgb,var(--accent) 7%,transparent); }
+.building[data-state="max"]::before { border-color: color-mix(in srgb,var(--accent) 30%,transparent); }
+.building[data-state="max"][aria-pressed="true"]::before { border-color: var(--accent); }
+.buildingArt { position: relative; display: block; width: min(100%,182px); transition: translate .18s ease; }
+.building:hover .buildingArt, .building:focus-visible .buildingArt { translate: 0 -4px; }
+.buildingShape { display: block; width: 100%; height: auto; overflow: visible; }
+.building[data-state="locked"] .buildingArt { filter: grayscale(.65); opacity: .68; }
+.building[data-state="available"] .buildingArt { filter: saturate(.9); }
+.building.level2 .buildingArt { filter: drop-shadow(0 5px 7px color-mix(in srgb,var(--accent) 18%,transparent)); }
+.building.level3 .buildingArt { filter: drop-shadow(0 6px 10px color-mix(in srgb,var(--accent) 30%,transparent)); }
+.buildingName { position: relative; border: 1px solid color-mix(in srgb,var(--accent) 14%,var(--border)); border-radius: 10px; padding: 5px 9px; background: var(--surface); box-shadow: 0 3px 9px #152d3214; }
+.buildingLevel { position: relative; font-weight: 650; }
+.justGrew { animation: none; }
+.justGrew .buildingArt { animation: city-grow .8s ease-out both; }
+.artShadow { fill: #1b383e; opacity: .17; }
+.artPlatformSide { fill: #839c9b; }
+.artPlatform { fill: #e8e4d7; stroke: #9dafac; stroke-width: 1.5; }
+.artPlaza { fill: #cadad0; }
+.stone .blockFront { fill: #bfcfd2; } .stone .blockSide { fill: #7f9ea5; } .stone .blockTop { fill: #e0e6dc; }
+.glass .blockFront { fill: #7db5bc; } .glass .blockSide { fill: #3f7989; } .glass .blockTop { fill: #c1e3e0; }
+.warm .blockFront { fill: #e7c89d; } .warm .blockSide { fill: #b48c72; } .warm .blockTop { fill: #f3dfb8; }
+.artWindows { fill: #356d7c; stroke: #d5edf0; stroke-width: 1.1; }
+.artPediment, .artRoof { fill: #626f83; stroke: #e4e8e3; stroke-width: 1.5; stroke-linejoin: round; }
+.artTrim, .artColumns, .artTowerFace { fill: none; stroke: #f8f0d8; stroke-width: 3; stroke-linecap: round; }
+.artColumns { stroke-width: 5; }
+.artDoor { fill: #496470; stroke: #f6dfb5; stroke-width: 2; }
+.artChimney { fill: #8da9a8; stroke: #e7f1e8; stroke-width: 2; }
+.artArch { fill: #648686; stroke: #f8e1bb; stroke-width: 3; }
+.artFlag { fill: #b47357; stroke: #f5dfc4; stroke-width: 2; }
+.artClock { fill: #f3e7c8; stroke: #526975; stroke-width: 2; }
+.artClockHands { fill: none; stroke: #526975; stroke-width: 2; stroke-linecap: round; }
+.artGold { fill: none; stroke: #ddad5f; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.artGoldFill { fill: #e5b961; stroke: #fff2c6; stroke-width: 1.5; }
+.artScaffold { fill: none; stroke: #907a5f; stroke-width: 2; stroke-dasharray: 5 3; }
+.details { box-shadow: 0 8px 28px #102b2d0d; }
+.detailArt { height: 160px; background: radial-gradient(ellipse at 50% 70%,color-mix(in srgb,var(--accent) 14%,#c9d9d2),color-mix(in srgb,var(--accent) 6%,var(--surface)) 78%); }
+.detailArt .buildingShape { width: 155px; height: auto; }
+.eligibility { background: color-mix(in srgb,var(--accent) 6%,var(--surface-subtle)); }
+@media (max-width: 1120px) { .map { height: clamp(530px,65vw,670px); } }
+@media (max-width: 720px) { .map { height: 670px; } .roads { opacity: .84; } .building { width: 46%; min-height: 175px; } .building:nth-of-type(1) { left: 26%; top: 17%; } .building:nth-of-type(2) { left: 74%; top: 17%; } .building:nth-of-type(3) { left: 26%; top: 48%; } .building:nth-of-type(4) { left: 74%; top: 48%; } .building:nth-of-type(5) { left: 26%; top: 79%; } .building:nth-of-type(6) { left: 74%; top: 79%; } .buildingArt { width: min(100%,155px); } }
+@media (max-width: 440px) { .map { height: 620px; } .building { min-height: 162px; padding-inline: 1px; } .buildingArt { width: min(100%,136px); } .buildingName { font-size: .7rem; padding-inline: 5px; } .buildingLevel { font-size: .67rem; } }
+@media (prefers-reduced-motion: reduce) { .buildingArt, .building::before { transition: none; } .building:hover .buildingArt, .building:focus-visible .buildingArt { translate: none; } .justGrew .buildingArt { animation: none; } }

@@ -13,6 +13,7 @@ registerHooks({ load(url, context, nextLoad) {
   return nextLoad(url, context);
 } });
 const { CityExperience } = await import("../src/app/app/city/city-experience");
+const { CityBuildingArt } = await import("../src/app/app/city/city-building-art");
 
 function overview(levels: number[] = [0, 0, 0, 0, 0, 0]): CityOverview {
   return {
@@ -35,6 +36,7 @@ test("all six authoritative buildings render with owner levels and bilingual dir
   assert.match(en, /Focus Tower, Level 1/);
   assert.match(en, /Library District, Level 2/);
   assert.match(en, /Science Lab, Level 3, Max Level/);
+  assert.match(en, /Language Academy, Level 0, Locked/);
   assert.match(ar, /dir="rtl"/);
   assert.match(ar, /مركز المعرفة/);
   assert.match(ar, /نقاط البناء/);
@@ -94,4 +96,36 @@ test("mobile, keyboard focus and reduced motion rules remain in the City stylesh
   assert.match(css, /max-width: 440px/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /prefers-reduced-motion: reduce/);
+});
+
+test("six distinct vector buildings reflect persisted levels without client-side guesses", () => {
+  for (const entry of buildingCatalog) {
+    const art = renderToStaticMarkup(<CityBuildingArt kind={entry.key} level={1} />);
+    assert.match(art, new RegExp(`data-art-kind="${entry.key}"`));
+    assert.match(art, /class="artPlatform"/);
+  }
+  const locked = renderToStaticMarkup(<CityBuildingArt kind="science_lab" level={0} />);
+  const built = renderToStaticMarkup(<CityBuildingArt kind="science_lab" level={1} />);
+  const upgraded = renderToStaticMarkup(<CityBuildingArt kind="science_lab" level={2} />);
+  const max = renderToStaticMarkup(<CityBuildingArt kind="science_lab" level={3} />);
+  assert.match(locked, /artScaffold/);
+  assert.doesNotMatch(built, /artScaffold/);
+  assert.notEqual(built, upgraded);
+  assert.match(max, /artGold/);
+  assert.doesNotMatch(upgraded, /artGold/);
+});
+
+test("selection stays a stationary semantic hit target with a linked live details panel", () => {
+  const rendered = html(overview([2, 3, 1, 0, 2, 0]));
+  const css = readFileSync(new URL("../src/app/app/city/city.module.css", import.meta.url), "utf8");
+  assert.equal((rendered.match(/data-building="/g) ?? []).length, 6);
+  assert.match(rendered, /data-building="knowledge_center"[^>]*aria-pressed="true"/);
+  assert.match(rendered, /id="city-building-details"[^>]*aria-label="Building details"/);
+  assert.match(rendered, /aria-live="polite"/);
+  assert.match(rendered, /Your city progresses automatically/);
+  assert.match(rendered, /Recent City Activity/);
+  assert.match(css, /\.building \{[^}]*transition: none/);
+  assert.match(css, /\.building:hover \{[^}]*transform: translate\(-50%,-50%\)/);
+  assert.match(css, /\.building:hover \.buildingArt/);
+  assert.match(css, /\.map \{[^}]*overflow: hidden/);
 });

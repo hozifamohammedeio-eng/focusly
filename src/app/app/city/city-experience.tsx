@@ -8,29 +8,8 @@ import type { BuildingKey } from "@/features/city/domain";
 import { buildingView, citySummary, nextCityMilestone, type CityBuilding, type CityOverview } from "@/features/city/overview";
 import { CITY_GROWTH_STORAGE_KEY, confirmedRecentGrowth } from "@/features/city/receipt";
 import { buildings } from "./city-buildings";
+import { CityBuildingArt } from "./city-building-art";
 import styles from "./city.module.css";
-
-function BuildingShape({ kind, level }: { kind: BuildingKey; level: number }) {
-  const tower = kind === "focus_tower";
-  const tall = kind === "knowledge_center" || tower;
-  const top = tall ? 20 : 39;
-  return <svg viewBox="0 0 140 132" aria-hidden="true" className={styles.buildingShape}>
-    <ellipse cx="70" cy="114" rx="58" ry="11" className={styles.shadow} />
-    <path d="M9 102 70 75l61 27-61 26Z" className={styles.plot} />
-    <path d={`M24 103V${top + 19}L70 ${top}v85Z`} className={styles.front} />
-    <path d={`M70 ${top} 116 ${top + 19}v84l-46-18Z`} className={styles.side} />
-    <path d={`M24 ${top + 19} 70 ${top}l46 19-46 20Z`} className={styles.roof} />
-    {kind === "knowledge_center" && <path d="M49 29V19a21 21 0 0 1 42 0v10L70 38Z" className={styles.accentShape} />}
-    {tower && <><path d="M70 21V4" className={styles.line} /><circle cx="70" cy="4" r="4" className={styles.accentShape} /></>}
-    {kind === "science_lab" && <path d="M85 43V20h12v30" className={styles.accentShape} />}
-    {kind === "language_academy" && <path d="M69 38V16l25 9-25 10" className={styles.accentShape} />}
-    {kind === "planner_hall" && <circle cx="70" cy="61" r="9" className={styles.accentShape} />}
-    {kind === "library_district" && <path d="M43 101V62m12 34V57m12 33V53" className={styles.line} />}
-    <path d="M36 67v8m15-14v8m-15 12v8m15-14v8m36-19v8m15-3v8m-15 1v8m15-3v8" className={styles.windows} />
-    {level >= 2 && <><path d="M18 100V83l13-6m82 0 10 6v19" className={styles.wing} /><path d="M57 104V88l13-6 13 6v16" className={styles.accentShape} /><path d="M21 84h10m82-1h10" className={styles.line} /></>}
-    {level >= 3 && <><path d="M36 48 70 32l34 16M70 32V22" className={styles.crown} /><circle cx="70" cy="20" r="4" className={styles.accentShape} /><path d="M42 105h56M50 112h40" className={styles.crown} /></>}
-  </svg>;
-}
 
 function Status({ building, overview, locale }: { building: CityBuilding; overview: CityOverview; locale: "en" | "ar" }) {
   const t = cityCopy[locale];
@@ -104,22 +83,26 @@ export function CityExperience({ overview }: { overview: CityOverview | null }) 
       <section className={styles.mapPanel} aria-labelledby="city-map-title">
         <div className={styles.mapHeader}><div><p className={styles.kicker}>{t.progress}</p><h2 id="city-map-title">{t.map}</h2></div><p>{t.mapHint}</p></div>
         <div className={styles.map}>
-          <svg className={styles.roads} viewBox="0 0 600 580" preserveAspectRatio="none" aria-hidden="true">
-            <ellipse cx="300" cy="285" rx="260" ry="252" className={styles.terrain} />
-            <path d="M132 110Q300 15 468 110M132 110 300 270 468 110M300 270 120 415 300 515 480 415 300 270M120 415Q10 250 132 110M480 415Q590 250 468 110M300 270V515" className={styles.road} />
-            <path d="M132 110 300 270 468 110M300 270 120 415 300 515 480 415 300 270" className={styles.roadLine} />
+          <svg className={styles.roads} viewBox="0 0 900 660" preserveAspectRatio="none" aria-hidden="true">
+            <path className={styles.districtShadow} d="M25 231 433 43l439 190v310L450 641 25 542Z" />
+            <path className={styles.districtSide} d="M25 520 450 622l422-102v23L450 645 25 543Z" />
+            <path className={styles.districtGround} d="M25 215 433 44l439 189v287L450 622 25 520Z" />
+            <path className={styles.districtRoad} d="M25 355h847M25 435h847M294 80v520M352 80v520M583 92v500M641 92v500" />
+            <path className={styles.districtLane} d="M25 395h847M323 75v540M612 90v505" />
+            <path className={styles.districtGarden} d="M52 236 251 147v154L52 339ZM668 127l180 92v117l-180-72ZM57 466l191 50v62L57 527ZM668 467l174-42v83l-174 41Z" />
+            <g className={styles.districtTrees}><circle cx="72" cy="276" r="11" /><circle cx="223" cy="196" r="10" /><circle cx="714" cy="189" r="10" /><circle cx="825" cy="272" r="11" /><circle cx="85" cy="493" r="10" /><circle cx="825" cy="483" r="10" /></g>
           </svg>
           {buildings.map(position => {
             const building = overview.buildings.find(item => item.key === position.key);
             if (!building) return null;
             const view = buildingView(building, overview);
             const active = selected?.key === building.key;
-            return <button key={building.key} type="button" className={`${styles.building} ${styles[`level${building.level}`]} ${growing.includes(building.key) ? styles.justGrew : ""}`} data-state={view.state} dir={ar ? "rtl" : "ltr"}
+            return <button key={building.key} type="button" className={`${styles.building} ${styles[`level${building.level}`]} ${growing.includes(building.key) ? styles.justGrew : ""}`} data-state={view.state} data-building={building.key} dir={ar ? "rtl" : "ltr"}
               style={{ "--x": `${position.x}%`, "--y": `${position.y}%` } as CSSProperties}
               aria-pressed={active} aria-controls="city-building-details"
-              aria-label={`${t.names[building.key]}, ${building.level ? `${t.level} ${number(building.level)}` : t.locked}, ${view.state === "max" ? t.max : t[view.state]}`}
+              aria-label={`${t.names[building.key]}, ${t.level} ${number(building.level)}, ${view.state === "max" ? t.max : t[view.state]}`}
               onClick={() => setSelectedKey(building.key)}>
-              <BuildingShape kind={building.key} level={building.level} />
+              <span className={styles.buildingArt}><CityBuildingArt kind={building.key} level={building.level} /></span>
               <span className={styles.buildingName}>{t.names[building.key]}</span>
               <span className={styles.buildingLevel}>{building.level ? `${t.level} ${number(building.level)}` : view.state === "available" ? t.available : t.locked}</span>
             </button>;
@@ -129,7 +112,7 @@ export function CityExperience({ overview }: { overview: CityOverview | null }) 
 
       {selected && next && <aside id="city-building-details" className={styles.details} aria-label={t.details}>
         <div aria-live="polite" aria-atomic="true">
-          <div className={`${styles.detailArt} ${styles[`level${selected.level}`]}`}><BuildingShape kind={selected.key} level={selected.level} /></div>
+          <div className={`${styles.detailArt} ${styles[`level${selected.level}`]}`}><CityBuildingArt kind={selected.key} level={selected.level} /></div>
           <p className={styles.kicker}>{t.details}</p><h2>{t.names[selected.key]}</h2>
           <p className={styles.description}>{t.descriptions[selected.key]}</p>
           <div className={styles.detailStatus}><strong>{selected.level ? `${t.level} ${number(selected.level)} / ${number(selected.maxLevel)}` : `${t.level} 0 / ${number(selected.maxLevel)}`}</strong><Status building={selected} overview={overview} locale={locale} /></div>
