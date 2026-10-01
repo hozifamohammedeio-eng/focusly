@@ -25,9 +25,9 @@ test("timer recovery preserves auth checks without invalidating the app layout",
   assert.deepEqual(await exports.focusAction(f), { error: true }); assert.equal(calls, 1);
   authenticated = true; state = "completed";
   await exports.focusAction(f);
-  assert.deepEqual(invalidated, [["/app"], ["/app/statistics"], ["/app/profile"], ["/app/challenges"], ["/app/city"]]);
+  assert.deepEqual(invalidated, [["/app"], ["/app/statistics"], ["/app/profile"], ["/app/challenges"], ["/app/city"], ["/app/achievements"]]);
 });
-test("Focus claim consumes one trusted receipt and replay cannot announce completion", async () => {
+test("Focus claim evaluates achievements only for a new trusted reward", async () => {
   const source = fs.readFileSync(new URL("../src/features/focus/actions.ts", import.meta.url), "utf8");
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const calls = [];
@@ -44,6 +44,7 @@ test("Focus claim consumes one trusted receipt and replay cannot announce comple
         rpc: async (rpc) => {
           calls.push(rpc);
           if (rpc === "claim_focus_progression_reward" && fail) throw new Error("network");
+          if (rpc === "evaluate_progression_achievements") return { data: [{ achievementKey: "first_focus" }] };
           return rpc === "focus_transition"
             ? { data: { session: { id: "session", completed: true, timer_state: "completed" }, serverNow: new Date().toISOString() } }
             : { data: { awarded, challenges: awarded ? [{ eventId: "event" }] : [] } };
@@ -51,17 +52,20 @@ test("Focus claim consumes one trusted receipt and replay cannot announce comple
       }) };
       if (name === "@/features/challenges/receipt") return { challengeAwardsFromClaim: (value) => value.awarded ? value.challenges : [] };
       if (name === "@/features/city/receipt") return { cityGrowthFromClaim: () => null };
+      if (name === "@/features/progression/achievement-receipt") return { achievementAwardsFromEvaluation: (claim, value) => claim.awarded ? value : [] };
       if (name === "@/features/planning/logic") return { UUID: /^[0-9a-f-]{36}$/ };
       return {};
     }, exports);
     const form = new FormData(); form.set("action", "finish");
     const first = await exports.focusAction(form);
-    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward"]);
+    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward", "evaluate_progression_achievements"]);
     assert.equal(first.challengeAwards.length, 1);
+    assert.equal(first.achievementAwards.length, 1);
     awarded = false;
     const replay = await exports.focusAction(form);
-    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward", "focus_transition", "claim_focus_progression_reward"]);
+    assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward", "evaluate_progression_achievements", "focus_transition", "claim_focus_progression_reward"]);
     assert.deepEqual(replay.challengeAwards, []);
+    assert.deepEqual(replay.achievementAwards, []);
     fail = true;
     const saved = await exports.focusAction(form);
     assert.equal(saved.session.completed, true);

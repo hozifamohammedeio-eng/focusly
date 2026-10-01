@@ -26,6 +26,7 @@ type NavigationKey =
   | "planner"
   | "calendar"
   | "city"
+  | "achievements"
   | "statistics"
   | "subjects"
   | "profile"
@@ -38,6 +39,7 @@ const navigation = [
     url: "/app",
   },
   { key: "city", url: "/app/city" },
+  { key: "achievements", url: "/app/achievements" },
   {
     key: "tasks",
     url: "/app/tasks",
@@ -200,6 +202,8 @@ function NavigationIcon({
 
     case "city":
       return <svg {...commonProps}><path d="M3 21V10h5V4h8v9h5v8H3ZM11 8h2m-2 4h2m-2 4h2M6 14v3m12 0v2" /></svg>;
+    case "achievements":
+      return <svg {...commonProps}><circle cx="12" cy="9" r="6" /><path d="m8 14-2 8 6-3 6 3-2-8M9 9l2 2 4-4" /></svg>;
     case "subjects":
       return (
         <svg {...commonProps}>

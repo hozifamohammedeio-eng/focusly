@@ -1,0 +1,62 @@
+.page { max-width: 1440px; margin-inline: auto; min-width: 0; }
+.header { margin-block-end: 24px; }
+.header h1 { font-size: clamp(2rem, 3vw, 3rem); font-weight: 720; line-height: 1.15; letter-spacing: -.04em; margin-block: 8px 10px; }
+.header > p:last-child, .collectionHeader p, .description, .detail > p { color: var(--muted); line-height: 1.65; }
+.summary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 26px; padding: 23px 26px; border: 1px solid var(--border); border-radius: 25px; background: var(--surface); margin-block-end: 24px; }
+.summary > div:not(.track) { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.summary strong { font-size: clamp(1.5rem,2vw,2rem); font-variant-numeric: tabular-nums; }
+.summary span, .category { color: var(--muted); font-size: .78rem; }
+.track, .smallTrack { display: block; height: 8px; border-radius: 99px; overflow: hidden; background: var(--surface-subtle); }
+.track i, .smallTrack i { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .35s ease; }
+.summary .track { grid-column: 1 / -1; }
+.notice { padding: 18px 22px; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); margin-block-end: 23px; line-height: 1.6; }
+.feature, .recent { margin-block-end: 27px; }
+.feature h2, .recent h2, .collectionHeader h2 { font-size: 1.28rem; font-weight: 680; margin-block-end: 13px; }
+.featureList { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.featureList button, .recent button { min-width: 0; border: 1px solid var(--border); border-radius: 18px; background: var(--surface); text-align: start; padding: 15px 18px; min-height: 74px; }
+.featureList button { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+.featureList button strong { color: var(--accent); }
+.featureList button .smallTrack { grid-column: 1 / -1; height: 6px; }
+.recent > div { display: flex; gap: 12px; overflow-x: auto; padding-block-end: 3px; }
+.recent button { display: flex; align-items: center; gap: 12px; min-width: min(225px,75vw); }
+.recent .badge { width: 47px; height: 47px; flex: 0 0 47px; }
+.recent small { display: block; color: var(--muted); margin-block-start: 4px; }
+.collectionHeader { display: flex; gap: 20px; align-items: baseline; justify-content: space-between; margin-block-end: 12px; }
+.collectionHeader p { max-width: 570px; font-size: .83rem; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-block-end: 18px; }
+.filters button { min-height: 42px; padding: 8px 16px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); font-size: .84rem; }
+.filters button[aria-pressed="true"] { color: var(--foreground); border-color: var(--accent); background: color-mix(in srgb,var(--accent) 10%,var(--surface)); font-weight: 680; }
+.grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 15px; }
+.card { display: flex; flex-direction: column; min-width: 0; min-height: 285px; padding: 20px; border: 1px solid var(--border); border-radius: 24px; background: var(--surface); text-align: start; color: var(--foreground); transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+.card:hover { border-color: color-mix(in srgb,var(--accent) 40%,var(--border)); transform: translateY(-2px); }
+.card[data-state="new"] { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb,var(--accent) 10%,transparent); }
+.card[data-state="locked"] .badge { filter: grayscale(1); opacity: .52; }
+.cardTop { display: flex; justify-content: space-between; gap: 10px; align-items: start; margin-block-end: 15px; }
+.badge { display: inline-grid; place-items: center; width: 65px; height: 65px; flex: 0 0 65px; border-radius: 18px; color: var(--accent); background: color-mix(in srgb,var(--accent) 11%,var(--surface)); }
+.badge svg { width: 86%; height: 86%; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.badgeOuter { fill: color-mix(in srgb,var(--accent) 11%,var(--surface)); stroke-width: 1.8; }
+.badgeInner { fill: color-mix(in srgb,var(--accent) 5%,var(--surface)); opacity: .75; }
+.badge.tasks { color: color-mix(in srgb,var(--accent) 75%,#40a18d); }
+.badge.progression { color: color-mix(in srgb,var(--accent) 75%,#b78a48); }
+.badge.mastery { color: color-mix(in srgb,var(--accent) 75%,#708bcb); }
+.badge.locked { filter: grayscale(1); opacity: .52; }
+.badge.unlocked { border: 1px solid color-mix(in srgb,var(--accent) 28%,var(--border)); }
+.newBadge { box-shadow: 0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent); }
+.cardName { display: block; font-size: 1.08rem; font-weight: 700; line-height: 1.3; }
+.description { display: block; font-size: .82rem; margin-block: 6px 11px; }
+.state { display: inline-flex; align-self: start; border: 1px solid var(--border); border-radius: 99px; padding: 4px 9px; font-size: .72rem; font-weight: 650; margin-block-end: 16px; }
+.card[data-state="new"] .state, .card[data-state="unlocked"] .state { color: var(--accent); border-color: color-mix(in srgb,var(--accent) 40%,var(--border)); }
+.progressLabel { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-block-start: auto; margin-block-end: 8px; font-size: .75rem; color: var(--muted); }
+.progressLabel bdi { color: var(--foreground); font-variant-numeric: tabular-nums; text-align: end; }
+.reward { display: block; font-size: .75rem; color: var(--muted); margin-block-start: 12px; }
+.detail { padding-block: 20px 4px; min-width: 0; width: min(460px,100%); }
+.detail .badge { margin-block-end: 12px; }
+.detail h3 { font-size: 1.5rem; font-weight: 700; margin-block: 5px 7px; }
+.detail h4 { font-size: .83rem; font-weight: 700; margin-block: 19px 5px; }
+.detail .state { margin-block: 12px 0; }
+.detail .track { margin-block-start: 10px; }
+.detail .encouragement { padding: 13px 16px; border-radius: 14px; margin-block-start: 19px; background: color-mix(in srgb,var(--accent) 8%,var(--surface)); color: var(--foreground); }
+.card:focus-visible, .filters button:focus-visible, .featureList button:focus-visible, .recent button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 1100px) { .grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 720px) { .grid, .featureList { grid-template-columns: 1fr; } .collectionHeader { display: block; } .summary { padding: 18px; } .card { min-height: 255px; } }
+@media (prefers-reduced-motion: reduce) { .card, .track i, .smallTrack i { transition: none; } .card:hover { transform: none; } }

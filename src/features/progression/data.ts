@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 
 import { getIdentity } from "@/features/auth/session";
+import type { Database } from "@/types/database";
 import {
   achievementCatalog,
   isAchievementKey,
@@ -126,12 +127,15 @@ type UnlockedAchievement = Readonly<{
   unlockedAt: string;
 }>;
 
+export type AchievementProgress = Database["public"]["Functions"]["get_achievement_progress"]["Returns"][number];
+
 type AchievementsResult =
   | { kind: "anonymous" | "unconfigured" | "unavailable" }
   | {
       kind: "authenticated";
       catalog: typeof achievementCatalog;
       unlocked: UnlockedAchievement[];
+      progress: AchievementProgress[];
     };
 
 function parseSubjectMasteryRows(value: unknown): SubjectMasteryRow[] {
@@ -178,20 +182,28 @@ export const getSubjectMastery = cache(async (): Promise<SubjectMasteryResult> =
   }
 });
 
-/** Reads the catalog and owner-scoped unlock ledger for future UI use. */
+/** Reads owner-scoped achievement evidence and unlocks without evaluating rewards. */
 export const getAchievements = cache(async (): Promise<AchievementsResult> => {
   const identity = await getIdentity();
   if (identity.kind !== "authenticated") return identity;
   try {
-    const result = await identity.client
-      .from("user_achievements")
-      .select("id, achievement_key, unlocked_at")
-      .eq("user_id", identity.user.id)
-      .order("unlocked_at", { ascending: true });
-    if (result.error) return { kind: "unavailable" };
+    const [result, evidence] = await Promise.all([
+      identity.client.from("user_achievements")
+        .select("id, achievement_key, unlocked_at")
+        .eq("user_id", identity.user.id)
+        .order("unlocked_at", { ascending: false }),
+      identity.client.rpc("get_achievement_progress"),
+    ]);
+    if (result.error || evidence.error || !evidence.data ||
+      evidence.data.length !== achievementCatalog.length ||
+      new Set(evidence.data.map((row) => row.achievement_key)).size !== achievementCatalog.length ||
+      evidence.data.some((row) => !isAchievementKey(row.achievement_key) ||
+        !Number.isSafeInteger(row.progress) || row.progress < 0 ||
+        !Number.isSafeInteger(row.target) || row.target <= 0)) return { kind: "unavailable" };
     return {
       kind: "authenticated",
       catalog: achievementCatalog,
+      progress: evidence.data,
       unlocked: result.data.flatMap((row) =>
         isAchievementKey(row.achievement_key)
           ? [{
@@ -204,6 +216,31 @@ export const getAchievements = cache(async (): Promise<AchievementsResult> => {
     };
   } catch {
     return { kind: "unavailable" };
+  }
+});
+
+/** Compact indexed ledger read for Dashboard; it never invokes the progress RPC. */
+export const getAchievementSummary = cache(async () => {
+  const identity = await getIdentity();
+  if (identity.kind !== "authenticated") return { kind: "unavailable" as const };
+  try {
+    const result = await identity.client.from("user_achievements")
+      .select("achievement_key,unlocked_at", { count: "exact" })
+      .eq("user_id", identity.user.id)
+      .order("unlocked_at", { ascending: false })
+      .limit(1);
+    if (result.error || result.count === null) return { kind: "unavailable" as const };
+    const latest = result.data[0];
+    return {
+      kind: "authenticated" as const,
+      count: result.count,
+      total: achievementCatalog.length,
+      latest: latest && isAchievementKey(latest.achievement_key)
+        ? { key: latest.achievement_key, unlockedAt: latest.unlocked_at }
+        : null,
+    };
+  } catch {
+    return { kind: "unavailable" as const };
   }
 });
 

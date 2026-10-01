@@ -24,7 +24,7 @@ test("daily task copy and dates work in English and Arabic", () => {
   assert.notEqual(formatDay("2026-10-01", "en", { dateStyle: "full" }),
     formatDay("2026-10-01", "ar", { dateStyle: "full" }));
 });
-test("Task completion claims once and only announces newly awarded challenges", async () => {
+test("Task completion evaluates achievements only for a new trusted reward", async () => {
   const source = fs.readFileSync(new URL("../src/features/planning/actions.ts", import.meta.url), "utf8");
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const rpcCalls = [];
@@ -42,22 +42,25 @@ test("Task completion claims once and only announces newly awarded challenges", 
         from: (table) => table === "profiles"
           ? { select: () => ({ eq: () => ({ single: async () => ({ data: { onboarding_completed: true } }) }) }) }
           : chain,
-        rpc: async (rpc) => { rpcCalls.push(rpc); if (fail) throw new Error("network"); return { data: { awarded, challenges: awarded ? [{ eventId: "event" }] : [] } }; },
+        rpc: async (rpc) => { rpcCalls.push(rpc); if (fail) throw new Error("network"); return rpc === "evaluate_progression_achievements" ? { data: [{ achievementKey: "first_task" }] } : { data: { awarded, challenges: awarded ? [{ eventId: "event" }] : [] } }; },
       }) };
       if (name === "@/features/challenges/receipt") return { challengeAwardsFromClaim: (value) => value.awarded ? value.challenges : [] };
       if (name === "@/features/city/receipt") return { cityGrowthFromClaim: () => null };
+      if (name === "@/features/progression/achievement-receipt") return { achievementAwardsFromEvaluation: (claim, value) => claim.awarded ? value : [] };
       if (name === "./logic") return { UUID: /^[a-z]+$/ };
       return {};
     }, exports);
     const form = new FormData();
     form.set("entity", "tasks"); form.set("action", "complete"); form.set("id", "task"); form.set("completed", "true");
     const first = await exports.mutate(form);
-    assert.deepEqual(rpcCalls, ["claim_task_progression_reward"]);
+    assert.deepEqual(rpcCalls, ["claim_task_progression_reward", "evaluate_progression_achievements"]);
     assert.equal(first.challengeAwards.length, 1);
+    assert.equal(first.achievementAwards.length, 1);
     awarded = false;
     const replay = await exports.mutate(form);
-    assert.deepEqual(rpcCalls, ["claim_task_progression_reward", "claim_task_progression_reward"]);
+    assert.deepEqual(rpcCalls, ["claim_task_progression_reward", "evaluate_progression_achievements", "claim_task_progression_reward"]);
     assert.deepEqual(replay.challengeAwards, []);
+    assert.deepEqual(replay.achievementAwards, []);
     fail = true;
     const saved = await exports.mutate(form);
     assert.equal(saved.success, "saved");
@@ -65,11 +68,11 @@ test("Task completion claims once and only announces newly awarded challenges", 
     fail = false;
     form.set("completed", "false");
     await exports.mutate(form);
-    assert.equal(rpcCalls.length, 3);
+    assert.equal(rpcCalls.length, 4);
     process.env.FOCUSLY2_REWARDS_ENABLED = "false";
     form.set("completed", "true");
     const disabled = await exports.mutate(form);
-    assert.equal(rpcCalls.length, 3);
+    assert.equal(rpcCalls.length, 4);
     assert.deepEqual(disabled.challengeAwards, []);
   } finally {
     if (prior === undefined) delete process.env.FOCUSLY2_REWARDS_ENABLED;

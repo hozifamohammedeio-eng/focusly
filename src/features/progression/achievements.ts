@@ -1,7 +1,7 @@
 import type { RewardAmounts } from "./types";
 
-// This catalog is presentation metadata for future UI previews. The database
-// evaluator remains authoritative for eligibility and persisted reward values.
+// Presentation metadata only. The database evaluator remains authoritative for
+// eligibility and persisted reward values.
 export const achievementCatalog = [
   {
     key: "first_focus",

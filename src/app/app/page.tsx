@@ -2,6 +2,8 @@ import { planningData } from "@/features/planning/data";
 import { progressData } from "@/features/focus/data";
 import { getChallenges } from "@/features/challenges/data";
 import { DailyChallengesWidget } from "@/features/challenges/summary";
+import { getAchievementSummary } from "@/features/progression/data";
+import { AchievementSummaryWidget } from "@/features/progression/achievement-summary";
 
 import {
   ProgressHeading,
@@ -69,10 +71,11 @@ function dailyMotivation(
 }
 
 export default async function Page() {
-  const [data, stats, challenges] = await Promise.all([
+  const [data, stats, challenges, achievements] = await Promise.all([
     planningData(),
     progressData(),
     getChallenges(),
+    getAchievementSummary(),
   ]);
   const challengeSnapshot = challenges.kind === "authenticated" ? { userId: challenges.userId, challenges: challenges.challenges } : null;
 
@@ -188,6 +191,7 @@ export default async function Page() {
         />
       </div>
       <DailyChallengesWidget snapshot={challengeSnapshot} />
+      <AchievementSummaryWidget summary={achievements.kind === "authenticated" ? achievements : null} />
     </main>
   );
 }

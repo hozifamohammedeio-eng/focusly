@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { challengeAwardsFromClaim, type ChallengeAward } from "@/features/challenges/receipt";
 import { cityGrowthFromClaim, type CityGrowth } from "@/features/city/receipt";
+import { achievementAwardsFromEvaluation, type AchievementAward } from "@/features/progression/achievement-receipt";
 import {
   UUID,
   overlaps,
@@ -18,6 +19,7 @@ import {
 export type MutationResult = {
   challengeAwards?: ChallengeAward[];
   cityGrowth?: CityGrowth | null;
+  achievementAwards?: AchievementAward[];
   error?:
     | "invalid"
     | "expired"
@@ -46,6 +48,7 @@ export async function mutate(form: FormData): Promise<MutationResult> {
     const owner = auth.user.id;
     let challengeAwards: ChallengeAward[] = [];
     let cityGrowth: CityGrowth | null = null;
+    let achievementAwards: AchievementAward[] = [];
     const profile = await client
       .from("profiles")
       .select("onboarding_completed")
@@ -157,6 +160,11 @@ export async function mutate(form: FormData): Promise<MutationResult> {
           else {
             challengeAwards = challengeAwardsFromClaim(reward.data);
             cityGrowth = cityGrowthFromClaim(reward.data);
+            if (reward.data && typeof reward.data === "object" && !Array.isArray(reward.data) && reward.data.awarded === true) {
+              const achievements = await client.rpc("evaluate_progression_achievements");
+              if (achievements.error) console.error("achievement_evaluation_failed", { code: achievements.error.code });
+              else achievementAwards = achievementAwardsFromEvaluation(reward.data, achievements.data);
+            }
           }
         } catch {
           console.error("task_reward_request_failed");
@@ -296,7 +304,8 @@ export async function mutate(form: FormData): Promise<MutationResult> {
     revalidatePath("/app", "layout");
     if (entity === "tasks" && action === "complete") revalidatePath("/app/challenges");
     if (entity === "tasks" && action === "complete") revalidatePath("/app/city");
-    return { success: action === "delete" ? "deleted" : "saved", challengeAwards, cityGrowth };
+    if (entity === "tasks" && action === "complete") revalidatePath("/app/achievements");
+    return { success: action === "delete" ? "deleted" : "saved", challengeAwards, cityGrowth, achievementAwards };
   } catch {
     console.error("planning_request_failed", { entity, action });
     return { error: "saveError" };

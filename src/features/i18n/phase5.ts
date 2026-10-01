@@ -33,6 +33,7 @@ export const phase5 = {
     focusSessionsBeforeLongBreak: "Sessions before a long break",
     unsupportedPreference: "This preference is not available yet.",
     profile: "Profile",
+    achievements: "Achievements",
     settings: "Settings",
   },
   ar: {
@@ -69,6 +70,7 @@ export const phase5 = {
     focusSessionsBeforeLongBreak: "عدد الجلسات قبل الاستراحة الطويلة",
     unsupportedPreference: "هذا التفضيل غير متاح حتى الآن.",
     profile: "الملف الشخصي",
+    achievements: "الإنجازات",
     settings: "الإعدادات",
   },
 } as const;

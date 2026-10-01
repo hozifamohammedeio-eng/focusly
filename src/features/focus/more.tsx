@@ -44,6 +44,10 @@ export function MoreNavigation() {
             : "Challenges"}
         </ButtonLink>
 
+        <ButtonLink href="/app/achievements" variant="ghost">
+          {t.achievements}
+        </ButtonLink>
+
         {(
           [
             "calendar",

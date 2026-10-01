@@ -22,6 +22,8 @@ import { ChallengeRewardToast } from "@/features/challenges/reward-toast";
 import { CityGrowthToast } from "@/features/city/growth-toast";
 import type { CityGrowth } from "@/features/city/receipt";
 import type { ChallengeAward } from "@/features/challenges/receipt";
+import { AchievementRewardToast } from "@/features/progression/achievement-toast";
+import type { AchievementAward } from "@/features/progression/achievement-receipt";
 import type { EditorState } from "./editor";
 const Editor = dynamic(() => import("./editor").then((module) => module.Editor));
 const DeleteDialog = dynamic(() => import("./editor").then((module) => module.DeleteDialog));
@@ -133,8 +135,10 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
     [error, setError] = useState(""),
     [pending, start] = useTransition();
   const [challengeAwards, setChallengeAwards] = useState<ChallengeAward[]>([]);
+  const [achievementAwards, setAchievementAwards] = useState<AchievementAward[]>([]);
   const [cityGrowth, setCityGrowth] = useState<CityGrowth | null>(null);
   const dismissChallengeAwards = useCallback(() => setChallengeAwards([]), []);
+  const dismissAchievementAwards = useCallback(() => setAchievementAwards([]), []);
   const dismissCityGrowth = useCallback(() => setCityGrowth(null), []);
   useEffect(() => {
     if (!message) return;
@@ -194,6 +198,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
         if (r.error) setError(t[r.error]);
         else {
           if (r.challengeAwards?.length) setChallengeAwards(r.challengeAwards);
+          if (r.achievementAwards?.length) setAchievementAwards(r.achievementAwards);
           if (r.cityGrowth) setCityGrowth(r.cityGrowth);
           setError("");
           router.refresh();
@@ -469,6 +474,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
         ) : null}
       </div>
       <ChallengeRewardToast awards={challengeAwards} onDismiss={dismissChallengeAwards} />
+      <AchievementRewardToast awards={achievementAwards} onDismiss={dismissAchievementAwards} />
       <CityGrowthToast growth={cityGrowth} onDismiss={dismissCityGrowth} />
       {message && (
         <div className="study-toast" role="status">

@@ -224,6 +224,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      get_achievement_progress: {
+        Args: Record<string, never>;
+        Returns: { achievement_key: string; progress: number; target: number }[];
+      };
       get_challenge_progress: {
         Args: Record<string, never>;
         Returns: { challenge_key: string; progress: number; target: number; completed: boolean; starts_at: string; ends_at: string }[];

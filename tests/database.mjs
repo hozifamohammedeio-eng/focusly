@@ -445,6 +445,19 @@ try {
   const firstAchievementEvaluation = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
   const firstAchievementKeys = firstAchievementEvaluation.map((row) => row.achievementKey).sort();
   equal(firstAchievementKeys, ["first_focus", "first_task"], "initial achievements use canonical activity");
+  const initialAchievementProgress = Object.fromEntries((await db.query("select * from public.get_achievement_progress()")).rows.map(row => [row.achievement_key, [Number(row.progress), Number(row.target)]]));
+  equal(Object.fromEntries(Object.entries(initialAchievementProgress).map(([key, [, target]]) => [key, target])), {
+    first_focus: 1, focus_5: 5, focus_60_minutes: 60, focus_300_minutes: 300,
+    first_task: 1, tasks_10: 10, level_2: 100, level_5: 550, first_subject_level_2: 100,
+  }, "read model covers exactly the evaluator's nine keys and thresholds");
+  equal(initialAchievementProgress.first_focus, [3, 1], "achievement focus count matches completed qualifying sessions");
+  equal(initialAchievementProgress.focus_60_minutes, [37, 60], "achievement minutes floor each qualifying session");
+  equal(initialAchievementProgress.first_task, [3, 1], "achievement task count requires completed timestamp");
+  equal(initialAchievementProgress.level_2[1], 100, "achievement level threshold matches evaluator");
+  equal(initialAchievementProgress.level_5[1], 550, "higher achievement level threshold matches evaluator");
+  const readOnlyBefore = (await db.query("select (select count(*) from public.user_achievements where user_id=$1)::integer as unlocks,(select count(*) from public.progression_reward_events where user_id=$1)::integer as rewards", [first])).rows[0];
+  await db.query("select * from public.get_achievement_progress()");
+  equal((await db.query("select (select count(*) from public.user_achievements where user_id=$1)::integer as unlocks,(select count(*) from public.progression_reward_events where user_id=$1)::integer as rewards", [first])).rows[0], readOnlyBefore, "achievement reads never unlock or award");
   equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1 and achievement_key='level_2'", [first])).rows[0].count, 0, "insufficient XP does not unlock level 2");
   const firstAchievementRepeat = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
   equal(firstAchievementRepeat, [], "repeated achievement evaluation is idempotent");
@@ -473,13 +486,24 @@ try {
   const finalAchievementEvaluation = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
   equal(finalAchievementEvaluation.map((row) => row.achievementKey).sort(), ["focus_300_minutes"], "long-term focus achievement unlocks");
   equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1", [first])).rows[0].count, 9, "all catalog achievements unlock exactly once");
+  const finalAchievementProgress = Object.fromEntries((await db.query("select * from public.get_achievement_progress()")).rows.map(row => [row.achievement_key, [Number(row.progress), Number(row.target)]]));
+  equal(finalAchievementProgress.focus_300_minutes[0] >= 300, true, "long-term progress matches evaluator eligibility");
+  equal(finalAchievementProgress.first_subject_level_2[0] >= 100, true, "subject progress uses owner-attributed XP");
   equal((await db.query("select count(*)::integer as count from public.progression_reward_events where user_id=$1 and event_type='achievement_unlocked'", [first])).rows[0].count, 9, "achievement and reward ledgers stay consistent");
+  equal(Object.fromEntries((await db.query("select source_id,xp,coins,construction_points from public.progression_reward_events where user_id=$1 and event_type='achievement_unlocked'", [first])).rows.map(row => [row.source_id, [row.xp,row.coins,row.construction_points]])), {
+    first_focus: [5,5,0], focus_5: [50,10,0], focus_60_minutes: [60,12,0], focus_300_minutes: [150,30,0],
+    first_task: [5,5,0], tasks_10: [100,20,0], level_2: [100,20,0], level_5: [250,50,0], first_subject_level_2: [100,20,0],
+  }, "achievement reward ledger matches the existing catalog values");
   equal((await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0], (await db.query("select sum(xp)::integer as total_xp,(sum(coins)-(select coalesce(sum(coins),0) from public.city_transactions where user_id=$1))::integer as coins,(sum(construction_points)-(select coalesce(sum(construction_points),0) from public.city_transactions where user_id=$1))::integer as construction_points from public.progression_reward_events where user_id=$1", [first])).rows[0], "achievement rewards minus City spending reconcile with cached balances");
   await asUser(second);
   await rejects(`select public.claim_task_progression_reward('${taskid}')`, "P0002", "cross-user task reward denied");
   for (const table of progressionTables)
     equal((await db.query(`select count(*)::integer as count from public.${table} where user_id='${first}'`)).rows[0].count, 0, `${table}: cross-user reads denied`);
   equal((await db.query(`select count(*)::integer as count from public.user_achievements where user_id='${first}'`)).rows[0].count, 0, "user achievements: cross-user reads denied");
+  const secondAchievementProgress = Object.fromEntries((await db.query("select * from public.get_achievement_progress()")).rows.map(row => [row.achievement_key, Number(row.progress)]));
+  equal(secondAchievementProgress.focus_300_minutes, 0, "achievement progress excludes another user's focus time");
+  equal(secondAchievementProgress.tasks_10, 0, "achievement progress excludes another user's tasks");
+  equal(secondAchievementProgress.first_subject_level_2, 0, "achievement progress excludes another user's subject XP");
   const secondMasteryRows = (await db.query("select public.get_subject_mastery() as value")).rows[0].value;
   equal(secondMasteryRows.some((row) => row.subjectId === masterySubject), false, "subject mastery read model is owner-scoped");
   await db.query("insert into public.focus_sessions(id,user_id,started_at,duration_seconds,completed,timer_state,planned_seconds,accumulated_seconds) values ('d0000000-0000-4000-8000-000000000001',$1,now(),0,false,'paused',300,0)", [second]);
@@ -503,6 +527,7 @@ try {
     await rejects(`select * from public.${table}`, "42501", `${table}: anonymous reads denied`);
   for (const table of achievementTables)
     await rejects(`select * from public.${table}`, "42501", `${table}: anonymous reads denied`);
+  await rejects("select * from public.get_achievement_progress()", "42501", "anonymous achievement progress denied");
   await rejects(
     "select public.complete_onboarding('en','light','blue')",
     "42501",
