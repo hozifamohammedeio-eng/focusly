@@ -25,7 +25,7 @@ test("timer recovery preserves auth checks without invalidating the app layout",
   assert.deepEqual(await exports.focusAction(f), { error: true }); assert.equal(calls, 1);
   authenticated = true; state = "completed";
   await exports.focusAction(f);
-  assert.deepEqual(invalidated, [["/app"], ["/app/statistics"], ["/app/profile"], ["/app/challenges"]]);
+  assert.deepEqual(invalidated, [["/app"], ["/app/statistics"], ["/app/profile"], ["/app/challenges"], ["/app/city"]]);
 });
 test("Focus claim consumes one trusted receipt and replay cannot announce completion", async () => {
   const source = fs.readFileSync(new URL("../src/features/focus/actions.ts", import.meta.url), "utf8");
@@ -50,6 +50,7 @@ test("Focus claim consumes one trusted receipt and replay cannot announce comple
         },
       }) };
       if (name === "@/features/challenges/receipt") return { challengeAwardsFromClaim: (value) => value.awarded ? value.challenges : [] };
+      if (name === "@/features/city/receipt") return { cityGrowthFromClaim: () => null };
       if (name === "@/features/planning/logic") return { UUID: /^[0-9a-f-]{36}$/ };
       return {};
     }, exports);

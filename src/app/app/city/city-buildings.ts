@@ -1,8 +1,10 @@
-export const buildings = [
-  { id: "knowledge", en: "Knowledge Center", ar: "مركز المعرفة", roleEn: "The heart of your learning journey.", roleAr: "قلب رحلتك التعليمية.", growthEn: "Your overall study progress and subject mastery will shape this central landmark.", growthAr: "تقدمك في المذاكرة وإتقانك للمواد سيشكّلان هذا المعلم المركزي.", x: 50, y: 46 },
-  { id: "focus", en: "Focus Tower", ar: "برج التركيز", roleEn: "A landmark for time well spent.", roleAr: "معلم لوقت المذاكرة المثمر.", growthEn: "Completed focus sessions and consistent study time will help this tower grow.", growthAr: "جلسات التركيز المكتملة والاستمرار في المذاكرة سيساعدان هذا البرج على النمو.", x: 25, y: 20 },
-  { id: "library", en: "Library District", ar: "حي المكتبة", roleEn: "A home for everything you learn.", roleAr: "موطن لكل ما تتعلمه.", growthEn: "Regular study across your subjects will bring this district to life.", growthAr: "المذاكرة المنتظمة لموادك ستمنح هذا الحي الحياة.", x: 75, y: 20 },
-  { id: "science", en: "Science Lab", ar: "مختبر العلوم", roleEn: "A place for discovery and understanding.", roleAr: "مساحة للاكتشاف والفهم.", growthEn: "Growing mastery in science and technical subjects will shape this lab.", growthAr: "تطور مستواك في المواد العلمية والتقنية سيسهم في نمو هذا المختبر.", x: 20, y: 69 },
-  { id: "language", en: "Language Academy", ar: "أكاديمية اللغات", roleEn: "A meeting place for new perspectives.", roleAr: "ملتقى لآفاق جديدة.", growthEn: "Consistent language study and subject mastery will develop this academy.", growthAr: "الاستمرار في دراسة اللغات وإتقانها سيطوّران هذه الأكاديمية.", x: 80, y: 69 },
-  { id: "planner", en: "Planner Hall", ar: "قاعة التخطيط", roleEn: "Where your plans become practice.", roleAr: "حيث تتحول خططك إلى ممارسة.", growthEn: "Completing tasks and following your study plans will support this hall.", growthAr: "إنجاز المهام والالتزام بخطط المذاكرة سيدعمان نمو هذه القاعة.", x: 50, y: 85 },
-] as const;
+import type { BuildingKey } from "@/features/city/domain";
+
+export const buildings: ReadonlyArray<{ key: BuildingKey; x: number; y: number }> = [
+  { key: "knowledge_center", x: 50, y: 47 },
+  { key: "focus_tower", x: 22, y: 20 },
+  { key: "library_district", x: 78, y: 20 },
+  { key: "science_lab", x: 20, y: 72 },
+  { key: "language_academy", x: 80, y: 72 },
+  { key: "planner_hall", x: 50, y: 86 },
+];

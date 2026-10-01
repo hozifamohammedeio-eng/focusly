@@ -45,6 +45,7 @@ test("Task completion claims once and only announces newly awarded challenges", 
         rpc: async (rpc) => { rpcCalls.push(rpc); if (fail) throw new Error("network"); return { data: { awarded, challenges: awarded ? [{ eventId: "event" }] : [] } }; },
       }) };
       if (name === "@/features/challenges/receipt") return { challengeAwardsFromClaim: (value) => value.awarded ? value.challenges : [] };
+      if (name === "@/features/city/receipt") return { cityGrowthFromClaim: () => null };
       if (name === "./logic") return { UUID: /^[a-z]+$/ };
       return {};
     }, exports);

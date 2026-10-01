@@ -2,6 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { challengeAwardsFromClaim, type ChallengeAward } from "@/features/challenges/receipt";
+import { cityGrowthFromClaim, type CityGrowth } from "@/features/city/receipt";
 import {
   UUID,
   overlaps,
@@ -16,6 +17,7 @@ import {
 } from "./logic";
 export type MutationResult = {
   challengeAwards?: ChallengeAward[];
+  cityGrowth?: CityGrowth | null;
   error?:
     | "invalid"
     | "expired"
@@ -43,6 +45,7 @@ export async function mutate(form: FormData): Promise<MutationResult> {
     if (authError || !auth.user) return { error: "expired" };
     const owner = auth.user.id;
     let challengeAwards: ChallengeAward[] = [];
+    let cityGrowth: CityGrowth | null = null;
     const profile = await client
       .from("profiles")
       .select("onboarding_completed")
@@ -151,7 +154,10 @@ export async function mutate(form: FormData): Promise<MutationResult> {
         try {
           const reward = await client.rpc("claim_task_progression_reward", { p_task_id: id });
           if (reward.error) console.error("task_reward_failed", { code: reward.error.code });
-          else challengeAwards = challengeAwardsFromClaim(reward.data);
+          else {
+            challengeAwards = challengeAwardsFromClaim(reward.data);
+            cityGrowth = cityGrowthFromClaim(reward.data);
+          }
         } catch {
           console.error("task_reward_request_failed");
         }
@@ -289,7 +295,8 @@ export async function mutate(form: FormData): Promise<MutationResult> {
     } else return { error: "invalid" };
     revalidatePath("/app", "layout");
     if (entity === "tasks" && action === "complete") revalidatePath("/app/challenges");
-    return { success: action === "delete" ? "deleted" : "saved", challengeAwards };
+    if (entity === "tasks" && action === "complete") revalidatePath("/app/city");
+    return { success: action === "delete" ? "deleted" : "saved", challengeAwards, cityGrowth };
   } catch {
     console.error("planning_request_failed", { entity, action });
     return { error: "saveError" };

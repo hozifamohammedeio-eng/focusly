@@ -19,6 +19,8 @@ import { phase3 } from "@/features/i18n/phase3";
 import type { PlanningData } from "./data";
 import { mutate } from "./actions";
 import { ChallengeRewardToast } from "@/features/challenges/reward-toast";
+import { CityGrowthToast } from "@/features/city/growth-toast";
+import type { CityGrowth } from "@/features/city/receipt";
 import type { ChallengeAward } from "@/features/challenges/receipt";
 import type { EditorState } from "./editor";
 const Editor = dynamic(() => import("./editor").then((module) => module.Editor));
@@ -131,7 +133,9 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
     [error, setError] = useState(""),
     [pending, start] = useTransition();
   const [challengeAwards, setChallengeAwards] = useState<ChallengeAward[]>([]);
+  const [cityGrowth, setCityGrowth] = useState<CityGrowth | null>(null);
   const dismissChallengeAwards = useCallback(() => setChallengeAwards([]), []);
+  const dismissCityGrowth = useCallback(() => setCityGrowth(null), []);
   useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => setMessage(""), 4500);
@@ -190,6 +194,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
         if (r.error) setError(t[r.error]);
         else {
           if (r.challengeAwards?.length) setChallengeAwards(r.challengeAwards);
+          if (r.cityGrowth) setCityGrowth(r.cityGrowth);
           setError("");
           router.refresh();
         }
@@ -464,6 +469,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
         ) : null}
       </div>
       <ChallengeRewardToast awards={challengeAwards} onDismiss={dismissChallengeAwards} />
+      <CityGrowthToast growth={cityGrowth} onDismiss={dismissCityGrowth} />
       {message && (
         <div className="study-toast" role="status">
           <span>{message}</span>

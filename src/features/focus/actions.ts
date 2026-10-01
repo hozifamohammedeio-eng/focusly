@@ -6,9 +6,10 @@ import { educationFrom, validEducation } from "@/features/education/config";
 import { UUID, validZone } from "@/features/planning/logic";
 import type { TimerReply } from "./logic";
 import { challengeAwardsFromClaim, type ChallengeAward } from "@/features/challenges/receipt";
+import { cityGrowthFromClaim, type CityGrowth } from "@/features/city/receipt";
 export async function focusAction(
   form: FormData,
-): Promise<(TimerReply & { challengeAwards?: ChallengeAward[] }) | { error: true }> {
+): Promise<(TimerReply & { challengeAwards?: ChallengeAward[]; cityGrowth?: CityGrowth | null }) | { error: true }> {
   try {
     const action = String(form.get("action") ?? ""),
       id = String(form.get("id") ?? ""),
@@ -42,15 +43,18 @@ export async function focusAction(
     // terminal session can change dashboard/statistics aggregates.
     const reply = r.data as unknown as TimerReply;
     let challengeAwards: ChallengeAward[] = [];
-    // The existing production database does not yet have Focusly 2 reward RPCs.
-    // Enable only after the reviewed migration chain is deployed.
+    let cityGrowth: CityGrowth | null = null;
+    // The server-only flag gates the trusted reward RPC; the reply never spends locally.
     if (process.env.FOCUSLY2_REWARDS_ENABLED === "true" && reply.session?.completed) {
       try {
         const reward = await client.rpc("claim_focus_progression_reward", {
           p_session_id: reply.session.id,
         });
         if (reward.error) console.error("focus_reward_failed", { code: reward.error.code });
-        else challengeAwards = challengeAwardsFromClaim(reward.data);
+        else {
+          challengeAwards = challengeAwardsFromClaim(reward.data);
+          cityGrowth = cityGrowthFromClaim(reward.data);
+        }
       } catch {
         console.error("focus_reward_request_failed");
       }
@@ -60,8 +64,9 @@ export async function focusAction(
       revalidatePath("/app/statistics");
       revalidatePath("/app/profile");
       revalidatePath("/app/challenges");
+      revalidatePath("/app/city");
     }
-    return { ...reply, challengeAwards };
+    return { ...reply, challengeAwards, cityGrowth };
   } catch {
     return { error: true };
   }

@@ -61,6 +61,15 @@ export async function testCity({ db, equal, rejects, asUser }) {
   await deny("build", "knowledge_center");
   await rejects(`select public.city_transaction('build','focus_tower','${buildRequest}')`, "22023", "request id payload mismatch denied");
   equal(await balances(), { coins:40, construction_points:45 }, "duplicate/new-ID rebuild cannot charge twice");
+  const beforeRead = {
+    balance: await balances(),
+    transactions: (await db.query("select count(*)::int n from public.city_transactions")).rows[0].n,
+  };
+  await db.query("select building_key,level from public.user_city_buildings where user_id=$1", [owner]);
+  await db.query("select building_key,target_level,source_reward_event_id from public.city_transactions where user_id=$1", [owner]);
+  await db.query("select public.get_subject_mastery()");
+  equal(await balances(), beforeRead.balance, "City and mastery reads never spend balances");
+  equal((await db.query("select count(*)::int n from public.city_transactions")).rows[0].n, beforeRead.transactions, "City reads never create transactions");
   await asUser(stranger);
   equal((await db.query("select * from public.user_city_buildings")).rows.length, 0, "other user's buildings hidden");
   equal((await db.query("select * from public.city_transactions")).rows.length, 0, "other user's spend history hidden");

@@ -36,6 +36,8 @@ import type {
 
 import { focusAction } from "./actions";
 import { ChallengeRewardToast } from "@/features/challenges/reward-toast";
+import { CityGrowthToast } from "@/features/city/growth-toast";
+import type { CityGrowth } from "@/features/city/receipt";
 import type { ChallengeAward } from "@/features/challenges/receipt";
 
 import {
@@ -91,7 +93,9 @@ export function FocusTimer({
   const router =
     useRouter();
   const [challengeAwards, setChallengeAwards] = useState<ChallengeAward[]>([]);
+  const [cityGrowth, setCityGrowth] = useState<CityGrowth | null>(null);
   const dismissChallengeAwards = useCallback(() => setChallengeAwards([]), []);
+  const dismissCityGrowth = useCallback(() => setCityGrowth(null), []);
 
   const [
     session,
@@ -250,6 +254,7 @@ export function FocusTimer({
             !current.current
               ?.completed;
           if (result.challengeAwards?.length) setChallengeAwards(result.challengeAwards);
+          if (result.cityGrowth) setCityGrowth(result.cityGrowth);
 
           offset.current =
             Date.parse(
@@ -516,6 +521,7 @@ export function FocusTimer({
         .join(" ")}
     >
       <ChallengeRewardToast awards={challengeAwards} onDismiss={dismissChallengeAwards} />
+      <CityGrowthToast growth={cityGrowth} onDismiss={dismissCityGrowth} />
       <header
         className={
           styles.header
