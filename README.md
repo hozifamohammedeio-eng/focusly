@@ -1,5 +1,9 @@
 # Focusly
 
+## Daily tasks (pending local migration)
+
+`tasks.task_date` is the stable calendar day shared by Today, the dashboard, Focus task picker, Weekly Planner, and Calendar. The new migration `20261001010000_daily_task_date.sql` is additive and has **not** been applied to the hosted project. Deploy it only after reviewing hosted migration history and data; deploy the corresponding application code afterward. Existing date-only tasks keep `due_on`. Timed legacy tasks are assigned the day of `due_at` in the user's saved timezone at migration time. Previously undated tasks fall back to the day of `created_at` in that timezone, or UTC if no saved timezone exists. This backfill runs once and never moves historical tasks when settings change. The migration preserves existing scheduling fields, status, subjects, notes, timestamps, and reward receipts; a compatibility trigger assigns dates for writes from the currently deployed app during rollout.
+
 Focusly is a bilingual study-planning application built with Next.js, TypeScript, Tailwind CSS, and Supabase.
 
 The existing Supabase project was reconciled on 14 September 2026. Phase 1/2 migrations and the legacy-data import are deployed, with the original user/profile/preferences preserved. Phase 3 Subjects, Tasks, Planner, Calendar and Home are implemented and live-tested. Phase 4 adds the persisted Focus timer, study-progress aggregation, streaks, statistics, goal tracking and the final dashboard. See `outputs/Focusly-Phase-4-Report.md` for current results, and `supabase/reconciliation/README.md` for the preserved history.

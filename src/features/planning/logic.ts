@@ -145,7 +145,8 @@ export function formatRange(from: string, to: string, locale: string) {
     .replace(/[\u00a0\u2009\u202f]/g, " ");
 }
 export function taskDay(task: Task, zone: string) {
-  return task.due_on || (task.due_at ? dayInZone(task.due_at, zone) : null);
+  void zone; // Calendar day is stored; a later timezone change must not move it.
+  return task.task_date;
 }
 export function filterTasks(
   tasks: Task[],

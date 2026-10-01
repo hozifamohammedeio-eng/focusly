@@ -493,7 +493,7 @@ export function FocusTimer({
       (item) =>
         item.status !==
           "completed" &&
-        item.due_on ===
+        item.task_date ===
           progress.today,
     );
 

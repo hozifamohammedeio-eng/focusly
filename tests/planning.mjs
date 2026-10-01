@@ -11,10 +11,19 @@ import {
   overlaps,
   filterTasks,
   taskDay,
+  dayInZone,
   dateAdd,
   weekStart,
   formatRange,
+  formatDay,
 } from "../src/features/planning/logic.ts";
+import { phase3 } from "../src/features/i18n/phase3.ts";
+test("daily task copy and dates work in English and Arabic", () => {
+  assert.equal(phase3.en.noToday, "No tasks for today yet.");
+  assert.equal(phase3.ar.noToday, "لا توجد مهام لليوم بعد.");
+  assert.notEqual(formatDay("2026-10-01", "en", { dateStyle: "full" }),
+    formatDay("2026-10-01", "ar", { dateStyle: "full" }));
+});
 test("Task completion claims once and only announces newly awarded challenges", async () => {
   const source = fs.readFileSync(new URL("../src/features/planning/actions.ts", import.meta.url), "utf8");
   const code = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
@@ -82,6 +91,7 @@ const task = (id, fields = {}) => ({
   status: "todo",
   due_at: null,
   due_on: null,
+  task_date: "2026-01-01",
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
   completed_at: null,
@@ -119,16 +129,19 @@ test("subject and task validation enforce meaningful limits and exclusive deadli
     }),
   );
 });
-test("date-only deadlines never shift, while timed deadlines follow the viewing zone", () => {
-  const only = task("a", { due_on: "2026-09-14" }),
-    timed = task("b", { due_at: "2026-09-14T00:30:00Z" });
+test("canonical task day stays fixed across zone changes and DST", () => {
+  const only = task("a", { due_on: "2026-09-14", task_date: "2026-09-14" }),
+    timed = task("b", { due_at: "2026-09-14T00:30:00Z", task_date: "2026-09-14" });
   for (const zone of [
     "America/Los_Angeles",
     "Pacific/Kiritimati",
     "Africa/Cairo",
   ])
     assert.equal(taskDay(only, zone), "2026-09-14");
-  assert.equal(taskDay(timed, "America/Los_Angeles"), "2026-09-13");
+  assert.equal(taskDay(timed, "America/Los_Angeles"), "2026-09-14");
+  assert.equal(dayInZone("2026-10-01T21:30:00Z", "Africa/Cairo"), "2026-10-02");
+  assert.equal(dayInZone("2026-10-01T21:30:00Z", "America/New_York"), "2026-10-01");
+  assert.equal(dayInZone("2026-03-08T06:59:00Z", "America/New_York"), "2026-03-08");
   assert.equal(validDate("2024-02-29"), true);
   assert.equal(validDate("2026-02-29"), false);
   assert.equal(dateAdd("2026-12-31", 1), "2027-01-01");
@@ -136,15 +149,16 @@ test("date-only deadlines never shift, while timed deadlines follow the viewing 
 });
 test("Today, Upcoming and compound filters exclude completed tasks and sorting is stable", () => {
   const rows = [
-    task("undated"),
-    task("done", { due_on: "2026-09-10", status: "completed" }),
+    task("undated", { task_date: "2026-09-16" }),
+    task("done", { due_on: "2026-09-10", task_date: "2026-09-10", status: "completed" }),
     task("tomorrow", {
       due_on: "2026-09-15",
+      task_date: "2026-09-15",
       priority: "high",
       subject_id: "math",
     }),
-    task("today", { due_on: "2026-09-14" }),
-    task("late", { due_on: "2026-09-13" }),
+    task("today", { due_on: "2026-09-14", task_date: "2026-09-14" }),
+    task("late", { due_on: "2026-09-13", task_date: "2026-09-13" }),
   ];
   assert.deepEqual(
     filterTasks(rows, "today", "", "", "2026-09-14", "UTC").map((x) => x.id),

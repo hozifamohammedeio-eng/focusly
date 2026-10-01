@@ -87,7 +87,7 @@ export default async function Page() {
     "today",
     "",
     "",
-    progress.today,
+    data.selectedDay,
     progress.zone,
   ).slice(0, 5);
 

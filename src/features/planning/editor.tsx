@@ -53,10 +53,10 @@ export function Editor({
   const initial = block
     ? localParts(block.starts_at, blockZone)
     : task?.due_at
-      ? localParts(task.due_at, zone)
+      ? { day: task.task_date, time: localParts(task.due_at, zone).time }
       : {
           day:
-            task?.due_on ||
+            task?.task_date ||
             (editor.entity === "tasks"
               ? editor.day || today
               : editor.entity === "study_blocks"
@@ -204,7 +204,6 @@ export function Editor({
             {editor.entity === "tasks" ? (
               <>
                 <p className="muted text-xs">{t.dateOnly}</p>
-                <input type="hidden" name="zone" value={zone} />
                 <label className="grid gap-2 text-sm font-semibold">
                   {t.priority}
                   <select

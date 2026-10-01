@@ -3,7 +3,6 @@ import {
   useCallback,
   useEffect,
   useState,
-  useSyncExternalStore,
   useTransition,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -40,7 +39,6 @@ import {
   type View,
   type Occurrence,
 } from "./logic";
-const subscribe = () => () => {};
 
 const FOCUSLY_DAILY_MOTIVATION = {
   ar: [
@@ -105,25 +103,23 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
     t = phase3[locale],
     p2 = useCopy(),
     router = useRouter();
-  const hydrated = useSyncExternalStore(
-    subscribe,
-    () => true,
-    () => false,
-  );
   const [clock, setClock] = useState(data.now);
   useEffect(() => {
-    const update = () => setClock(new Date().toISOString());
+    const update = () => {
+      const instant = new Date().toISOString();
+      setClock(instant);
+      if (dayInZone(instant, data.zone) !== dayInZone(data.now, data.zone))
+        router.refresh();
+    };
     const timer = setInterval(update, 60000);
     window.addEventListener("focus", update);
     return () => {
       clearInterval(timer);
       window.removeEventListener("focus", update);
     };
-  }, []);
+  }, [data.now, data.zone, router]);
   const now = clock > data.now ? clock : data.now;
-  const zone = hydrated
-      ? Intl.DateTimeFormat().resolvedOptions().timeZone
-      : "UTC",
+  const zone = data.zone,
     today = dayInZone(now, zone);
   const [editor, setEditor] = useState<EditorState | null>(null),
     [deleting, setDeleting] = useState<{
@@ -144,12 +140,11 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
   const [subjectFilter, setSubjectFilter] = useState(""),
     [priority, setPriority] = useState(""),
     [archived, setArchived] = useState(false);
-  const [week, setWeek] = useState(""),
-    [month, setMonth] = useState(""),
-    [selected, setSelected] = useState("");
-  const currentWeek = week || weekStart(today),
-    currentMonth = month || monthStart(today),
-    day = selected || today;
+  const [selected, setSelectedState] = useState({ base: data.selectedDay, day: data.selectedDay });
+  const setSelected = (chosen: string) => setSelectedState({ base: data.selectedDay, day: chosen });
+  const currentWeek = weekStart(data.selectedDay),
+    currentMonth = monthStart(data.selectedDay),
+    day = selected.base === data.selectedDay ? selected.day : data.selectedDay;
   const active = data.subjects
     .filter((s) => !s.archived_at)
     .sort(
@@ -419,16 +414,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
     priority,
     today,
     zone,
-  ).filter((task) => taskDay(task, zone) === today);
-
-  const undatedTasks = filterTasks(
-    data.tasks,
-    "all",
-    subjectFilter,
-    priority,
-    today,
-    zone,
-  ).filter((task) => !taskDay(task, zone));
+  ).filter((task) => taskDay(task, zone) === day);
   const weekly = view === "planner" ? occurrences(
     data.blocks,
     currentWeek,
@@ -466,7 +452,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
           <p className="muted mt-3 leading-7">{subtitle}</p>
         </div>
         {view === "tasks" ? (
-          <Button onClick={() => setEditor({ entity: "tasks" })}>
+          <Button onClick={() => setEditor({ entity: "tasks", day })}>
             + {t.newTask}
           </Button>
         ) : view === "subjects" ? (
@@ -680,7 +666,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow mb-2">
-                {formatDay(today, locale, {
+                {formatDay(day, locale, {
                   weekday: "long",
                   month: "long",
                   day: "numeric",
@@ -688,14 +674,15 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
               </p>
 
               <h2 className="text-2xl font-semibold tracking-tight">
-                {t.todayTasks}
+                {day === today ? t.todayTasks : formatDay(day, locale, { dateStyle: "full" })}
               </h2>
 
               <p className="muted mt-2 text-sm">
-                {locale === "ar"
-                  ? "هنا هتظهر مهام النهارده فقط. مهام الأيام السابقة محفوظة في التخطيط الأسبوعي."
-                  : "Only today's tasks appear here. Previous days stay available in the weekly planner."}
+                {t.dayTasksHint}
               </p>
+              {day !== today && <ButtonLink href="/app/tasks" variant="ghost">
+                {t.backToday}
+              </ButtonLink>}
             </div>
 
             <span className="muted text-sm">
@@ -785,19 +772,18 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
             ) : (
               <div className="empty-state">
                 <h2>
-                  {t.noToday}
+                  {day === today ? t.noToday : t.noDay}
                 </h2>
 
                 <p className="muted">
-                  {locale === "ar"
-                    ? "ابدأ بإضافة مهام النهارده."
-                    : "Start by adding today's tasks."}
+                  {t.addDayHint}
                 </p>
 
                 <Button
                   onClick={() =>
                     setEditor({
                       entity: "tasks",
+                      day,
                     })
                   }
                 >
@@ -820,35 +806,6 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
             )}
           </div>
 
-          {undatedTasks.length > 0 && (
-            <div className="mt-8">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <h2 className="text-lg font-semibold">
-                  {locale === "ar"
-                    ? "مهام قديمة بدون تاريخ"
-                    : "Older undated tasks"}
-                </h2>
-
-                <span className="muted text-sm">
-                  {number(
-                    undatedTasks.length,
-                  )}
-                </span>
-              </div>
-
-              <p className="muted mb-4 text-sm">
-                {locale === "ar"
-                  ? "دي مهام اتعملت قبل نظام الأيام. افتح المهمة وحدد لها تاريخ علشان تتحط في يومها."
-                  : "These tasks were created before daily organization. Edit them and choose a date to place them in the correct day."}
-              </p>
-
-              <div className="surface overflow-hidden">
-                {taskRows(
-                  undatedTasks,
-                )}
-              </div>
-            </div>
-          )}
         </>
       )}
 
@@ -859,8 +816,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  setWeek(dateAdd(currentWeek, -7));
-                  setSelected(dateAdd(currentWeek, -7));
+                  router.push(`/app/planner?date=${dateAdd(currentWeek, -7)}`);
                 }}
                 aria-label={t.previous}
               >
@@ -869,8 +825,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  setWeek(dateAdd(currentWeek, 7));
-                  setSelected(dateAdd(currentWeek, 7));
+                  router.push(`/app/planner?date=${dateAdd(currentWeek, 7)}`);
                 }}
                 aria-label={t.next}
               >
@@ -879,7 +834,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  setWeek(weekStart(today));
+                  router.push("/app/planner");
                   setSelected(today);
                 }}
               >
@@ -913,6 +868,8 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
                 >
                   <div className="mb-5 flex items-center justify-between">
                     <h2>
+                      <button type="button" onClick={() => setSelected(d)}
+                        aria-pressed={day === d} aria-label={formatDay(d, locale, { dateStyle: "full" })}>
                       <span className="muted block text-xs">
                         {formatDay(d, locale, { weekday: "long" })}
                       </span>
@@ -921,6 +878,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
                       >
                         {number(Number(d.slice(-2)))}
                       </span>
+                      </button>
                     </h2>
                     <div className="flex flex-wrap gap-1">
                       <Button
@@ -938,6 +896,9 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
                       >
                         + {t.tasks}
                       </Button>
+                      <ButtonLink href={`/app/tasks?date=${d}`} variant="ghost">
+                        {t.viewDay}
+                      </ButtonLink>
 
                       <Button
                         variant="ghost"
@@ -1004,8 +965,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
                 aria-label={t.previous}
                 onClick={() => {
                   const m = monthMove(currentMonth, -1);
-                  setMonth(m);
-                  setSelected(m);
+                  router.push(`/app/calendar?date=${m}`);
                 }}
               >
                 ‹
@@ -1015,8 +975,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
                 aria-label={t.next}
                 onClick={() => {
                   const m = monthMove(currentMonth, 1);
-                  setMonth(m);
-                  setSelected(m);
+                  router.push(`/app/calendar?date=${m}`);
                 }}
               >
                 ›
@@ -1024,7 +983,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  setMonth(monthStart(today));
+                  router.push("/app/calendar");
                   setSelected(today);
                 }}
               >

@@ -56,12 +56,39 @@ try {
     if (migration.endsWith('_egypt_education.sql')) {
       await db.exec("insert into auth.users(id) values ('33333333-3333-4333-8333-333333333333'); update public.profiles set school_stage='secondary',school_year='secondary_3',onboarding_completed=true where id='33333333-3333-4333-8333-333333333333';");
     }
+    if (migration.endsWith('_daily_task_date.sql')) {
+      await db.exec(`
+        insert into auth.users(id) values ('44444444-4444-4444-8444-444444444444');
+        update public.user_settings set time_zone='America/New_York' where user_id='44444444-4444-4444-8444-444444444444';
+        insert into public.tasks(user_id,title,due_on,status) values
+          ('44444444-4444-4444-8444-444444444444','Legacy date','2026-09-30','completed');
+        insert into public.tasks(user_id,title,due_at) values
+          ('44444444-4444-4444-8444-444444444444','Legacy timed','2026-10-01T02:00:00Z');
+        insert into public.tasks(user_id,title,created_at) values
+          ('44444444-4444-4444-8444-444444444444','Legacy undated','2026-10-01T02:00:00Z');
+      `);
+    }
     await db.exec(
       await readFile(
         new URL(`../supabase/migrations/${migration}`, import.meta.url),
         "utf8",
       ),
     );
+    if (migration.endsWith('_daily_task_date.sql')) {
+      const legacy = (await db.query("select title,task_date::text as task_date,status from public.tasks where user_id='44444444-4444-4444-8444-444444444444' order by title")).rows;
+      equal(legacy.map(x => [x.title,x.task_date,x.status]), [
+        ['Legacy date','2026-09-30','completed'],
+        ['Legacy timed','2026-09-30','todo'],
+        ['Legacy undated','2026-09-30','todo'],
+      ], 'legacy rows retain state and receive deterministic local dates');
+      await db.exec("insert into public.tasks(user_id,title,due_on) values ('44444444-4444-4444-8444-444444444444','Old client','2026-10-02')");
+      equal((await db.query("select task_date::text as task_date from public.tasks where title='Old client'")).rows[0].task_date, '2026-10-02', 'old client writes receive a canonical date');
+      await db.exec("update public.tasks set status='completed' where title='Old client'");
+      equal((await db.query("select task_date::text as task_date from public.tasks where title='Old client'")).rows[0].task_date, '2026-10-02', 'completion does not move the task');
+      await db.exec("update public.tasks set due_on='2026-10-03' where title='Old client'");
+      equal((await db.query("select task_date::text as task_date from public.tasks where title='Old client'")).rows[0].task_date, '2026-10-03', 'old client rescheduling updates the day');
+      await db.exec("delete from auth.users where id='44444444-4444-4444-8444-444444444444'");
+    }
   }
   equal((await db.query("select onboarding_completed,education_system from public.profiles where id='33333333-3333-4333-8333-333333333333'")).rows[0], {onboarding_completed:true,education_system:null}, 'additive migration preserves legacy completed profile');
   await db.query(
@@ -384,6 +411,9 @@ try {
   const duplicateTaskReward = (await db.query("select public.claim_task_progression_reward($1) as value", [taskid])).rows[0].value;
   equal(duplicateTaskReward.reason, "already_awarded", "duplicate task reward is idempotent");
   equal((await db.query("select count(*)::integer as count from public.progression_reward_events where user_id=$1 and event_type='task_completed' and source_id=$2", [first, taskid])).rows[0].count, 1, "duplicate task reward does not duplicate ledger");
+  await db.query("update public.tasks set task_date='2026-10-03',due_on='2026-10-03' where id=$1 and user_id=$2", [taskid, first]);
+  equal((await db.query("select public.claim_task_progression_reward($1) as value", [taskid])).rows[0].value.reason, 'already_awarded', 'rescheduling completed task does not reclaim reward');
+  equal((await db.query("select count(*)::integer as count from public.progression_reward_events where user_id=$1 and event_type='task_completed' and source_id=$2", [first, taskid])).rows[0].count, 1, 'rescheduling preserves one reward receipt');
   equal((await db.query("select subject_id from public.progression_reward_events where user_id=$1 and source_id=$2", [first, taskid])).rows[0].subject_id, subject, "archived task attribution is preserved");
   await rejects(`select public.claim_task_progression_reward('${unassignedTask}')`, "P0002", "incomplete task reward denied");
   await db.query("update public.tasks set status='completed',completed_at=now() where id=$1 and user_id=$2", [masteryTask, first]);
@@ -531,6 +561,19 @@ try {
   await assert.rejects(db.query('select public.save_education($1::jsonb)',[JSON.stringify({...engineering,education_system:null})]),e=>e.code==='22023');checks++;
   await testCity({ db, equal, rejects, asUser });
   await testAutomaticCity({ db, equal, rejects, asUser });
+  await asUser(first);
+  const rewardsBeforeDayReads = (await db.query("select count(*)::integer as count from public.progression_reward_events where user_id=$1",[first])).rows[0].count;
+  await db.exec("insert into public.tasks(user_id,title,task_date,due_on) values ('11111111-1111-4111-8111-111111111111','Daily yesterday','2026-09-30','2026-09-30'),('11111111-1111-4111-8111-111111111111','Daily today','2026-10-01','2026-10-01'),('11111111-1111-4111-8111-111111111111','Daily tomorrow','2026-10-02','2026-10-02')");
+  equal((await db.query("select title from public.tasks where user_id=$1 and task_date='2026-10-01' and title like 'Daily %'",[first])).rows.map(x=>x.title), ['Daily today'], 'today query excludes yesterday and tomorrow');
+  equal((await db.query("select title from public.tasks where user_id=$1 and task_date='2026-09-30' and title like 'Daily %'",[first])).rows.map(x=>x.title), ['Daily yesterday'], 'past day remains queryable');
+  equal((await db.query("select title from public.tasks where user_id=$1 and task_date='2026-10-02' and title like 'Daily %'",[first])).rows.map(x=>x.title), ['Daily tomorrow'], 'future day remains queryable');
+  equal((await db.query("select count(*)::integer as count from public.progression_reward_events where user_id=$1",[first])).rows[0].count, rewardsBeforeDayReads, 'daily reads and navigation never award rewards');
+  await asUser(second);
+  equal((await db.query("select title from public.tasks where task_date between '2026-09-30' and '2026-10-02' and title like 'Daily %'")).rows, [], 'other user cannot read daily tasks');
+  await db.exec("delete from public.tasks where title like 'Daily %'");
+  await asUser(first);
+  equal((await db.query("select count(*)::integer as count from public.tasks where title like 'Daily %'")).rows[0].count, 3, 'other user cannot delete daily tasks');
+  await db.exec("delete from public.tasks where title like 'Daily %'");
   await db.exec("reset role");
   const beforeChallenges = (await db.query("select user_id,total_xp,coins,construction_points from public.progression_profiles order by user_id")).rows;
   for (const migration of (await readdir(new URL('../supabase/migrations/', import.meta.url))).filter(name => name.endsWith('_challenges_engine.sql') || name.endsWith('_challenges_read_model.sql')).sort()) {

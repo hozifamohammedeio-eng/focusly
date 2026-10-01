@@ -9,6 +9,7 @@ import {
   validSubject,
   validTask,
   validText,
+  validDate,
   validZone,
   type Block,
   type Task,
@@ -180,15 +181,18 @@ export async function mutate(form: FormData): Promise<MutationResult> {
       }
       if (entity === "tasks") {
         const day = field("date"),
-          time = field("time"),
-          zone = field("zone");
+          time = field("time");
+        const settings = await client.from("user_settings").select("time_zone")
+          .eq("user_id", owner).single();
+        if (settings.error) return fail(settings.error.code);
+        const zone = settings.data.time_zone || "UTC";
         const due_at = day && time ? toInstant(day, time, zone) : null,
           due_on = day && !time ? day : null;
         const priority = field("priority");
         const title = field("title"),
           notes = field("notes");
         if (
-          (time && !day) ||
+          !validDate(day) ||
           (day && time && !due_at) ||
           !validTask({ title, notes, priority, due_on, due_at }) ||
           (priority !== "low" && priority !== "medium" && priority !== "high")
@@ -196,13 +200,14 @@ export async function mutate(form: FormData): Promise<MutationResult> {
           return { error: "invalid" };
         const values: Pick<
           Task,
-          "title" | "notes" | "subject_id" | "due_on" | "due_at" | "priority"
+          "title" | "notes" | "subject_id" | "due_on" | "due_at" | "task_date" | "priority"
         > = {
           title,
           notes: notes || null,
           subject_id,
           due_on,
           due_at,
+          task_date: day,
           priority,
         };
         const r = id

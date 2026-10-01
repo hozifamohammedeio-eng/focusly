@@ -111,6 +111,7 @@ export type Database = {
           priority: Database["public"]["Enums"]["task_priority"];
           due_at: string | null;
           due_on: string | null;
+          task_date: string;
           estimated_minutes: number | null;
           completed_at: string | null;
         },
