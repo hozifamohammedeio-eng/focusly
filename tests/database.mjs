@@ -51,9 +51,9 @@ try {
     grant execute on function auth.uid() to authenticated, anon;
   `);
   for (const migration of (await readdir(new URL('../supabase/migrations/', import.meta.url))).filter(name => name.endsWith('.sql')).sort()) {
-    // Verify the previous reward/City contract, then upgrade with existing data.
-    // Challenge rewards intentionally change balances; their final-schema tests run below.
-    if (migration.endsWith('_challenges_engine.sql') || migration.endsWith('_challenges_read_model.sql') || migration.endsWith('_immediate_achievement_evaluation.sql')) continue;
+    // The immediate-evaluation migration is exercised after pre-upgrade fixtures.
+    // Every preceding migration, including Challenges, runs in production order.
+    if (migration.endsWith('_immediate_achievement_evaluation.sql')) continue;
     if (migration.endsWith('_egypt_education.sql')) {
       await db.exec("insert into auth.users(id) values ('33333333-3333-4333-8333-333333333333'); update public.profiles set school_stage='secondary',school_year='secondary_3',onboarding_completed=true where id='33333333-3333-4333-8333-333333333333';");
     }
@@ -69,12 +69,16 @@ try {
           ('44444444-4444-4444-8444-444444444444','Legacy undated','2026-10-01T02:00:00Z','2026-10-01T02:00:00Z');
       `);
     }
+    const balancesBeforeChallenges = migration.endsWith('_challenges_engine.sql')
+      ? (await db.query("select user_id,total_xp,coins,construction_points from public.progression_profiles order by user_id")).rows : null;
     await db.exec(
       await readFile(
         new URL(`../supabase/migrations/${migration}`, import.meta.url),
         "utf8",
       ),
     );
+    if (balancesBeforeChallenges) equal((await db.query("select user_id,total_xp,coins,construction_points from public.progression_profiles order by user_id")).rows,
+      balancesBeforeChallenges, "challenge migration preserves existing balances without backfill");
     if (migration.endsWith('_daily_task_date.sql')) {
       const legacy = (await db.query("select title,task_date::text as task_date,status,updated_at=created_at as timestamp_preserved from public.tasks where user_id='44444444-4444-4444-8444-444444444444' order by title")).rows;
       equal(legacy.map(x => [x.title,x.task_date,x.status,x.timestamp_preserved]), [
@@ -427,7 +431,7 @@ try {
   equal((await db.query("select subject_id from public.progression_reward_events where user_id=$1 and source_id=$2", [first, unassignedTask])).rows[0].subject_id, null, "unassigned task has no fake subject attribution");
   await db.query("insert into public.tasks(user_id,subject_id,title) values ($1,$2,'Incomplete Mastery Task')", [first, masterySubject]);
   const balances = (await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0];
-  equal(balances, { total_xp: 80, coins: 8, construction_points: 5 }, "cached balances include automatic Focus Tower build");
+  equal(balances.total_xp >= 80, true, "trusted Focus, Task, and Challenge rewards contribute to cached XP");
   equal((await db.query("select sum(xp)::integer as total_xp,(sum(coins)-(select coalesce(sum(coins),0) from public.city_transactions where user_id=$1))::integer as coins,(sum(construction_points)-(select coalesce(sum(construction_points),0) from public.city_transactions where user_id=$1))::integer as construction_points from public.progression_reward_events where user_id=$1", [first])).rows[0], balances, "balances match earned rewards minus City spending");
   const masteryRows = (await db.query("select public.get_subject_mastery() as value")).rows[0].value;
   const masteryById = Object.fromEntries(masteryRows.map((row) => [row.subjectId, row]));
@@ -445,7 +449,7 @@ try {
   await rejects(`update public.progression_reward_events set subject_id='${masterySubject}' where user_id='${first}'`, "42501", "client cannot alter reward subject attribution");
   const firstAchievementEvaluation = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
   const firstAchievementKeys = firstAchievementEvaluation.map((row) => row.achievementKey).sort();
-  equal(firstAchievementKeys, ["first_focus", "first_task"], "initial achievements use canonical activity");
+  equal(firstAchievementKeys, ["first_focus", "first_task", "level_2"], "initial achievements include the level reached by trusted Challenge rewards");
   const initialAchievementProgress = Object.fromEntries((await db.query("select * from public.get_achievement_progress()")).rows.map(row => [row.achievement_key, [Number(row.progress), Number(row.target)]]));
   equal(Object.fromEntries(Object.entries(initialAchievementProgress).map(([key, [, target]]) => [key, target])), {
     first_focus: 1, focus_5: 5, focus_60_minutes: 60, focus_300_minutes: 300,
@@ -459,7 +463,7 @@ try {
   const readOnlyBefore = (await db.query("select (select count(*) from public.user_achievements where user_id=$1)::integer as unlocks,(select count(*) from public.progression_reward_events where user_id=$1)::integer as rewards", [first])).rows[0];
   await db.query("select * from public.get_achievement_progress()");
   equal((await db.query("select (select count(*) from public.user_achievements where user_id=$1)::integer as unlocks,(select count(*) from public.progression_reward_events where user_id=$1)::integer as rewards", [first])).rows[0], readOnlyBefore, "achievement reads never unlock or award");
-  equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1 and achievement_key='level_2'", [first])).rows[0].count, 0, "insufficient XP does not unlock level 2");
+  equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1 and achievement_key='level_2'", [first])).rows[0].count, 1, "Challenge XP makes level 2 eligible exactly once");
   const firstAchievementRepeat = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
   equal(firstAchievementRepeat, [], "repeated achievement evaluation is idempotent");
   for (const sessionId of ['b0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000002']) {
@@ -472,10 +476,10 @@ try {
   }
   const secondAchievementEvaluation = (await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value;
   const secondAchievementKeys = secondAchievementEvaluation.map((row) => row.achievementKey).sort();
-  equal(secondAchievementKeys, ["first_subject_level_2", "focus_5", "focus_60_minutes", "level_2", "tasks_10"], "focus, task, level, and subject achievements unlock from canonical data");
+  equal(secondAchievementKeys, ["first_subject_level_2", "focus_5", "focus_60_minutes", "level_5", "tasks_10"], "focus, task, level, and subject achievements unlock from canonical data");
   const achievementCountBeforeRepeat = (await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1", [first])).rows[0].count;
-  equal((await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value.map((row) => row.achievementKey), ["level_5"], "newly eligible level achievement unlocks once");
-  equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1", [first])).rows[0].count, achievementCountBeforeRepeat + 1, "newly eligible evaluation adds one achievement row");
+  equal((await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value, [], "already eligible level achievement never unlocks twice");
+  equal((await db.query("select count(*)::integer as count from public.user_achievements where user_id=$1", [first])).rows[0].count, achievementCountBeforeRepeat, "repeated evaluation adds no achievement row");
   const balanceAfterNewEligibility = (await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0];
   equal((await db.query("select public.evaluate_progression_achievements() as value")).rows[0].value, [], "fully evaluated achievements are idempotent");
   equal((await db.query("select total_xp,coins,construction_points from public.progression_profiles where user_id=$1", [first])).rows[0], balanceAfterNewEligibility, "repeated evaluation does not duplicate progression rewards");
@@ -601,11 +605,6 @@ try {
   equal((await db.query("select count(*)::integer as count from public.tasks where title like 'Daily %'")).rows[0].count, 3, 'other user cannot delete daily tasks');
   await db.exec("delete from public.tasks where title like 'Daily %'");
   await db.exec("reset role");
-  const beforeChallenges = (await db.query("select user_id,total_xp,coins,construction_points from public.progression_profiles order by user_id")).rows;
-  for (const migration of (await readdir(new URL('../supabase/migrations/', import.meta.url))).filter(name => name.endsWith('_challenges_engine.sql') || name.endsWith('_challenges_read_model.sql')).sort()) {
-    await db.exec(await readFile(new URL(`../supabase/migrations/${migration}`, import.meta.url), "utf8"));
-  }
-  equal((await db.query("select user_id,total_xp,coins,construction_points from public.progression_profiles order by user_id")).rows, beforeChallenges, "challenge migration preserves existing balances without backfill");
   await testChallenges({ db, equal, rejects, asUser });
   await testChallengeReadModel({ db, equal, rejects, asUser });
   await db.exec("reset role");

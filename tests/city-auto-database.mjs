@@ -54,7 +54,7 @@ export async function testAutomaticCity({ db, equal, rejects, asUser }) {
   const earned = await claimFocus(valid);
   equal(earned.reward, { xp:25, coins:5, constructionPoints:5 }, "automatic flow preserves reward economics");
   equal(earned.cityConstruction.map(item => [item.building.building_key,item.building.level]), [["focus_tower",1]], "completed Focus builds without City visit/call");
-  equal(earned.balances, { totalXp:25, coins:0, constructionPoints:0 }, "RPC returns exact post-spend balances");
+  equal(earned.balances, { totalXp:75, coins:10, constructionPoints:0 }, "RPC returns post-spend balances including the first daily Challenge reward");
   equal((await snapshot()).receipts[0].source_reward_event_id, earned.eventId, "receipt records trusted source reward");
   const afterFocus = await snapshot();
   equal((await claimFocus(valid)).cityConstruction, [], "duplicate Focus does not run construction");
@@ -67,8 +67,8 @@ export async function testAutomaticCity({ db, equal, rejects, asUser }) {
   const taskRows = await tasks(taskOwner,5);
   const taskResults = [];
   for (const row of taskRows) taskResults.push(await claimTask(row.id));
-  equal(taskResults.flatMap(item => item.cityConstruction).map(item => item.building.building_key), ["planner_hall"], "genuine tasks automatically build relevant landmark");
-  equal(taskResults[4].balances, { totalXp:75, coins:5, constructionPoints:3 }, "task rewards minus one build reconcile");
+  equal((await snapshot()).buildings, [{ building_key: "planner_hall", level: 1 }], "genuine tasks automatically build relevant landmark, including Challenge-triggered construction");
+  equal(taskResults[4].balances, { totalXp:125, coins:15, constructionPoints:3 }, "Task and Challenge rewards minus one build reconcile");
   const afterTasks = await snapshot();
   equal((await claimTask(taskRows[4].id)).cityConstruction, [], "duplicate Task cannot build twice");
   equal(await snapshot(), afterTasks, "duplicate Task preserves balances and City");
@@ -102,7 +102,7 @@ export async function testAutomaticCity({ db, equal, rejects, asUser }) {
   const richResult = await claimFocus(richSession);
   const priority = ["knowledge_center","focus_tower","library_district","science_lab","language_academy","planner_hall"];
   equal(richResult.cityConstruction.map(item => [item.building.building_key,item.building.level]), [1,2,3].flatMap(level => priority.map(key => [key,level])), "automatic construction follows level-first central priority");
-  equal(richResult.balances, { totalXp:900,coins:820,constructionPoints:958 }, "all levels charge exactly catalog costs times target level");
+  equal(richResult.balances, { totalXp:1100,coins:860,constructionPoints:958 }, "all levels charge catalog costs while earned Challenge bonuses remain in balances");
   equal((await snapshot()).buildings.every(item => item.level===3), true, "every building reaches max level three");
   const richBefore = await snapshot();
   await claimFocus(richSession);
