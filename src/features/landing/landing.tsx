@@ -28,7 +28,7 @@ export function Landing() {
           <figure className="product-collage" aria-label={t.previewLabel}>
             <Card variant="accent" className="preview-goal">
               <p className="eyebrow">{p.goal}</p>
-              <p className="preview-duration display-type"><bdi>1h 45m</bdi></p>
+              <p className="preview-duration display-type"><bdi>{ar ? "١س ٤٥د" : "1h 45m"}</bdi></p>
               <p>{ar ? "من هدف ٣ ساعات" : "of a 3 hour goal"}</p>
               <div className="preview-track" aria-hidden="true"><span /></div>
               <p className="mt-5 text-sm">{t.intentText}</p>
