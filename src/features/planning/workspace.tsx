@@ -988,13 +988,16 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
           <div className="calendar-layout">
             <div className="surface p-3 sm:p-5">
               <div className="month-grid mb-2">
-                {Array.from({ length: 7 }, (_, i) => (
-                  <span key={i} className="muted py-2 text-center text-xs">
-                    {formatDay(dateAdd(calendarStart, i), locale, {
-                      weekday: "short",
-                    })}
-                  </span>
-                ))}
+                {Array.from({ length: 7 }, (_, i) => {
+                  const label = formatDay(dateAdd(calendarStart, i), locale, {
+                    weekday: "short",
+                  });
+                  return (
+                    <span key={i} className="muted py-2 text-center text-xs">
+                      {locale === "ar" ? label.replace(/^ال/, "") : label}
+                    </span>
+                  );
+                })}
               </div>
               <div className="month-grid">
                 {Array.from({ length: 42 }, (_, i) =>

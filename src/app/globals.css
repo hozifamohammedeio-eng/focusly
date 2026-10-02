@@ -6962,3 +6962,6 @@ li:last-child {
 }
 @media (max-width: 760px) { .profile-facts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .profile-facts-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; } .profile-facts-grid > div { padding-block: 6px 12px; } }
+
+/* Keep modal form text readable over the page in both themes. */
+.focusly-dialog { background: var(--surface) !important; }
