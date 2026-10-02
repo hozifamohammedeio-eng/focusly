@@ -1660,3 +1660,62 @@ input[name="duration"] {
 }
 
 /* FOCUSLY_RING_V3_END */
+
+/* Focus presentation: keep the authoritative clock and controls unchanged. */
+.page { max-width: 840px; padding-bottom: 48px; }
+.header { max-width: 550px; }
+.subtitle { font-size: .9rem; line-height: 1.55; }
+.stage { min-height: 0; padding-top: 22px; }
+.dialWrap { display: flex; flex-direction: column; align-items: center; width: 100%; min-width: 0; }
+.dial {
+  width: clamp(280px, 31vw, 340px);
+  max-width: calc(100vw - 56px);
+  margin-top: 18px;
+}
+.ring { filter: none; }
+.ringProgress { filter: none; will-change: auto; transition: stroke-dashoffset 900ms linear; }
+.ringIdle { animation: none; stroke-dasharray: 80 940; opacity: .65; }
+.glassCore {
+  width: 84%; height: 84%; padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+  background: var(--surface);
+  box-shadow: 0 8px 28px rgb(0 0 0 / .045);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: none;
+}
+.glassCore:hover { transform: none; box-shadow: 0 8px 28px rgb(0 0 0 / .045); }
+.glassShine { display: none; }
+.time { font-size: clamp(3.1rem, 7vw, 4.8rem); font-weight: 650; }
+.status { margin-top: 14px; font-size: .83rem; }
+.context { width: min(400px, 100%); margin-top: 14px; text-align: center; }
+.subject { max-width: 100%; margin-top: 0; font-size: .92rem; }
+.task { max-width: 100%; margin-top: 3px; }
+.controls { width: min(380px, 100%); min-height: 52px; margin-top: 22px; }
+.primaryControl { flex: 1; min-width: 0; }
+.secondaryControl { flex: 0 0 auto; min-width: 104px; }
+:global(.study-shell) .controls .primaryControl:hover,
+:global(.study-shell) .controls .secondaryControl:hover,
+:global(.study-shell) .controls .primaryControl:active,
+:global(.study-shell) .controls .secondaryControl:active { transform: none; }
+.helper, .soundNote { margin-top: 12px; }
+.setupLayout { width: min(560px, 100%); margin: 24px auto 0; grid-template-columns: minmax(0, 1fr); gap: 22px; }
+.setupCard { width: 100%; padding: 22px; gap: 17px; border-radius: 24px; box-shadow: none; }
+.previewColumn { width: 100%; }
+.modeTabs { order: -1; }
+.modeTab { min-height: 42px; }
+.result { margin-top: 30px; box-shadow: none; }
+@media (max-width: 600px) {
+  .page { padding-bottom: 42px; }
+  .stage { padding-top: 12px; }
+  .dial { width: clamp(220px, 68vw, 280px); max-width: calc(100vw - 56px); margin-top: 14px; }
+  .time { font-size: clamp(2.65rem, 12vw, 3.8rem); }
+  .controls { padding-inline: 0; gap: 8px; }
+  .primaryControl, .secondaryControl { min-width: 0; }
+  .secondaryControl { flex: 0 0 auto; }
+  .setupLayout { margin-top: 18px; gap: 18px; }
+  .setupCard { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ringProgress { transition: none !important; }
+}

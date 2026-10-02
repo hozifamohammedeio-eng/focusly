@@ -898,13 +898,6 @@ export function FocusTimer({
                   </Button>
                 </div>
 
-                <p
-                  className={
-                    styles.soundNote
-                  }
-                >
-                  {t.noSound}
-                </p>
               </section>
             );
           }
@@ -1459,13 +1452,6 @@ export function FocusTimer({
                       : "Start focus"}
                 </Button>
 
-                <p
-                  className={
-                    styles.ready
-                  }
-                >
-                  {t.ready}
-                </p>
               </form>
             </section>
           );
@@ -1602,13 +1588,14 @@ function FocusDial({
           safeProgress);
 
   return (
+    <div className={styles.dialWrap}>
     <div
       className={
         styles.dial
       }
       role="timer"
       aria-label={
-        ariaLabel
+        `${ariaLabel}: ${value}. ${status}`
       }
     >
       <svg
@@ -1673,26 +1660,6 @@ function FocusDial({
           {value}
         </p>
 
-        {subject ? (
-          <p
-            className={
-              styles.subject
-            }
-          >
-            {subject}
-          </p>
-        ) : null}
-
-        {task ? (
-          <p
-            className={
-              styles.task
-            }
-          >
-            {task}
-          </p>
-        ) : null}
-
         <p
           className={
             styles.status
@@ -1701,6 +1668,11 @@ function FocusDial({
           {status}
         </p>
       </div>
+    </div>
+    {(subject || task) ? <div className={styles.context}>
+      {subject ? <p className={styles.subject}>{subject}</p> : null}
+      {task ? <p className={styles.task}>{task}</p> : null}
+    </div> : null}
     </div>
   );
 }
