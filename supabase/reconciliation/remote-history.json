@@ -104,6 +104,21 @@
       "version": "20261001151802",
       "name": "immediate_achievement_evaluation",
       "source": "migrations/20261001105230_immediate_achievement_evaluation.sql"
+    },
+    {
+      "version": "20261002094350",
+      "name": "secure_focus_session_writes",
+      "source": "migrations/20261002100000_secure_focus_session_writes.sql"
+    },
+    {
+      "version": "20261002094402",
+      "name": "secure_push_subscription_claim",
+      "source": "reconciliation/20261002101000_secure_push_subscription_claim.sql"
+    },
+    {
+      "version": "20261002132215",
+      "name": "validate_push_endpoint",
+      "source": "reconciliation/20261002102000_validate_push_endpoint.sql"
     }
   ]
 }

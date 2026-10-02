@@ -53,7 +53,8 @@ try {
   for (const migration of (await readdir(new URL('../supabase/migrations/', import.meta.url))).filter(name => name.endsWith('.sql')).sort()) {
     // The immediate-evaluation migration is exercised after pre-upgrade fixtures.
     // Every preceding migration, including Challenges, runs in production order.
-    if (migration.endsWith('_immediate_achievement_evaluation.sql')) continue;
+    if (migration.endsWith('_immediate_achievement_evaluation.sql') ||
+        migration.endsWith('_secure_focus_session_writes.sql')) continue;
     if (migration.endsWith('_egypt_education.sql')) {
       await db.exec("insert into auth.users(id) values ('33333333-3333-4333-8333-333333333333'); update public.profiles set school_stage='secondary',school_year='secondary_3',onboarding_completed=true where id='33333333-3333-4333-8333-333333333333';");
     }
@@ -610,6 +611,59 @@ try {
   await db.exec("reset role");
   await db.exec(await readFile(new URL('../supabase/migrations/20261001105230_immediate_achievement_evaluation.sql', import.meta.url), "utf8"));
   await testImmediateAchievements({ db, equal, rejects, asUser });
+  await db.exec("reset role");
+  await db.exec(await readFile(new URL('../supabase/migrations/20261002100000_secure_focus_session_writes.sql', import.meta.url), "utf8"));
+  const secureFocusOwner = '90000000-0000-4000-8000-000000000002';
+  await db.query('insert into auth.users(id) values ($1)', [secureFocusOwner]);
+  await db.query('update public.profiles set onboarding_completed=true where id=$1', [secureFocusOwner]);
+  await asUser(secureFocusOwner);
+  await rejects(`insert into public.focus_sessions(user_id,started_at,completed,duration_seconds,ended_at) values ('${secureFocusOwner}',now()-interval '25 minutes',true,1500,now())`, '42501', 'authenticated user cannot forge completed Focus reward evidence');
+  await rejects(`update public.focus_sessions set duration_seconds=1500 where id='${fid}'`, '42501', 'authenticated user cannot rewrite Focus reward evidence');
+  await rejects(`delete from public.focus_sessions where id='${fid}'`, '42501', 'authenticated user cannot delete Focus reward evidence');
+  const secureFocusId = '90000000-0000-4000-8000-000000000001';
+  equal((await db.query("select public.focus_transition('start',$1) as value", [secureFocusId])).rows[0].value.session.user_id, secureFocusOwner, 'owner-scoped Focus RPC still starts after write revoke');
+  await db.exec('reset role');
+  await db.query("update public.focus_sessions set running_since=now()-interval '70 seconds' where id=$1", [secureFocusId]);
+  await asUser(secureFocusOwner);
+  equal((await db.query("select public.focus_transition('finish',$1) as value", [secureFocusId])).rows[0].value.session.completed, true, 'server-clock Focus RPC still completes after write revoke');
+  equal((await db.query('select public.claim_focus_progression_reward($1) as value', [secureFocusId])).rows[0].value.awarded, true, 'legitimate completed Focus still awards once');
+  equal((await db.query('select public.claim_focus_progression_reward($1) as value', [secureFocusId])).rows[0].value.reason, 'already_awarded', 'secured Focus reward replay remains idempotent');
+  await asUser(second);
+  await rejects(`select public.focus_transition('finish','${secureFocusId}')`, 'P0002', 'definer Focus RPC still rejects foreign sessions');
+  await db.exec('reset role');
+  await db.exec(`create table public.study_push_subscriptions (
+    id uuid primary key default gen_random_uuid(), user_id uuid not null references auth.users(id),
+    endpoint text not null unique, p256dh text not null, auth text not null,
+    user_agent text, created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+  ); alter table public.study_push_subscriptions enable row level security;`);
+  await db.exec(await readFile(new URL('../supabase/reconciliation/20261002101000_secure_push_subscription_claim.sql', import.meta.url), 'utf8'));
+  const endpoint = 'https://fcm.googleapis.com/fcm/send/disposable-endpoint';
+  const key = 'disposable-p256dh-key';
+  const authKey = 'test-auth-key';
+  await asUser(first);
+  const subscriptionId = (await db.query('select public.claim_study_push_subscription($1,$2,$3,$4) as id', [endpoint,key,authKey,'test-agent'])).rows[0].id;
+  equal((await db.query('select public.claim_study_push_subscription($1,$2,$3,$4) as id', [endpoint,key,authKey,'updated-agent'])).rows[0].id, subscriptionId, 'own push subscription refresh preserves identity');
+  await asUser(second);
+  await rejects(`select public.claim_study_push_subscription('${endpoint}','${key}','${authKey}',null)`, '42501', 'other user cannot replace a push endpoint');
+  await db.exec('reset role');
+  equal((await db.query('select user_id,user_agent from public.study_push_subscriptions where id=$1',[subscriptionId])).rows[0], {user_id:first,user_agent:'updated-agent'}, 'foreign claim leaves original push subscription intact');
+  await db.exec(await readFile(new URL('../supabase/reconciliation/20261002102000_validate_push_endpoint.sql', import.meta.url), 'utf8'));
+  await asUser(second);
+  for (const badEndpoint of [
+    'http://fcm.googleapis.com/fcm/send/unsafe',
+    'https://127.0.0.1/internal',
+    'https://fcm.googleapis.com.evil.test/fcm/send/unsafe',
+  ]) {
+    await assert.rejects(db.query('select public.claim_study_push_subscription($1,$2,$3,null)', [badEndpoint,key,authKey]), e => e.code === '23514', 'untrusted push destination denied');
+    checks++;
+  }
+  for (const trustedEndpoint of [
+    'https://updates.push.services.mozilla.com/wpush/v2/disposable',
+    'https://web.push.apple.com/disposable',
+    'https://wns2.notify.windows.com/w/disposable',
+  ]) {
+    equal(typeof (await db.query('select public.claim_study_push_subscription($1,$2,$3,null) as id', [trustedEndpoint,key,authKey])).rows[0].id, 'string', 'browser push provider remains supported');
+  }
   console.log(
     `PASS: ${checks} PostgreSQL migration, transaction, and ownership assertions.`,
   );
