@@ -1544,7 +1544,7 @@ function ModePill({
   );
 }
 
-function FocusDial({
+export function FocusDial({
   value,
   progress,
   subject,
@@ -1571,21 +1571,15 @@ function FocusDial({
   const safeProgress =
     progress === null
       ? null
-      : Math.min(
-          1,
-          Math.max(
-            0,
-            progress,
-          ),
-        );
+      : Number.isFinite(progress)
+        ? Math.min(1, Math.max(0, progress))
+        : 0;
 
+  // Fixed timers display the remaining fraction: full at start, empty at end.
   const dashOffset =
     safeProgress === null
-      ? circumference *
-        0.72
-      : circumference *
-        (1 -
-          safeProgress);
+      ? null
+      : circumference * (1 - safeProgress);
 
   return (
     <div className={styles.dialWrap}>
@@ -1616,28 +1610,16 @@ function FocusDial({
           }
         />
 
-        <circle
-          className={[
-            styles.ringProgress,
-            safeProgress ===
-            null
-              ? styles.ringIdle
-              : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-          cx="180"
-          cy="180"
-          r={
-            radius
-          }
-          strokeDasharray={
-            circumference
-          }
-          strokeDashoffset={
-            dashOffset
-          }
-        />
+        {safeProgress !== null ? (
+          <circle
+            className={styles.ringProgress}
+            cx="180"
+            cy="180"
+            r={radius}
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={dashOffset ?? 0}
+          />
+        ) : null}
       </svg>
 
       <div
@@ -1653,9 +1635,7 @@ function FocusDial({
 
         <p
           dir="ltr"
-          className={
-            styles.time
-          }
+          className={`${styles.time} ${value.length > 6 ? styles.timeLong : ""}`}
         >
           {value}
         </p>
@@ -1677,7 +1657,7 @@ function FocusDial({
   );
 }
 
-function stopwatchDigits(
+export function stopwatchDigits(
   seconds: number,
 ) {
   const n =

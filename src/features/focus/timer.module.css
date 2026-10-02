@@ -246,6 +246,8 @@
   transform:
     rotate(-90deg);
 
+  transform-origin: center;
+
   filter:
     drop-shadow(
       0 7px 22px
@@ -262,9 +264,6 @@
   fill: none;
 
   stroke-width: 5.5;
-
-  vector-effect:
-    non-scaling-stroke;
 }
 
 .ringTrack {
@@ -285,23 +284,11 @@
     );
 
   stroke-linecap:
-    round;
+    butt;
 
   transition:
     stroke-dashoffset
     780ms linear;
-}
-
-.ringIdle {
-  opacity: 0.48;
-
-  stroke-dasharray:
-    150 880;
-
-  animation:
-    focusIdleRing
-    16s linear
-    infinite;
 }
 
 .glassCore {
@@ -1110,18 +1097,6 @@
   }
 }
 
-@keyframes focusIdleRing {
-  to {
-    transform-origin:
-      center;
-
-    transform:
-      rotate(
-        360deg
-      );
-  }
-}
-
 @media (
   max-width: 900px
 ) {
@@ -1267,8 +1242,7 @@
       none !important;
   }
 
-  .loadingOrb,
-  .ringIdle {
+  .loadingOrb {
     animation:
       none !important;
   }
@@ -1514,153 +1488,6 @@ input[name="duration"] {
 
 /* FOCUSLY_CONTROLS_POLISH_V2_END */
 
-/* FOCUSLY_RING_V3_START */
-
-/* =========================================================
-   FOCUSLY TIMER RING V3
-
-   Full circle at session start.
-   Smoothly shrinks as time runs out.
-   ========================================================= */
-
-.ring {
-  position: absolute;
-
-  inset: 0;
-
-  width: 100%;
-  height: 100%;
-
-  overflow: visible;
-
-  /*
-   * Start progress from 12 o'clock.
-   */
-  transform:
-    rotate(-90deg);
-
-  filter:
-    drop-shadow(
-      0 0 7px
-      color-mix(
-        in srgb,
-        var(--accent) 20%,
-        transparent
-      )
-    );
-}
-
-.ringTrack,
-.ringProgress {
-  fill: none;
-
-  /*
-   * Refined thin Focusly ring.
-   */
-  stroke-width: 6;
-
-  vector-effect:
-    non-scaling-stroke;
-}
-
-.ringTrack {
-  stroke:
-    color-mix(
-      in srgb,
-      var(--foreground) 9%,
-      transparent
-    );
-}
-
-.ringProgress {
-  stroke:
-    color-mix(
-      in srgb,
-      var(--accent) 82%,
-      white 8%
-    );
-
-  stroke-linecap:
-    round;
-
-  /*
-   * The timer updates every second.
-   * 980ms means the visual movement
-   * nearly fills the gap between ticks,
-   * making the ring appear continuous.
-   */
-  transition:
-    stroke-dashoffset
-    980ms linear;
-
-  will-change:
-    stroke-dashoffset;
-
-  filter:
-    drop-shadow(
-      0 0 5px
-      color-mix(
-        in srgb,
-        var(--accent) 36%,
-        transparent
-      )
-    )
-
-    drop-shadow(
-      0 0 12px
-      color-mix(
-        in srgb,
-        var(--accent) 14%,
-        transparent
-      )
-    );
-}
-
-/*
- * Open Study has no fixed ending,
- * so its ring remains a calm
- * decorative animated indicator.
- */
-
-.ringIdle {
-  opacity: 0.55;
-
-  stroke-dasharray:
-    150 880;
-
-  animation:
-    focusIdleRing
-    16s linear
-    infinite;
-
-  transition:
-    none;
-}
-
-/*
- * Keep progress visually smooth
- * during pause:
- * React simply stops changing
- * strokeDashoffset.
- */
-
-@media (
-  prefers-reduced-motion:
-  reduce
-) {
-  .ringProgress {
-    transition:
-      none !important;
-  }
-
-  .ringIdle {
-    animation:
-      none !important;
-  }
-}
-
-/* FOCUSLY_RING_V3_END */
-
 /* Focus presentation: keep the authoritative clock and controls unchanged. */
 .page { max-width: 840px; padding-bottom: 48px; }
 .header { max-width: 550px; }
@@ -1674,7 +1501,6 @@ input[name="duration"] {
 }
 .ring { filter: none; }
 .ringProgress { filter: none; will-change: auto; transition: stroke-dashoffset 900ms linear; }
-.ringIdle { animation: none; stroke-dasharray: 80 940; opacity: .65; }
 .glassCore {
   width: 84%; height: 84%; padding: 22px;
   border: 1px solid color-mix(in srgb, var(--foreground) 9%, transparent);
@@ -1686,7 +1512,8 @@ input[name="duration"] {
 }
 .glassCore:hover { transform: none; box-shadow: 0 8px 28px rgb(0 0 0 / .045); }
 .glassShine { display: none; }
-.time { font-size: clamp(3.1rem, 7vw, 4.8rem); font-weight: 650; }
+.time { max-width: 100%; white-space: nowrap; font-size: clamp(2.5rem, 8.5vw, 3.35rem); font-weight: 650; unicode-bidi: isolate; }
+.timeLong { font-size: clamp(1.65rem, 7.5vw, 2.65rem); }
 .status { margin-top: 14px; font-size: .83rem; }
 .context { width: min(400px, 100%); margin-top: 14px; text-align: center; }
 .subject { max-width: 100%; margin-top: 0; font-size: .92rem; }
@@ -1709,7 +1536,8 @@ input[name="duration"] {
   .page { padding-bottom: 42px; }
   .stage { padding-top: 12px; }
   .dial { width: clamp(220px, 68vw, 280px); max-width: calc(100vw - 56px); margin-top: 14px; }
-  .time { font-size: clamp(2.65rem, 12vw, 3.8rem); }
+  .time { font-size: clamp(2.1rem, 9vw, 2.7rem); }
+  .timeLong { font-size: clamp(1.65rem, 7.5vw, 2rem); }
   .controls { padding-inline: 0; gap: 8px; }
   .primaryControl, .secondaryControl { min-width: 0; }
   .secondaryControl { flex: 0 0 auto; }
