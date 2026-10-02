@@ -293,6 +293,12 @@ html[dir="rtl"] h1 {
   gap: 1.25rem;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
 }
+.subject-list { border-block: 1px solid var(--border); }
+.subject-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 72px; padding: .75rem .25rem; border-block-end: 1px solid var(--border); }
+.subject-row:last-child { border-block-end: 0; }
+.subject-row > div:first-child { min-width: 0; }
+.subject-row h2 { font-size: 1rem; }
+@media (max-width: 520px) { .subject-row { align-items: flex-start; flex-direction: column; gap: .25rem; } .subject-row > div:last-child { align-self: flex-end; } }
 .section-heading {
   display: flex;
   align-items: center;
@@ -6932,3 +6938,27 @@ li:last-child {
 }
 
 /* FOCUSLY_STATISTICS_V4_END */
+
+/* Page hierarchy: grouped profile facts and quieter settings sections. */
+.profile-content { display: grid; gap: 24px; width: min(100%, 58rem); margin-inline: auto; }
+.profile-facts { padding: clamp(20px, 3vw, 28px); border: 1px solid var(--border); border-radius: 24px; background: var(--surface); }
+.profile-facts-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 24px; margin-top: 20px; }
+.profile-facts-grid > div { min-width: 0; padding-block: 6px 14px; border-block-end: 1px solid var(--border); }
+.profile-facts-grid dd { margin-inline: 0; overflow-wrap: anywhere; }
+.profile-editor > summary { width: fit-content; min-height: 44px; padding: 11px 16px; border: 1px solid var(--border); border-radius: 999px; cursor: pointer; font-weight: 650; }
+.profile-editor[open] > summary { margin-bottom: 16px; }
+.profile-editor > .surface { max-width: 100%; }
+.settings-editorial > .surface,
+.settings-editorial > .surface:hover {
+  padding: 24px 0 !important;
+  border: 0 !important;
+  border-block-start: 1px solid var(--border) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transform: none !important;
+}
+@media (max-width: 760px) { .profile-facts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .profile-facts-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; } .profile-facts-grid > div { padding-block: 6px 12px; } }

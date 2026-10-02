@@ -447,15 +447,9 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
     <main id="main" className="study-main">
       <div className="page-heading">
         <div>
-          <p className="eyebrow mb-3">
-            {view === "home"
-              ? formatDay(today, locale, {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                })
-              : "Focusly"}
-          </p>
+          {view === "home" && <p className="eyebrow mb-3">
+            {formatDay(today, locale, { weekday: "long", month: "long", day: "numeric" })}
+          </p>}
           <h1 className="break-words text-3xl font-semibold tracking-tight sm:text-4xl">
             {title}
           </h1>
@@ -602,11 +596,11 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
               </Button>
             ))}
           </div>
-          <div className="subject-grid">
+          <div className="subject-list">
             {data.subjects
               .filter((s) => Boolean(s.archived_at) === archived)
               .map((s) => (
-                <Card key={s.id}>
+                <div className="subject-row" key={s.id}>
                   <div className="flex items-center gap-3">
                     <span
                       className="subject-swatch"
@@ -616,7 +610,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
                       {subjectLabel(p2, s.name)}
                     </h2>
                   </div>
-                  <div className="mt-7 flex flex-wrap justify-end gap-1">
+                  <div className="flex flex-wrap justify-end gap-1">
                     {archived ? (
                       <Button
                         variant="ghost"
@@ -658,17 +652,12 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
                       </>
                     )}
                   </div>
-                </Card>
+                </div>
               ))}
           </div>
           {!data.subjects.some((s) => Boolean(s.archived_at) === archived) && (
             <div className="surface empty-state">
               <p>{archived ? t.noArchived : t.noSubjects}</p>
-              {!archived && (
-                <Button onClick={() => setEditor({ entity: "subjects" })}>
-                  {t.addSubject}
-                </Button>
-              )}
             </div>
           )}
         </>
@@ -677,21 +666,12 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
         <>
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="eyebrow mb-2">
-                {formatDay(day, locale, {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
-
               <h2 className="text-2xl font-semibold tracking-tight">
                 {day === today ? t.todayTasks : formatDay(day, locale, { dateStyle: "full" })}
               </h2>
-
-              <p className="muted mt-2 text-sm">
-                {t.dayTasksHint}
-              </p>
+              {day === today && <p className="muted mt-2 text-sm">
+                {formatDay(day, locale, { weekday: "long", month: "long", day: "numeric" })}
+              </p>}
               {day !== today && <ButtonLink href="/app/tasks" variant="ghost">
                 {t.backToday}
               </ButtonLink>}
@@ -784,26 +764,18 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
             ) : (
               <div className="empty-state">
                 <h2>
-                  {day === today ? t.noToday : t.noDay}
+                  {subjectFilter || priority
+                    ? locale === "ar" ? "لا توجد مهام تطابق هذه التصفية" : "No tasks match these filters"
+                    : day === today ? t.noToday : t.noDay}
                 </h2>
 
                 <p className="muted">
-                  {t.addDayHint}
+                  {subjectFilter || priority
+                    ? locale === "ar" ? "جرّب مادة أو أولوية أخرى." : "Try another subject or priority."
+                    : t.addDayHint}
                 </p>
 
-                <Button
-                  onClick={() =>
-                    setEditor({
-                      entity: "tasks",
-                      day,
-                    })
-                  }
-                >
-                  + {t.newTask}
-                </Button>
-
-                {(subjectFilter ||
-                  priority) && (
+                {(subjectFilter || priority) ? (
                   <Button
                     variant="ghost"
                     onClick={() => {
@@ -812,6 +784,10 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
                     }}
                   >
                     {t.resetFilters}
+                  </Button>
+                ) : (
+                  <Button onClick={() => setEditor({ entity: "tasks", day })}>
+                    + {t.newTask}
                   </Button>
                 )}
               </div>

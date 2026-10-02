@@ -295,22 +295,15 @@ export function SettingsPanel({
 }) {
   const { locale } = useLocale();
   const t = phase5[locale];
-  const p3 = phase3[locale];
   return (
     <div className="settings-editorial">
       <header className="mb-2">
-        <p className="eyebrow">FOCUSLY</p>
         <h1 className="mt-3 text-3xl font-semibold">{t.settingsTitle}</h1>
         <p className="muted mt-3">{t.settingsSubtitle}</p>
       </header>
       <Card>
         <h2 className="mb-5 text-lg font-semibold">{t.account}</h2>
-        <Field
-          label={p3.name}
-          name="account-name"
-          value={profile.display_name ?? ""}
-          readOnly
-        />
+        <p className="font-semibold">{profile.display_name}</p>
         <p className="muted mt-4 text-sm">{t.email}</p>
         <p className="mt-2 break-words">{email}</p>
         <p className="muted mt-2 text-xs">{t.emailReadOnly}</p>
@@ -350,24 +343,20 @@ export function ProfileView({
     <main id="main" className="study-main">
       <header className="page-heading">
         <div>
-          <p className="eyebrow">FOCUSLY</p>
           <h1 className="mt-3 text-3xl font-semibold">{t.profileTitle}</h1>
-          <p className="muted mt-3">{t.profileSubtitle}</p>
+          <p className="mt-3 text-lg font-semibold">{profile.display_name}</p>
+          <p className="muted mt-1 break-words">{email}</p>
         </div>
         <ButtonLink href="/app/settings" variant="ghost">
           {t.settingsTitle}
         </ButtonLink>
       </header>
-      <div className="profile-layout">
-        <div className="grid gap-5">
-          <Card>
-            <h2 className="mb-5 text-lg font-semibold">{t.account}</h2>
-            <p className="text-xl font-semibold">{profile.display_name}</p>
-            <p className="muted mt-2 break-words">{email}</p>
-          </Card>
-          <ProfileForm profile={profile} title={t.profile} includeName />
-        </div>
-        <div className="grid gap-5 sm:grid-cols-2">
+      <div className="profile-content">
+        <section className="profile-facts" aria-labelledby="profile-study-title">
+          <h2 id="profile-study-title" className="text-lg font-semibold">
+            {locale === "ar" ? "ملخص المذاكرة" : "Study at a glance"}
+          </h2>
+          <dl className="profile-facts-grid">
           {[
             [
               t.educationSection,
@@ -396,12 +385,17 @@ export function ProfileView({
               `${new Intl.NumberFormat(locale).format(progress.streak)} ${phase4[locale].days}`,
             ],
           ].map(([label, value]) => (
-            <Card key={label}>
-              <h2 className="muted text-sm">{label}</h2>
-              <p className="mt-3 text-lg font-semibold">{value}</p>
-            </Card>
+            <div key={label}>
+              <dt className="muted text-sm">{label}</dt>
+              <dd className="mt-2 text-lg font-semibold">{value}</dd>
+            </div>
           ))}
-        </div>
+          </dl>
+        </section>
+        <details className="profile-editor" open={!validEducation(educationFrom(profile))}>
+          <summary>{locale === "ar" ? "تعديل بياناتك" : "Edit your details"}</summary>
+          <ProfileForm profile={profile} title={t.educationSection} includeName />
+        </details>
       </div>
     </main>
   );

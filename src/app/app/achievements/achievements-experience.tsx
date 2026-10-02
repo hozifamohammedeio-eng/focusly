@@ -84,14 +84,6 @@ export function AchievementsExperience({ views }: { views: readonly AchievementV
         </button>)}</div>
       </section>}
 
-      {recent.length > 0 && <section className={styles.recent} aria-labelledby="achievements-recent-title">
-        <h2 id="achievements-recent-title">{t.recent}</h2>
-        <div>{recent.map((view) => <button key={view.definition.key} type="button" onClick={() => setSelectedKey(view.definition.key)}>
-          <Badge category={view.definition.category} state="unlocked" newUnlock={newKeys.includes(view.definition.key)} />
-          <span>{t.entries[view.definition.key].name}<small><time dateTime={view.unlockedAt!}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(view.unlockedAt!))}</time></small></span>
-        </button>)}</div>
-      </section>}
-
       <section aria-labelledby="achievements-collection-title">
         <div className={styles.collectionHeader}><h2 id="achievements-collection-title">{t.collection}</h2><p>{t.automatic}</p></div>
         <div className={styles.filters} role="group" aria-label={t.collection}>
@@ -111,6 +103,13 @@ export function AchievementsExperience({ views }: { views: readonly AchievementV
           </button>;
         })}</div>
       </section>
+      {recent.length > 0 && <section className={styles.recent} aria-labelledby="achievements-recent-title">
+        <h2 id="achievements-recent-title">{t.recent}</h2>
+        <div>{recent.map((view) => <button key={view.definition.key} type="button" onClick={() => setSelectedKey(view.definition.key)}>
+          <Badge category={view.definition.category} state="unlocked" newUnlock={newKeys.includes(view.definition.key)} />
+          <span>{t.entries[view.definition.key].name}<small><time dateTime={view.unlockedAt!}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(view.unlockedAt!))}</time></small></span>
+        </button>)}</div>
+      </section>}
     </>}
 
     {selected && <Dialog title={t.details} closeLabel={t.close} onClose={() => setSelectedKey(null)}>

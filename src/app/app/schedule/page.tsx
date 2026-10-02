@@ -10,9 +10,6 @@ import {
   ScheduleManager,
 } from "@/features/schedule/schedule-manager";
 
-import {
-  PushNotifications,
-} from "@/features/schedule/push-notifications";
 
 
 export default async function Page() {
@@ -57,17 +54,6 @@ export default async function Page() {
 
 
   return (
-    <>
-      <div className="mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
-        <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-5">
-          <PushNotifications
-            locale={
-              data.settings.locale
-            }
-          />
-        </div>
-      </div>
-
       <ScheduleManager
         items={
           items
@@ -83,6 +69,5 @@ export default async function Page() {
           data.settings.locale
         }
       />
-    </>
   );
 }

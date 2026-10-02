@@ -20,6 +20,8 @@ import {
 import {
   Field,
 } from "@/components/ui/field";
+import { Dialog } from "@/components/ui/dialog";
+import { PushNotifications } from "./push-notifications";
 
 import type {
   Database,
@@ -71,14 +73,11 @@ const copy = {
 
   ar: {
 
-    eyebrow:
-      "المساعد الدراسي الذكي",
-
     title:
       "جدول الدروس والمحاضرات",
 
     subtitle:
-      "سجّل أيام دروسك ومواعيد نزول المحاضرات. هنستخدم البيانات دي بعد كده في التذكيرات والتقرير الأسبوعي.",
+      "احتفظ بمواعيد دروسك ومحاضراتك المتكررة في مكان واحد.",
 
     add:
       "إضافة موعد",
@@ -141,7 +140,7 @@ const copy = {
       "فعّل التذكير لهذا الموعد",
 
     notificationNote:
-      "إعداد التذكير هيتحفظ دلوقتي. إرسال Notification حقيقية للجهاز هنعمله في المرحلة التالية.",
+      "سيُحفظ اختيار التذكير مع هذا الموعد.",
 
     save:
       "حفظ",
@@ -194,14 +193,11 @@ const copy = {
 
   en: {
 
-    eyebrow:
-      "Smart Study Assistant",
-
     title:
       "Lessons & Lecture Schedule",
 
     subtitle:
-      "Save your lesson days and lecture release times. These will later power reminders and your weekly AI report.",
+      "Keep recurring lessons and lecture releases in one place.",
 
     add:
       "Add schedule item",
@@ -264,7 +260,7 @@ const copy = {
       "Enable reminder for this item",
 
     notificationNote:
-      "The reminder preference is saved now. Real browser notifications will be connected in the next phase.",
+      "Your reminder preference is saved with this item.",
 
     save:
       "Save",
@@ -323,6 +319,7 @@ function ScheduleForm({
   zone,
   locale,
   onDone,
+  onCancel,
 }: {
 
   item:
@@ -338,6 +335,9 @@ function ScheduleForm({
     "ar" | "en";
 
   onDone:
+    () => void;
+
+  onCancel:
     () => void;
 
 }) {
@@ -442,19 +442,7 @@ function ScheduleForm({
 
   return (
 
-    <Card>
-
-      <h2
-        className="mb-5 text-lg font-semibold"
-      >
-
-        {
-          item
-            ? t.edit
-            : t.add
-        }
-
-      </h2>
+    <div className="pt-5">
 
 
       <form
@@ -881,7 +869,7 @@ function ScheduleForm({
                 type="button"
                 variant="ghost"
                 onClick={
-                  onDone
+                  onCancel
                 }
               >
                 {
@@ -912,7 +900,7 @@ function ScheduleForm({
 
       </form>
 
-    </Card>
+    </div>
   );
 }
 
@@ -958,6 +946,8 @@ export function ScheduleManager({
       null,
     );
 
+  const [formOpen, setFormOpen] = useState(false);
+
 
   const [
     message,
@@ -989,6 +979,8 @@ export function ScheduleManager({
     t.noSubject;
 
 
+  const visibleItems = items.filter((item) => item.enabled);
+
   const grouped =
     weekdayOrder.map(
       (
@@ -997,11 +989,10 @@ export function ScheduleManager({
         day,
 
         rows:
-          items.filter(
+          visibleItems.filter(
             (
               item,
             ) =>
-              item.enabled &&
               item.weekday ===
                 day,
           ),
@@ -1054,6 +1045,7 @@ export function ScheduleManager({
           setEditing(
             null,
           );
+          setFormOpen(false);
         }
 
 
@@ -1081,15 +1073,6 @@ export function ScheduleManager({
 
         <div>
 
-          <p
-            className="eyebrow mb-3"
-          >
-            {
-              t.eyebrow
-            }
-          </p>
-
-
           <h1
             className="text-3xl font-semibold tracking-tight sm:text-4xl"
           >
@@ -1108,6 +1091,10 @@ export function ScheduleManager({
           </p>
 
         </div>
+
+        <Button type="button" onClick={() => { setEditing(null); setFormOpen(true); }}>
+          + {t.add}
+        </Button>
 
       </div>
 
@@ -1145,16 +1132,14 @@ export function ScheduleManager({
       }
 
 
-      <div
-        className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]"
-      >
+      <div className="mx-auto w-full max-w-4xl">
 
         <div
-          className="grid gap-4"
+          className="grid gap-5"
         >
 
           {
-            items.length ===
+            visibleItems.length ===
             0
 
               ? (
@@ -1187,7 +1172,7 @@ export function ScheduleManager({
                           key={
                             day
                           }
-                          className="surface p-5"
+                          className="border-b border-[var(--border)] pb-5"
                         >
 
                           <h2
@@ -1215,7 +1200,7 @@ export function ScheduleManager({
                                     key={
                                       item.id
                                     }
-                                    className="rounded-2xl border p-4"
+                                    className="rounded-xl bg-[var(--surface)] px-4 py-3"
                                   >
 
                                     <div
@@ -1331,10 +1316,12 @@ export function ScheduleManager({
                                             pending
                                           }
                                           onClick={
-                                            () =>
+                                            () => {
                                               setEditing(
                                                 item,
-                                              )
+                                              );
+                                              setFormOpen(true);
+                                            }
                                           }
                                         >
                                           {
@@ -1383,8 +1370,13 @@ export function ScheduleManager({
         </div>
 
 
-        <div>
+        <section className="mt-8 border-t border-[var(--border)] pt-6" aria-label={locale === "ar" ? "إشعارات المواعيد" : "Schedule notifications"}>
+          <PushNotifications locale={locale} />
+        </section>
 
+      </div>
+
+      {formOpen && <Dialog title={editing ? t.edit : t.add} closeLabel={t.cancel} onClose={() => { setFormOpen(false); setEditing(null); }}>
           <ScheduleForm
             key={
               editing?.id ||
@@ -1412,15 +1404,14 @@ export function ScheduleManager({
                 setEditing(
                   null,
                 );
+                setFormOpen(false);
 
                 router.refresh();
               }
             }
+            onCancel={() => { setFormOpen(false); setEditing(null); }}
           />
-
-        </div>
-
-      </div>
+      </Dialog>}
 
     </main>
   );

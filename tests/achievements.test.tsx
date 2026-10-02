@@ -49,6 +49,7 @@ test("in-progress and unlocked states use numeric evidence and persisted dates",
   assert.match(rendered, /data-state="in_progress"/);
   assert.match(rendered, /data-state="unlocked"/);
   assert.match(rendered, /Recently unlocked/);
+  assert.ok(rendered.indexOf('id="achievements-collection-title"') < rendered.indexOf('id="achievements-recent-title"'));
   assert.match(rendered, /\+50 XP/);
   assert.equal(value.find((item) => item.definition.key === "first_focus")?.state, "unlocked");
 });
