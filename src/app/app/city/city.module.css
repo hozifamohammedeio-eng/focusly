@@ -81,7 +81,7 @@
 .districtGarden { fill: color-mix(in srgb,var(--accent) 25%,#597b65); opacity: .55; }
 .districtTrees { fill: color-mix(in srgb,var(--accent) 28%,#5a966c); stroke: #e3f0d7; stroke-width: 4; }
 .building { width: 31%; min-height: 215px; padding: 0 3px 8px; justify-content: end; border: 0; background: transparent; box-shadow: none; transition: none; -webkit-tap-highlight-color: transparent; }
-.building:hover { background: transparent; transform: translate(-50%,-50%); }
+.city .map .building:hover, .city .map .building:active { background: transparent; transform: translate(-50%,-50%); border: 0; }
 .building[aria-pressed="true"], .building[data-state="max"] { background: transparent; box-shadow: none; }
 .building::before { content: ""; position: absolute; inset: 8% 3% 2%; border: 2px solid transparent; border-radius: 22px; pointer-events: none; transition: border-color .18s ease, background-color .18s ease; }
 .building:hover::before { background: color-mix(in srgb,var(--accent) 5%,transparent); }

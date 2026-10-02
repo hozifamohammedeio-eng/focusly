@@ -130,7 +130,7 @@ export function CityExperience({ overview }: { overview: CityOverview | null }) 
             </dl>
             <p className={styles.eligibility}>{next.progress >= next.requirement && next.affordable ? t.ready : t.automatic}</p>
           </>}
-          {next.state === "max" && <p className={styles.eligibility}>{t.allComplete}</p>}
+          {next.state === "max" && <p className={styles.eligibility}>{t.buildingComplete}</p>}
         </div>
         <div className={styles.links}><Link href="/app/focus">{t.focus}</Link><Link href="/app/tasks">{t.tasks}</Link><Link href="/app/subjects">{t.subjects}</Link></div>
       </aside>}

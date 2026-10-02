@@ -64,6 +64,9 @@ test("City completion is exactly 18 levels and max level has no next cost", () =
   assert.equal(nextCityMilestone(data), null);
   assert.equal(buildingView(data.buildings[0]!, data).cost, null);
   assert.match(html(data), /Every building is at its highest level/);
+  const partial = html(overview([3, 2, 1, 0, 0, 0]));
+  assert.match(partial, /This building has reached its highest level/);
+  assert.doesNotMatch(partial, /Every building is at its highest level/);
   assert.equal(nextCityMilestone(overview())?.key, "knowledge_center");
 });
 
@@ -125,7 +128,7 @@ test("selection stays a stationary semantic hit target with a linked live detail
   assert.match(rendered, /Your city progresses automatically/);
   assert.match(rendered, /Recent City Activity/);
   assert.match(css, /\.building \{[^}]*transition: none/);
-  assert.match(css, /\.building:hover \{[^}]*transform: translate\(-50%,-50%\)/);
+  assert.match(css, /\.city \.map \.building:hover, \.city \.map \.building:active \{[^}]*transform: translate\(-50%,-50%\)/);
   assert.match(css, /\.building:hover \.buildingArt/);
   assert.match(css, /\.map \{[^}]*overflow: hidden/);
 });
