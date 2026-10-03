@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { dateAdd, toInstant, type Block } from "../src/features/planning/logic.ts";
 import { hasWorkload, parsePlan, validateInput, validatePlan, type GeneratedPlan, type PlannerInput } from "../src/features/ai-planner/model.ts";
 import { aiPlannerCopy } from "../src/features/i18n/ai-planner.ts";
+import { PlannerRequestTimeout, runGenerationOnce } from "../src/features/ai-planner/generation-control.ts";
 
 const subject = "97000000-0000-4000-8000-000000000001";
 const first = "2026-10-03";
@@ -24,6 +25,8 @@ test("bilingual copy contains every AI Planner label, with no English fallback i
   assert.deepEqual(Object.keys(aiPlannerCopy.en).sort(), Object.keys(aiPlannerCopy.ar).sort());
   assert.equal(aiPlannerCopy.en.cta, "AI Weekly Planner");
   assert.equal(aiPlannerCopy.ar.cta, "أنشئ جدولك بالذكاء الاصطناعي");
+  assert.equal(aiPlannerCopy.en.busy, "The AI service is busy right now. Please try again shortly.");
+  assert.equal(aiPlannerCopy.ar.busy, "الخدمة مزدحمة دلوقتي. جرّب كمان شوية.");
   assert.ok(Object.values(aiPlannerCopy.ar).every(value => !!value.trim()));
 });
 test("input requires a real owned subject and meaningful workload", () => {
@@ -66,4 +69,22 @@ test("an adjustment may move a flexible session while fixed commitment stays in 
 test("preview wall times resolve DST gaps and folds deterministically before save", () => {
   assert.equal(toInstant("2026-03-08", "02:30", "America/New_York"), null);
   assert.equal(toInstant("2026-11-01", "01:30", "America/New_York"), "2026-11-01T05:30:00.000Z");
+});
+test("rapid generation calls start only one request and release the button afterward", async () => {
+  const gate = { current: false };
+  let calls = 0;
+  let finish!: (value: number) => void;
+  const first = runGenerationOnce(gate, () => { calls++; return new Promise<number>(resolve => { finish = resolve; }); }, 1000);
+  const duplicate = await runGenerationOnce(gate, async () => { calls++; return 2; }, 1000);
+  assert.deepEqual(duplicate, { started: false });
+  assert.equal(calls, 1);
+  finish(1);
+  assert.deepEqual(await first, { started: true, result: 1 });
+  assert.equal(gate.current, false);
+});
+test("a stalled client request times out and permits a localized retry", async () => {
+  const gate = { current: false };
+  await assert.rejects(runGenerationOnce(gate, () => new Promise<never>(() => {}), 10), PlannerRequestTimeout);
+  assert.equal(gate.current, false);
+  assert.deepEqual(await runGenerationOnce(gate, async () => "recovered", 1000), { started: true, result: "recovered" });
 });

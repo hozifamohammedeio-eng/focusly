@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { generateAiPlan, saveAiPlan } from "./actions";
+import { PlannerRequestTimeout, runGenerationOnce } from "./generation-control";
 import { hasWorkload, type FixedEvent, type GeneratedPlan, type PlannerInput } from "./model";
 import { aiPlannerCopy } from "@/features/i18n/ai-planner";
 import { useLocale } from "@/features/i18n/locale-provider";
@@ -13,7 +14,7 @@ import styles from "./planner.module.css";
 const keys = ["subjects", "fixed", "backlog", "time", "priorities", "review"] as const;
 const prefs = ["morning", "afternoon", "evening", "flexible"] as const;
 const stylesList = ["balanced", "light", "productive", "catchup"] as const;
-type ErrorKey = "required" | "invalid" | "conflict" | "provider" | "expired" | "unavailable";
+type ErrorKey = "required" | "invalid" | "conflict" | "provider" | "busy" | "expired" | "unavailable";
 
 export default function PlannerDialog({ subjects, weekStart, zone, onClose }: {
   subjects: Subject[]; weekStart: string; zone: string; onClose: () => void;
@@ -24,6 +25,7 @@ export default function PlannerDialog({ subjects, weekStart, zone, onClose }: {
   const dialog = useRef<HTMLDialogElement>(null);
   const form = useRef<HTMLFormElement>(null);
   const requestId = useRef(crypto.randomUUID());
+  const generationInFlight = useRef(false);
   const [step, setStep] = useState(0);
   const [input, setInput] = useState<PlannerInput>({ weekStart, zone, locale, workload: {}, backlog: "", exams: "",
     fixed: [], dailyMinutes: 120, preferred: "flexible", sessionMinutes: 45, daysOff: [], busyDays: [], prioritySubjects: [], style: "balanced" });
@@ -54,13 +56,16 @@ export default function PlannerDialog({ subjects, weekStart, zone, onClose }: {
   }
   async function generate(current?: GeneratedPlan, instruction?: string) {
     if (!hasWorkload(input)) { setError("required"); return; }
-    if (busy) return;
+    if (busy || generationInFlight.current) return;
     setBusy("generate"); setError(null);
     try {
-      const result = await generateAiPlan({ ...input, locale }, current, instruction);
+      const execution = await runGenerationOnce(generationInFlight,
+        () => generateAiPlan({ ...input, locale }, current, instruction), 35000);
+      if (!execution.started) return;
+      const result = execution.result;
       if (result.ok) { setPlan(result.plan); requestId.current = crypto.randomUUID(); setSelectedDay(result.plan.sessions[0]?.date ?? weekStart); setAdjustment(""); }
       else setError(result.error === "invalid" ? "invalid" : result.error);
-    } catch { setError("unavailable"); }
+    } catch (error) { setError(error instanceof PlannerRequestTimeout ? "provider" : "unavailable"); }
     finally { setBusy(null); }
   }
   async function save() {

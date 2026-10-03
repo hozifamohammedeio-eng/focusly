@@ -15,7 +15,7 @@
     "test": "node --test tests/validation.mjs tests/planning.mjs tests/focus.mjs tests/education.mjs tests/auth-flows.mjs",
     "test:db": "node tests/database.mjs",
     "test:progression": "tsx --test tests/progression.test.ts tests/city.test.ts tests/city-experience.test.tsx tests/challenges.test.tsx tests/achievements.test.tsx tests/dashboard.test.tsx tests/statistics.test.tsx",
-    "test:ai-planner": "tsx --test tests/ai-planner.test.ts"
+    "test:ai-planner": "tsx --test tests/ai-planner.test.ts tests/ai-planner-provider.test.mjs"
   },
   "dependencies": {
     "@google/genai": "2.27.0",

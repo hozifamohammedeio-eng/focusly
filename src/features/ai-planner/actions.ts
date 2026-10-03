@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { dateAdd, dayInZone, localParts, occurrences, toInstant, validZone, weekStart, type Block } from "@/features/planning/logic";
 import { hasWorkload, parsePlan, validateInput, validatePlan, type GeneratedPlan, type PlannerInput } from "./model";
-import { requestPlan } from "./provider";
+import { isProviderBusyError, requestPlan } from "./provider";
 
-type Result = { ok: true; plan: GeneratedPlan } | { ok: false; error: "invalid" | "unavailable" | "expired" | "conflict" | "provider" };
+type Result = { ok: true; plan: GeneratedPlan } | { ok: false; error: "invalid" | "unavailable" | "expired" | "conflict" | "provider" | "busy" };
 type SaveResult = { ok: true; tasks: number; sessions: number; alreadySaved: boolean } | { ok: false; error: "invalid" | "unavailable" | "expired" | "conflict" };
 
 function adjustmentItemsMatch(candidate: GeneratedPlan, current: GeneratedPlan) {
@@ -52,35 +52,63 @@ async function context(input: unknown) {
 }
 
 export async function generateAiPlan(input: PlannerInput, current?: GeneratedPlan, adjustment?: string): Promise<Result> {
+  const receivedAt = new Date().toISOString();
+  const started = performance.now();
+  const elapsed = () => Math.round(performance.now() - started);
+  const attempts: Array<{ attempt: number; gemini_start?: number; gemini_response?: number;
+    schema_parse_complete?: number; validation_complete?: number; outcome?: string }> = [];
+  let contextComplete: number | undefined;
+  let outcome = "provider";
+  let signal: AbortSignal | undefined;
+  const fail = (error: Exclude<Result, { ok: true }>["error"]): Result => {
+    outcome = error;
+    return { ok: false, error };
+  };
   try {
     const ctx = await context(input);
-    if ("error" in ctx) return { ok: false, error: ctx.error };
-    if (!hasWorkload(input)) return { ok: false, error: "invalid" };
-    if (adjustment && (adjustment.length > 500 || !adjustment.trim())) return { ok: false, error: "invalid" };
-    if (current && (!adjustment || !parsePlan(current) || !validatePlan(current, input, ctx.subjectIds, ctx.existing).ok)) return { ok: false, error: "invalid" };
+    contextComplete = elapsed();
+    if ("error" in ctx) return fail(ctx.error);
+    if (!hasWorkload(input)) return fail("invalid");
+    if (adjustment && (adjustment.length > 500 || !adjustment.trim())) return fail("invalid");
+    if (current && (!adjustment || !parsePlan(current) || !validatePlan(current, input, ctx.subjectIds, ctx.existing).ok)) return fail("invalid");
     const occupied = ctx.existing.map(x => {
       const start = localParts(x.starts_at, input.zone), end = localParts(x.ends_at, input.zone);
       return { date: start.day, start: start.time, end: end.time };
     });
+    // Both attempts share one deadline. A second call is reserved for a
+    // malformed or invalid model response, never for a provider failure.
+    signal = AbortSignal.timeout(28000);
     for (let attempt = 0; attempt < 2; attempt++) {
-      const raw = await requestPlan(input, ctx.subjects.map(x => ({ id: x.id, name: x.name })), occupied, current, adjustment);
+      if (signal.aborted) return fail("provider");
+      const timing: typeof attempts[number] = { attempt: attempt + 1 };
+      attempts.push(timing);
+      const raw = await requestPlan(input, ctx.subjects.map(x => ({ id: x.id, name: x.name })), occupied, current, adjustment,
+        { signal, onStage: stage => { timing[stage] = elapsed(); } });
       const plan = parsePlan(raw);
-      if (!plan) { console.error("ai_planner_output_invalid", { kind: "shape" }); continue; }
+      if (!plan) { timing.outcome = "shape"; console.error("ai_planner_output_invalid", { kind: "shape" }); continue; }
       const check = validatePlan(plan, input, ctx.subjectIds, ctx.existing);
-      if (!check.ok) { console.error("ai_planner_output_invalid", { kind: check.reason }); continue; }
+      timing.validation_complete = elapsed();
+      if (!check.ok) { timing.outcome = check.reason; console.error("ai_planner_output_invalid", { kind: check.reason }); continue; }
       if (current && !adjustmentItemsMatch(plan, current)) {
+        timing.outcome = "adjustment_changed_items";
         console.error("ai_planner_output_invalid", { kind: "adjustment_changed_items" }); continue;
       }
       // Adjustments may be localized by Gemini. Keep the original validated
       // work-item labels and metadata; only the schedule's flexible sessions
       // are allowed to change.
       const resultPlan = current ? { ...plan, items: current.items } : plan;
+      timing.outcome = "valid";
+      outcome = "success";
       return { ok: true, plan: resultPlan };
     }
-    return { ok: false, error: "provider" };
-  } catch {
-    console.error("ai_planner_generation_failed");
-    return { ok: false, error: "provider" };
+    return fail("provider");
+  } catch (error) {
+    const busy = isProviderBusyError(error);
+    console.error("ai_planner_generation_failed", { kind: busy ? "busy" : signal?.aborted ? "timeout" : "provider" });
+    return fail(busy ? "busy" : "provider");
+  } finally {
+    console.info("ai_planner_timing", { receivedAt, contextCompleteMs: contextComplete,
+      attempts, totalMs: elapsed(), outcome });
   }
 }
 
