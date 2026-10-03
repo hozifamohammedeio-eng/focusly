@@ -9,6 +9,17 @@ import { requestPlan } from "./provider";
 type Result = { ok: true; plan: GeneratedPlan } | { ok: false; error: "invalid" | "unavailable" | "expired" | "conflict" | "provider" };
 type SaveResult = { ok: true; tasks: number; sessions: number; alreadySaved: boolean } | { ok: false; error: "invalid" | "unavailable" | "expired" | "conflict" };
 
+function adjustmentItemsMatch(candidate: GeneratedPlan, current: GeneratedPlan) {
+  if (candidate.items.length !== current.items.length) return false;
+  const previous = new Map(current.items.map(item => [item.id, item]));
+  return candidate.items.every(item => {
+    const original = previous.get(item.id);
+    return !!original && item.subjectId === original.subjectId && item.type === original.type &&
+      item.estimatedMinutes === original.estimatedMinutes && item.priority === original.priority &&
+      item.isBacklog === original.isBacklog && item.deadline === original.deadline;
+  });
+}
+
 async function context(input: unknown) {
   const client = await createClient();
   const auth = await client.auth.getUser();
@@ -57,10 +68,14 @@ export async function generateAiPlan(input: PlannerInput, current?: GeneratedPla
       if (!plan) { console.error("ai_planner_output_invalid", { kind: "shape" }); continue; }
       const check = validatePlan(plan, input, ctx.subjectIds, ctx.existing);
       if (!check.ok) { console.error("ai_planner_output_invalid", { kind: check.reason }); continue; }
-      if (current && (JSON.stringify(plan.items) !== JSON.stringify(current.items))) {
+      if (current && !adjustmentItemsMatch(plan, current)) {
         console.error("ai_planner_output_invalid", { kind: "adjustment_changed_items" }); continue;
       }
-      return { ok: true, plan };
+      // Adjustments may be localized by Gemini. Keep the original validated
+      // work-item labels and metadata; only the schedule's flexible sessions
+      // are allowed to change.
+      const resultPlan = current ? { ...plan, items: current.items } : plan;
+      return { ok: true, plan: resultPlan };
     }
     return { ok: false, error: "provider" };
   } catch {
