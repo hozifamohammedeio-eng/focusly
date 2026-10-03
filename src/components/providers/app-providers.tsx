@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { LocaleProvider } from "@/features/i18n/locale-provider";
 import { ThemeProvider } from "@/features/theme/theme-provider";
+import { InstallProvider } from "@/features/pwa/install-provider";
 
 export function AppProviders({
   children,
@@ -18,7 +19,9 @@ export function AppProviders({
 }) {
   return (
     <ThemeProvider initial={initial}>
-      <LocaleProvider initial={initial.locale}>{children}</LocaleProvider>
+      <LocaleProvider initial={initial.locale}>
+        <InstallProvider>{children}</InstallProvider>
+      </LocaleProvider>
     </ThemeProvider>
   );
 }

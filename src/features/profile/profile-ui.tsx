@@ -22,6 +22,7 @@ import {
 } from "@/features/education/config";
 import { EducationFields } from "@/features/education/fields";
 import { useTheme } from "@/features/theme/theme-provider";
+import { useInstallFocusly } from "@/features/pwa/install-provider";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -284,6 +285,30 @@ function LanguageSettings({ settings }: { settings: Settings }) {
   );
 }
 
+function InstallSettings() {
+  const { locale } = useLocale();
+  const { canInstall, showIosInstructions, install } = useInstallFocusly();
+  if (!canInstall && !showIosInstructions) return null;
+  return (
+    <Card>
+      <h2 className="mb-2 text-lg font-semibold">
+        {locale === "ar" ? "تثبيت التطبيق" : "Install the app"}
+      </h2>
+      {canInstall ? (
+        <Button type="button" variant="secondary" onClick={() => void install()}>
+          {locale === "ar" ? "تثبيت Focusly" : "Install Focusly"}
+        </Button>
+      ) : (
+        <p className="muted text-sm">
+          {locale === "ar"
+            ? "في Safari، اضغط مشاركة ثم إضافة إلى الشاشة الرئيسية."
+            : "In Safari, tap Share, then Add to Home Screen."}
+        </p>
+      )}
+    </Card>
+  );
+}
+
 export function SettingsPanel({
   profile,
   settings,
@@ -312,6 +337,7 @@ export function SettingsPanel({
       <StudySettings settings={settings} />
       <AppearanceSettings />
       <LanguageSettings settings={settings} />
+      <InstallSettings />
       <Card>
         <h2 className="mb-2 text-lg font-semibold">{t.securitySection}</h2>
         <div className="flex flex-wrap gap-3">

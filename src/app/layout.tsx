@@ -70,6 +70,7 @@ const alexandria =
 
 export const metadata:
   Metadata = {
+    applicationName: "Focusly",
     title: {
       default:
         "Focusly",
@@ -79,7 +80,20 @@ export const metadata:
     },
 
     description:
-      "A calm study workspace for focused students.",
+      "Plan your studies, manage tasks, and stay focused with Focusly.",
+    manifest: "/manifest.webmanifest",
+    icons: {
+      icon: [
+        { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+      apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    },
+    appleWebApp: {
+      capable: true,
+      title: "Focusly",
+      statusBarStyle: "default",
+    },
   };
 
 export const viewport:

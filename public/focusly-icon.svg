@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Focusly">
+  <rect width="512" height="512" rx="112" fill="#f8f8fa"/>
+  <path d="M234 143c-52 0-83 30-83 79v23h-32v57h32v103h67V302h64v-57h-64v-21c0-17 9-25 27-25 12 0 22 2 33 6v-56c-12-4-27-6-44-6Z" fill="#17191c"/>
+  <circle cx="350" cy="365" r="43" fill="#6558d3"/>
+</svg>
