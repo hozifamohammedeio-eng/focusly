@@ -4,6 +4,8 @@ import Link from "next/link";
 import { dashboardChallengePeriod, dashboardFocusWeek, dashboardTodayTasks } from "./overview";
 import { formatDuration, goalProgress } from "@/features/focus/logic";
 import { formatDay, formatTime } from "@/features/planning/logic";
+import { weekStart } from "@/features/planning/logic";
+import { AiPlannerLauncher } from "@/features/ai-planner/launcher";
 import { useLocale } from "@/features/i18n/locale-provider";
 import { useCopy } from "@/features/i18n/use-copy";
 import { subjectLabel } from "@/features/i18n/phase2";
@@ -46,6 +48,8 @@ export function DashboardExperience({ data }: { data: DashboardData }) {
       <div><p className="eyebrow">FOCUSLY · {formatDay(data.today, locale, { dateStyle: "full" })}</p>
         <h1>{greeting}{data.name ? `${locale === "ar" ? "،" : ","} ${data.name}` : ""}</h1><p>{t.intro}</p></div>
     </header>
+
+    <AiPlannerLauncher subjects={data.subjects} weekStart={weekStart(data.today)} zone={data.zone} />
 
     <div className={styles.topGrid}>
       <section className={`${styles.card} ${styles.today}`} aria-labelledby="dashboard-today">

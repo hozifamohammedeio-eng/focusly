@@ -126,6 +126,7 @@ export type Database = {
           repeat_weekly: boolean;
           time_zone: string;
           notes: string | null;
+          task_id: string | null;
         },
         { user_id: string; title: string; starts_at: string; ends_at: string }
       >;
@@ -224,6 +225,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      save_ai_weekly_plan: {
+        Args: { p_request_id: string; p_payload: Json };
+        Returns: Json;
+      };
       get_achievement_progress: {
         Args: Record<string, never>;
         Returns: { achievement_key: string; progress: number; target: number }[];

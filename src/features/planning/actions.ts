@@ -277,6 +277,7 @@ export async function mutate(form: FormData): Promise<MutationResult> {
           id: id || "new",
           user_id: owner,
           notes: null,
+          task_id: null,
           created_at: start,
           updated_at: start,
         };

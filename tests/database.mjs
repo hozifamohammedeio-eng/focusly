@@ -10,6 +10,7 @@ import { testAutomaticCity } from "./city-auto-database.mjs";
 import { testChallenges } from "./challenges-database.mjs";
 import { testChallengeReadModel } from "./challenge-read-model-database.mjs";
 import { testImmediateAchievements } from "./immediate-achievements-database.mjs";
+import { testAiPlanner } from "./ai-planner-database.mjs";
 
 const { PGlite } = await import(pathToFileURL(resolve(process.argv[2])).href);
 const db = new PGlite();
@@ -664,6 +665,8 @@ try {
   ]) {
     equal(typeof (await db.query('select public.claim_study_push_subscription($1,$2,$3,null) as id', [trustedEndpoint,key,authKey])).rows[0].id, 'string', 'browser push provider remains supported');
   }
+  await db.exec('reset role');
+  await testAiPlanner({ db, equal, rejects, asUser });
   console.log(
     `PASS: ${checks} PostgreSQL migration, transaction, and ownership assertions.`,
   );

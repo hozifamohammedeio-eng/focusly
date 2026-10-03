@@ -137,3 +137,9 @@ For future releases: review the remote-history mapping; the education migration 
 Supabase Dashboard → Authentication → Email Templates: the provided confirmation/recovery templates use token hashes at /auth/confirm and work across browsers. config.toml applies them to a local stack only; it does not update hosted Auth. If the hosted default ConfirmationURL templates are retained, use the PKCE callback flow in the same browser that requested the email. SMTP stays external. No hosted configuration was changed by this update.
 
 Authenticated root HTML now uses Supabase theme/accent/locale before hydration. Appearance updates continue to patch only the changed field. The warm editorial surfaces remain; active navigation, controls, timer, progress/charts and selected calendar dates use semantic accents.
+
+## AI Weekly Planner (local, not deployed)
+
+The Dashboard opens a bilingual planning wizard in a dialog. Generation uses the server-only Google Gemini SDK with structured output. Set `GEMINI_API_KEY` and `FOCUSLY_AI_PLANNER_MODEL` in the server environment to enable it; neither value belongs in a `NEXT_PUBLIC_` variable. Without them, generation reports an unavailable state instead of inventing a plan. The provider response is parsed at runtime and checked against owned subjects, the saved timezone, Saturday–Friday dates, fixed events, existing Planner occurrences, days off, durations, and daily capacity.
+
+Apply `20261003100320_ai_weekly_planner_save.sql` to the target Supabase project **before** deploying this code. Its owner-scoped RPC saves one Task per work item and linked study blocks for scheduled sessions, all in one transaction. It checks live conflicts and makes retries idempotent. No hosted migration or deployment was performed as part of this local implementation. Run `npm run test:ai-planner` and the existing application, progression, database, type, lint, and build checks before rollout.
