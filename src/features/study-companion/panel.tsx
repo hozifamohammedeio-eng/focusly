@@ -5,11 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/features/i18n/locale-provider";
 import { Button } from "@/components/ui/button";
-import { applyDayPlan, askCompanion, createStudyReminder, proposeDayPlan, saveCompanionName,
+import { agentMessage, confirmAgentCalls, type AgentOutcome } from "./agent-actions";
+import { applyDayPlan, proposeDayPlan, saveCompanionName,
   suggestStudyNow, upcomingStudyReminders } from "./actions";
 import { CompanionAvatar } from "./avatar";
 import { companionCopy } from "./copy";
-import { localReminderLabel, validCompanionName, type DayPlan, type Mood, type ReminderProposal } from "./model";
+import { validCompanionName, type DayPlan, type Mood } from "./model";
+import type { AgentRef } from "./tools/resolve";
 import styles from "./companion.module.css";
 
 type Message = { role: "student" | "companion"; text: string; taskId?: string | null };
@@ -27,14 +29,16 @@ export default function CompanionPanel({ name, greeting, onClose, onNamed }: {
   const [available, setAvailable] = useState(90);
   const [planMode, setPlanMode] = useState(false);
   const [plan, setPlan] = useState<DayPlan | null>(null);
-  const [reminder, setReminder] = useState<ReminderProposal | null>(null);
+  const [agentPending, setAgentPending] = useState<Extract<AgentOutcome, { ok: true }>["pending"]>();
+  const [memory, setMemory] = useState<AgentRef | null>(null);
   const [offerNotification, setOfferNotification] = useState(false);
   const [upcoming, setUpcoming] = useState<{ id: string; title: string; remindAt: string }[]>([]);
   const [messages, setMessages] = useState<Message[]>(() => [{ role: "companion", text: name ? greeting ?? t.greetingEmpty : t.setup }]);
   const [pending, start] = useTransition();
+  const inFlight = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
-  const mood: Mood = pending ? "thinking" : reminder ? "reminder" : plan ? "happy" : displayName ? "neutral" : "celebrating";
+  const mood: Mood = pending ? "thinking" : agentPending ? "reminder" : plan ? "happy" : displayName ? "neutral" : "celebrating";
 
   useEffect(() => { inputRef.current?.focus(); }, [displayName]);
   useEffect(() => { endRef.current?.scrollIntoView({ block: "nearest" }); }, [messages]);
@@ -66,7 +70,7 @@ export default function CompanionPanel({ name, greeting, onClose, onNamed }: {
 
   function quickStudy() {
     if (pending) return;
-    setPlan(null); setReminder(null); setPlanMode(false);
+    setPlan(null); setAgentPending(undefined); setPlanMode(false);
     start(async () => {
       const result = await suggestStudyNow(locale);
       if (!result.ok) { error(result.error); return; }
@@ -79,7 +83,7 @@ export default function CompanionPanel({ name, greeting, onClose, onNamed }: {
     start(async () => {
       const result = await proposeDayPlan(locale, available);
       if (!result.ok) { error(result.error); return; }
-      setPlan(result.value.plan); setPlanMode(false); setReminder(null);
+      setPlan(result.value.plan); setPlanMode(false); setAgentPending(undefined);
       say(result.value.message);
     });
   }
@@ -87,17 +91,39 @@ export default function CompanionPanel({ name, greeting, onClose, onNamed }: {
   function send(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = draft.trim();
-    if (!text || pending) return;
+    if (!text || pending || inFlight.current) return;
+    inFlight.current = true;
     const recent = messages.slice(-4).map(item => ({ role: item.role, text: item.text.slice(0, 500) }));
     setMessages(previous => keep([...previous, { role: "student", text }]));
-    setDraft(""); setPlan(null); setReminder(null); setPlanMode(false);
+    setDraft(""); setPlan(null); setAgentPending(undefined); setPlanMode(false);
     start(async () => {
-      const result = await askCompanion(text, locale, recent);
-      if (!result.ok) { error(result.error); return; }
-      setReminder(result.value.proposal);
-      if (result.value.proposal) {
-        say(t.reminderConfirm(result.value.proposal.title, localReminderLabel(result.value.proposal, locale)));
-      } else say(result.value.reply.message, result.value.reply.taskId);
+      try { showAgentResult(await agentMessage(text, locale, recent, memory, crypto.randomUUID())); }
+      catch { say(t.tryAgain); }
+      finally { inFlight.current = false; }
+    });
+  }
+
+  function showAgentResult(result: AgentOutcome) {
+    say(result.text);
+    if (!result.ok) return;
+    if (result.ref) setMemory(result.ref);
+    if (result.pending) setAgentPending(result.pending);
+    if (result.companionSettingChanged) window.dispatchEvent(new Event("focusly-companion-settings"));
+    if (result.companionName) { setDisplayName(result.companionName); onNamed(result.companionName); }
+    if (result.reminderCreated && typeof Notification !== "undefined" && Notification.permission === "default") setOfferNotification(true);
+    if (result.reminderCreated) void upcomingStudyReminders().then(next => { if (next.ok) setUpcoming(next.value); });
+    if (result.changed) router.refresh();
+  }
+
+  function confirmAgent() {
+    if (!agentPending || pending || inFlight.current) return;
+    inFlight.current = true;
+    const proposal = agentPending;
+    setAgentPending(undefined);
+    start(async () => {
+      try { showAgentResult(await confirmAgentCalls(proposal.calls, locale, memory, proposal.requestId)); }
+      catch { setAgentPending(proposal); say(t.tryAgain); }
+      finally { inFlight.current = false; }
     });
   }
 
@@ -107,19 +133,6 @@ export default function CompanionPanel({ name, greeting, onClose, onNamed }: {
       const result = await applyDayPlan(plan);
       if (!result.ok) { say(result.error === "conflict" ? t.planConflict : t.tryAgain); return; }
       setPlan(null); say(t.planSaved); router.refresh();
-    });
-  }
-
-  function confirmReminder() {
-    if (!reminder || pending) return;
-    start(async () => {
-      const result = await createStudyReminder(reminder);
-      if (!result.ok) { error(result.error); return; }
-      setUpcoming(previous => [...previous.filter(item => item.id !== result.value.id),
-        { id: result.value.id, title: reminder.title, remindAt: reminder.remindAt }]
-        .sort((a, b) => a.remindAt.localeCompare(b.remindAt)).slice(0, 10));
-      setReminder(null); say(t.reminderSaved);
-      if (typeof Notification !== "undefined" && Notification.permission === "default") setOfferNotification(true);
     });
   }
 
@@ -159,9 +172,9 @@ export default function CompanionPanel({ name, greeting, onClose, onNamed }: {
         <div className="flex gap-2"><Button type="button" onClick={apply} disabled={pending}>{t.applyPlan}</Button>
           <Button type="button" variant="ghost" onClick={() => setPlan(null)}>{t.cancel}</Button></div>
       </div>}
-      {reminder && <div className="flex gap-2 border-t border-[var(--border)] px-4 py-3">
-        <Button type="button" onClick={confirmReminder} disabled={pending}>{t.saveReminder}</Button>
-        <Button type="button" variant="ghost" onClick={() => setReminder(null)}>{t.cancel}</Button>
+      {agentPending && <div className="flex gap-2 border-t border-[var(--border)] px-4 py-3">
+        <Button type="button" onClick={confirmAgent} disabled={pending}>{t.confirm}</Button>
+        <Button type="button" variant="ghost" onClick={() => setAgentPending(undefined)}>{t.cancel}</Button>
       </div>}
       {offerNotification && <div className="border-t border-[var(--border)] px-4 py-3 text-sm">
         <p>{t.notificationsAsk}</p><div className="mt-2 flex gap-2">
@@ -175,7 +188,7 @@ export default function CompanionPanel({ name, greeting, onClose, onNamed }: {
       </details>}
       <div className={styles.quick}>
         <button type="button" onClick={quickStudy} disabled={pending}>{t.studyNow}</button>
-        <button type="button" onClick={() => { setPlanMode(true); setPlan(null); setReminder(null); }} disabled={pending}>{t.planDay}</button>
+        <button type="button" onClick={() => { setPlanMode(true); setPlan(null); setAgentPending(undefined); }} disabled={pending}>{t.planDay}</button>
         <button type="button" onClick={() => { say(t.reminderPrompt); inputRef.current?.focus(); }} disabled={pending}>{t.remind}</button>
       </div>
       <form className={styles.inputRow} onSubmit={send}>

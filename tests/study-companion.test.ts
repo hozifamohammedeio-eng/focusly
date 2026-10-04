@@ -62,10 +62,10 @@ test("malformed AI output cannot become an action", () => {
   assert.equal(parseAiReply({ message: "Done", intent: "chat", taskId: null, reminder: null })?.intent, "chat");
 });
 
-test("panel requires explicit confirmation for plan and reminder writes; animation respects reduced motion", () => {
+test("panel requires explicit confirmation for proposed plans and agent writes; animation respects reduced motion", () => {
   const panel = readFileSync(new URL("../src/features/study-companion/panel.tsx", import.meta.url), "utf8");
   const css = readFileSync(new URL("../src/features/study-companion/companion.module.css", import.meta.url), "utf8");
   assert.match(panel, /onClick=\{apply\}/);
-  assert.match(panel, /onClick=\{confirmReminder\}/);
+  assert.match(panel, /onClick=\{confirmAgent\}/);
   assert.match(css, /prefers-reduced-motion: reduce/);
 });
