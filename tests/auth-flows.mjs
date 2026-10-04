@@ -10,6 +10,7 @@ import {
   textField,
 } from "../src/features/auth/validation.ts";
 import { authError } from "../src/features/auth/state.ts";
+import { PENDING_EMAIL_COOKIE, RESEND_AFTER_COOKIE, RESEND_COOLDOWN_MS, confirmedPath, maskEmail } from "../src/features/auth/confirmation.ts";
 const source = fs.readFileSync(
   new URL("../src/features/auth/actions.ts", import.meta.url),
   "utf8",
@@ -22,6 +23,11 @@ const code = ts.transpileModule(source, {
 }).outputText;
 function harness(auth) {
   const exports = {};
+  const values = new Map();
+  const jar = {
+    get: (key) => values.has(key) ? { value: values.get(key) } : undefined,
+    set: (key, value) => values.set(key, value),
+  };
   const boundary = {
     "@/lib/env/server": { siteUrl: () => "https://focusly.example" },
     "next/navigation": {
@@ -30,7 +36,9 @@ function harness(auth) {
       },
     },
     "next/cache": { revalidatePath: () => {} },
-    "@/lib/supabase/server": { createClient: async () => ({ auth }) },
+    "next/headers": { cookies: async () => jar },
+    "@/lib/supabase/server": { createClient: async () => ({ auth, from: auth.from }) },
+    "./confirmation": { PENDING_EMAIL_COOKIE, RESEND_AFTER_COOKIE, RESEND_COOLDOWN_MS, confirmedPath },
     "./state": { authError },
     "./validation": { validEmail, validName, validPassword, textField },
   };
@@ -38,26 +46,26 @@ function harness(auth) {
     assert.ok(name in boundary);
     return boundary[name];
   }, exports);
-  return exports;
+  return { ...exports, jar };
 }
 const form = (data) => {
   const f = new FormData();
   for (const [k, v] of Object.entries(data)) f.set(k, v);
   return f;
 };
-test("signup returns confirmation state and uses trusted PKCE callback", async () => {
+test("signup opens confirmation screen and uses trusted token-hash destination", async () => {
   const app = harness({
     signUp: async (input) => {
       assert.equal(
         input.options.emailRedirectTo,
-        "https://focusly.example/auth/callback",
+        "https://focusly.example/auth/confirm",
       );
       assert.equal(input.password, "test-password");
       return { data: { session: null }, error: null };
     },
   });
-  assert.deepEqual(
-    await app.signup(
+  await assert.rejects(
+    app.signup(
       {},
       form({
         name: "Student",
@@ -66,8 +74,51 @@ test("signup returns confirmation state and uses trusted PKCE callback", async (
         confirm: "test-password",
       }),
     ),
-    { success: "confirmation" },
+    (error) => error.path === "/confirm-email",
   );
+  assert.equal(app.jar.get(PENDING_EMAIL_COOKIE)?.value, "student@example.com");
+  assert.ok(Number(app.jar.get(RESEND_AFTER_COOKIE)?.value) > Date.now());
+});
+test("confirmation masking and owner-safe destination", () => {
+  assert.equal(maskEmail("home@gmail.com"), "ho***@gmail.com");
+  assert.equal(maskEmail("a@example.com"), "a***@example.com");
+  assert.equal(confirmedPath(false), "/onboarding?status=email-confirmed");
+  assert.equal(confirmedPath(true), "/app");
+});
+test("resend enforces cooldown and returns safe rate-limit state", async () => {
+  let calls = 0;
+  const app = harness({ resend: async ({ email, type, options }) => {
+    calls++;
+    assert.equal(email, "student@example.com");
+    assert.equal(type, "signup");
+    assert.equal(options.emailRedirectTo, "https://focusly.example/auth/confirm");
+    return { error: { code: "over_email_send_rate_limit", status: 429 } };
+  } });
+  app.jar.set(PENDING_EMAIL_COOKIE, "student@example.com");
+  app.jar.set(RESEND_AFTER_COOKIE, String(Date.now() + 60_000));
+  assert.equal((await app.resendConfirmation({}, new FormData())).status, "rateLimit");
+  assert.equal(calls, 0);
+  app.jar.set(RESEND_AFTER_COOKIE, "0");
+  assert.equal((await app.resendConfirmation({}, new FormData())).status, "rateLimit");
+  assert.equal(calls, 1);
+  assert.equal((await app.resendConfirmation({}, new FormData())).status, "rateLimit");
+  assert.equal(calls, 1);
+});
+test("resend success and provider failure are classified without leaking errors", async () => {
+  for (const [error, expected] of [[null, "sent"], [{ code: "internal_error", message: "secret" }, "unavailable"]]) {
+    const app = harness({ resend: async () => ({ error }) });
+    app.jar.set(PENDING_EMAIL_COOKIE, "student@example.com");
+    assert.equal((await app.resendConfirmation({}, new FormData())).status, expected);
+  }
+});
+test("confirmed-user check refreshes verified identity and routes to onboarding", async () => {
+  const app = harness({
+    getUser: async () => ({ data: { user: { id: "owner", email_confirmed_at: "2026-10-03" } }, error: null }),
+    from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: { onboarding_completed: false }, error: null }) }) }) }),
+  });
+  await assert.rejects(app.checkConfirmation(), (error) => error.path === "/onboarding?status=email-confirmed");
+  const waiting = harness({ getUser: async () => ({ data: { user: null }, error: null }) });
+  assert.equal(await waiting.checkConfirmation(), "waiting");
 });
 test("misconfigured immediate signup never falsely reports email delivery", async () => {
   let signedOut = false;

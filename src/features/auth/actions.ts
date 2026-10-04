@@ -3,8 +3,10 @@
 import { siteUrl } from "@/lib/env/server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { authError, type FormState } from "./state";
+import { PENDING_EMAIL_COOKIE, RESEND_AFTER_COOKIE, RESEND_COOLDOWN_MS, confirmedPath } from "./confirmation";
 import { textField, validEmail, validName, validPassword } from "./validation";
 
 export async function login(
@@ -47,7 +49,7 @@ export async function signup(
       password,
       options: {
         data: { display_name: name },
-        emailRedirectTo: `${siteUrl()}/auth/callback`,
+        emailRedirectTo: `${siteUrl()}/auth/confirm`,
       },
     });
     if (error) return { error: authError(error.code) };
@@ -55,10 +57,52 @@ export async function signup(
       await client.auth.signOut({ scope: "local" });
       return { error: "unavailable" }; // Hosted Confirm email must be ON; never falsely claim an email was sent.
     }
-    return { success: "confirmation" };
+    const jar = await cookies();
+    const options = { httpOnly: true, sameSite: "lax" as const, secure: siteUrl().startsWith("https:"), path: "/", maxAge: 3600 };
+    jar.set(PENDING_EMAIL_COOKIE, email, options);
+    jar.set(RESEND_AFTER_COOKIE, String(Date.now() + RESEND_COOLDOWN_MS), options);
   } catch {
     return { error: "unavailable" };
   }
+  redirect("/confirm-email");
+}
+
+export type ResendState = { status?: "sent" | "rateLimit" | "unavailable" | "missing"; retryAt?: number };
+
+export async function resendConfirmation(_previous: ResendState, _form: FormData): Promise<ResendState> {
+  void _previous;
+  void _form;
+  const jar = await cookies();
+  const email = jar.get(PENDING_EMAIL_COOKIE)?.value;
+  if (!email || !validEmail(email)) return { status: "missing" };
+  const retryAt = Number(jar.get(RESEND_AFTER_COOKIE)?.value ?? 0);
+  if (Number.isFinite(retryAt) && retryAt > Date.now()) return { status: "rateLimit", retryAt };
+  const nextRetryAt = Date.now() + RESEND_COOLDOWN_MS;
+  jar.set(RESEND_AFTER_COOKIE, String(nextRetryAt), { httpOnly: true, sameSite: "lax", secure: siteUrl().startsWith("https:"), path: "/", maxAge: 3600 });
+  try {
+    const client = await createClient();
+    const { error } = await client.auth.resend({ type: "signup", email, options: { emailRedirectTo: `${siteUrl()}/auth/confirm` } });
+    if (error) return { status: authError(error.code) === "rateLimit" || error.status === 429 ? "rateLimit" : "unavailable", retryAt: nextRetryAt };
+    return { status: "sent", retryAt: nextRetryAt };
+  } catch {
+    return { status: "unavailable", retryAt: nextRetryAt };
+  }
+}
+
+export async function checkConfirmation(): Promise<"waiting" | "unavailable"> {
+  let path: string | undefined;
+  try {
+    const client = await createClient();
+    const { data, error } = await client.auth.getUser();
+    if (error) return error.status && error.status >= 500 ? "unavailable" : "waiting";
+    if (!data.user?.email_confirmed_at) return "waiting";
+    const profile = await client.from("profiles").select("onboarding_completed").eq("id", data.user.id).single();
+    path = confirmedPath(profile.data?.onboarding_completed === true);
+  } catch {
+    return "unavailable";
+  }
+  revalidatePath("/", "layout");
+  redirect(path);
 }
 
 export async function logout(): Promise<FormState> {

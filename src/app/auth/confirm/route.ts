@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { confirmedDestination } from "@/features/auth/confirmed-destination";
+import { siteUrl } from "@/lib/env/server";
 export async function GET(request: NextRequest) {
   const type = request.nextUrl.searchParams.get("type");
   const token_hash = request.nextUrl.searchParams.get("token_hash");
@@ -7,7 +9,7 @@ export async function GET(request: NextRequest) {
   if (
     token_hash &&
     token_hash.length <= 512 &&
-    (type === "signup" || type === "recovery")
+    (type === "email" || type === "signup" || type === "recovery")
   ) {
     try {
       const client = await createClient();
@@ -15,16 +17,13 @@ export async function GET(request: NextRequest) {
       // verifyOtp verifies the email-link hash; this is not an OTP login flow.
       if (!error) {
         if (type === "recovery") path = "/reset-password";
-        else {
-          await client.auth.signOut({ scope: "local" });
-          path = "/login?status=confirmed";
-        }
+        else path = await confirmedDestination(client);
       }
     } catch {
       /* Invalid/unavailable links never grant access. */
     }
   }
-  const response = NextResponse.redirect(new URL(path, request.url));
+  const response = NextResponse.redirect(new URL(path, siteUrl()));
   response.headers.set("Cache-Control", "private, no-store");
   response.headers.set("Referrer-Policy", "no-referrer");
   return response;
