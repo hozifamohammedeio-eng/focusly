@@ -13,6 +13,7 @@ import { phase3 } from "@/features/i18n/phase3";
 import { phase4 } from "@/features/i18n/phase4";
 import { phase5 } from "@/features/i18n/phase5";
 import { QuickThemeSwitcher } from "@/features/theme/quick-theme-switcher";
+import { CompanionHost } from "@/features/study-companion/host";
 import { useTheme } from "@/features/theme/theme-provider";
 import type { Database } from "@/types/database";
 import { groupForRoute, navigationGroups, routeIsActive, type GroupKey, type PageKey } from "./navigation-model";
@@ -165,5 +166,6 @@ export function PlanningShell({ settings, children }: {
       {navigation(true)}
       {account(true)}
     </dialog>
+    <CompanionHost />
   </div>;
 }

@@ -23,6 +23,7 @@ import {
 import { EducationFields } from "@/features/education/fields";
 import { useTheme } from "@/features/theme/theme-provider";
 import { useInstallFocusly } from "@/features/pwa/install-provider";
+import { CompanionSettings } from "@/features/study-companion/settings";
 import type { Database } from "@/types/database";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -337,6 +338,7 @@ export function SettingsPanel({
       <StudySettings settings={settings} />
       <AppearanceSettings />
       <LanguageSettings settings={settings} />
+      <CompanionSettings />
       <InstallSettings />
       <Card>
         <h2 className="mb-2 text-lg font-semibold">{t.securitySection}</h2>

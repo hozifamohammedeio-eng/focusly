@@ -11,6 +11,7 @@ import { testChallenges } from "./challenges-database.mjs";
 import { testChallengeReadModel } from "./challenge-read-model-database.mjs";
 import { testImmediateAchievements } from "./immediate-achievements-database.mjs";
 import { testAiPlanner } from "./ai-planner-database.mjs";
+import { testStudyCompanion } from "./study-companion-database.mjs";
 
 const { PGlite } = await import(pathToFileURL(resolve(process.argv[2])).href);
 const db = new PGlite();
@@ -667,6 +668,7 @@ try {
   }
   await db.exec('reset role');
   await testAiPlanner({ db, equal, rejects, asUser });
+  await testStudyCompanion({ db, equal, rejects, asUser });
   console.log(
     `PASS: ${checks} PostgreSQL migration, transaction, and ownership assertions.`,
   );

@@ -150,6 +150,15 @@ export type Database = {
           time_zone: string;
         }
       >;
+      study_companion_preferences: Table<
+        { user_id: string; companion_name: string; enabled: boolean; auto_greeting_enabled: boolean; created_at: string; updated_at: string },
+        { user_id: string; companion_name: string }
+      >;
+      study_reminders: Table<
+        OwnedRow & { request_id: string; title: string; body: string | null; remind_at: string;
+          status: "scheduled" | "delivered" | "cancelled"; related_task_id: string | null; related_subject_id: string | null },
+        { user_id: string; request_id: string; title: string; remind_at: string }
+      >;
       focus_sessions: Table<
         OwnedRow & {
           subject_id: string | null;
@@ -225,6 +234,8 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      claim_due_study_reminders: { Args: Record<string, never>; Returns: Database["public"]["Tables"]["study_reminders"]["Row"][] };
+      apply_companion_day_plan: { Args: { p_request_id: string; p_blocks: Json }; Returns: Json };
       save_ai_weekly_plan: {
         Args: { p_request_id: string; p_payload: Json };
         Returns: Json;

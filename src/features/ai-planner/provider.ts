@@ -1,5 +1,6 @@
 import "server-only";
-import { ApiError, GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { ApiError, ThinkingLevel } from "@google/genai";
+import { configuredGemini } from "./gemini";
 import type { GeneratedPlan, PlannerInput } from "./model";
 
 type SubjectInfo = { id: string; name: string };
@@ -27,9 +28,7 @@ const schema = {
 /** Server-only adapter. No provider SDK or credentials enter the Dashboard bundle. */
 export async function requestPlan(input: PlannerInput, subjects: SubjectInfo[], existing: { date: string; start: string; end: string }[],
   current?: GeneratedPlan, adjustment?: string, options: RequestOptions = {}): Promise<unknown> {
-  const key = process.env.GEMINI_API_KEY;
-  const model = process.env.FOCUSLY_AI_PLANNER_MODEL;
-  if (!key || !model) throw new Error("provider_unconfigured");
+  const { client: ai, model } = configuredGemini();
   const relevantIds = new Set([
     ...Object.entries(input.workload).filter(([, value]) => value.trim()).map(([id]) => id),
     ...input.fixed.map(event => event.subjectId), ...input.prioritySubjects,
@@ -40,7 +39,6 @@ export async function requestPlan(input: PlannerInput, subjects: SubjectInfo[], 
   const relevantInput = { ...input,
     workload: Object.fromEntries(Object.entries(input.workload).filter(([, value]) => value.trim())),
   };
-  const ai = new GoogleGenAI({ apiKey: key });
   options.onStage?.("gemini_start");
   const response = await ai.models.generateContent({
     model,
