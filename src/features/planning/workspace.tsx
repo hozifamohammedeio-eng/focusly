@@ -327,11 +327,17 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
       </p>
     );
 
+  const selectCompanionBlock = (occ: Occurrence) => {
+    window.dispatchEvent(new CustomEvent("focusly-agent-selection", { detail: {
+      kind: "block", id: occ.block.id, title: occ.block.title, day: dayInZone(occ.starts, zone),
+    } }));
+    setEditor({ entity: "study_blocks", row: occ.block });
+  };
   const sessionCard = (occ: Occurrence) => (
     <button
       key={occ.block.id + occ.starts}
       className="session-card"
-      onClick={() => setEditor({ entity: "study_blocks", row: occ.block })}
+      onClick={() => selectCompanionBlock(occ)}
       style={{ borderInlineStartColor: subjectColor(occ.block.subject_id) }}
     >
       <span className="block break-words font-semibold">
@@ -356,9 +362,7 @@ export function Workspace({ data, view }: { data: PlanningData; view: View }) {
             <div className="flex justify-end gap-1">
               <Button
                 variant="ghost"
-                onClick={() =>
-                  setEditor({ entity: "study_blocks", row: o.block })
-                }
+                onClick={() => selectCompanionBlock(o)}
               >
                 {t.edit}
               </Button>

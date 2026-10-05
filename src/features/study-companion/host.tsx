@@ -18,7 +18,18 @@ export function CompanionHost() {
   const [open, setOpen] = useState(false);
   const [greeting, setGreeting] = useState<string | null>(null);
   const [notice, setNotice] = useState<string[]>([]);
+  const [selection, setSelection] = useState<{ id: string; title: string; day: string } | null>(null);
   const trigger = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const onSelection = (event: Event) => {
+      const row = (event as CustomEvent<unknown>).detail as Record<string, unknown> | null;
+      if (row?.kind === "block" && typeof row.id === "string" && typeof row.title === "string" && typeof row.day === "string")
+        setSelection({ id: row.id, title: row.title.slice(0, 200), day: row.day });
+    };
+    window.addEventListener("focusly-agent-selection", onSelection);
+    return () => window.removeEventListener("focusly-agent-selection", onSelection);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -73,7 +84,7 @@ export function CompanionHost() {
       <ul className="grid gap-1">{notice.map((message, index) => <li key={index} dir="auto">{message}</li>)}</ul>
       <button type="button" className="mt-2 underline" onClick={() => setNotice([])} aria-label={locale === "ar" ? "إغلاق التذكيرات" : "Dismiss reminders"}>×</button>
     </div>}
-    {open && <Suspense fallback={null}><CompanionPanel name={name} greeting={greeting} onClose={close}
+    {open && <Suspense fallback={null}><CompanionPanel name={name} greeting={greeting} onClose={close} selection={selection}
       onNamed={next => {
         try { sessionStorage.setItem(`focusly-companion-greeted:${boot.owner}`, "1"); } catch { /* optional storage */ }
         setBoot({ ...boot, preference: { companion_name: next, enabled: true, auto_greeting_enabled: true } });

@@ -12,16 +12,26 @@ import { reminderFromLocal, validCompanionName, type Locale } from "../model";
 import { resolveDay, resolveTime, type AgentCall } from "./registry";
 import { blockMatch, refFor, reminderMatch, subjectMatch, taskMatch, type AgentRef, type Match } from "./resolve";
 import { dayEvents, type AgentSnapshot, type Student } from "./snapshot";
+import type { AgentUndo } from "./memory";
+import { companionTone } from "../tone";
 
-export type ToolResult = { ok: boolean; message: string; ref?: AgentRef; ambiguous?: boolean };
+export type AgentCard = { kind: "task" | "block" | "reminder"; title: string; detail: string };
+export type AgentChoice = { ref: AgentRef; label: string };
+export type ToolResult = { ok: boolean; message: string; ref?: AgentRef; ambiguous?: boolean;
+  choices?: AgentChoice[]; card?: AgentCard; undo?: AgentUndo };
 const phrase = (locale: Locale, en: string, ar: string) => locale === "ar" ? ar : en;
 const error = (locale: Locale, en: string, ar: string): ToolResult => ({ ok: false, message: phrase(locale, en, ar) });
 const found = <T>(match: Match<T>, locale: Locale): match is { kind: "found"; value: T } => { void locale; return match.kind === "found"; };
-function missing<T extends { title?: string; name?: string; day?: string }>(match: Match<T>, locale: Locale): ToolResult {
+function missing<T extends { id: string; title?: string; name?: string; day?: string; starts_at?: string; remindAt?: string }>(
+  match: Match<T>, locale: Locale, kind: AgentRef["kind"], zone?: string): ToolResult {
   if (match.kind === "ambiguous") return { ok: false, ambiguous: true,
     message: phrase(locale, `I found several matches: ${match.choices.map(row => `${row.title ?? row.name}${row.day ? ` (${row.day})` : ""}`).join("; ")}. Which one?`,
-      `لقيت أكتر من واحدة: ${match.choices.map(row => `${row.title ?? row.name}${row.day ? ` (${row.day})` : ""}`).join("؛ ")}. تقصد أنهي؟`) };
-  return error(locale, "I couldn't find a matching item in your Focusly data. Can you be more specific?", "ملقتش حاجة مطابقة في بياناتك. ممكن توضح أكتر؟");
+      `لقيت أكتر من واحدة: ${match.choices.map(row => `${row.title ?? row.name}${row.day ? ` (${row.day})` : ""}`).join("؛ ")}. تقصد أنهي؟`),
+    choices: match.choices.slice(0, 4).map(row => ({ ref: refFor(kind, row),
+      label: [row.title ?? row.name, row.day ?? (zone && (row.starts_at ?? row.remindAt)
+        ? `${localParts((row.starts_at ?? row.remindAt)!, zone).day} · ${localParts((row.starts_at ?? row.remindAt)!, zone).time}` : undefined)]
+        .filter(Boolean).join(" · ") })) };
+  return { ok: false, message: companionTone.notFound(locale) };
 }
 function form(values: Record<string, string | number | null | undefined>): FormData {
   const result = new FormData();
@@ -43,7 +53,7 @@ function timeValue(raw: string | undefined, locale: Locale): string | ToolResult
 const isError = (value: string | ToolResult): value is ToolResult => typeof value !== "string";
 function confirmMutation(result: Awaited<ReturnType<typeof mutate>>, locale: Locale): ToolResult | null {
   if (result.success) return null;
-  if (result.error === "overlap") return error(locale, "That overlaps another Planner block. Try another time.", "الوقت ده متعارض مع حاجة في المخطط. نجرب معاد تاني؟");
+  if (result.error === "overlap") return { ok: false, message: companionTone.overlap(locale) };
   if (result.error === "expired") return error(locale, "Please sign in again before changing anything.", "سجل دخولك تاني قبل ما نغير حاجة.");
   return error(locale, "I couldn't change that, so I left it as it was.", "معرفتش أغيرها، فسيبتها زي ما هي.");
 }
@@ -111,19 +121,28 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
       case "read_settings": return okay(`Your daily goal is ${snapshot.goal} minutes. Language: ${snapshot.locale}; theme: ${snapshot.theme}; accent: ${snapshot.accent}. Auto greeting is ${snapshot.autoGreetingEnabled ? "on" : "off"}.`,
         `هدفك اليومي ${snapshot.goal} دقيقة. اللغة ${snapshot.locale === "ar" ? "عربي" : "إنجليزي"}، والمظهر ${({ light: "فاتح", dark: "داكن", system: "حسب الجهاز" } as Record<string, string>)[snapshot.theme] ?? "غير معروف"}. الترحيب التلقائي ${snapshot.autoGreetingEnabled ? "شغال" : "متوقف"}.`);
       case "read_focus": {
-        const sessions = await student.client.from("focus_sessions").select("duration_seconds,completed,started_at")
-          .eq("user_id", owner).order("started_at", { ascending: false }).limit(3);
-        if (sessions.error) return error(locale, "Focus history isn't available right now.", "سجل التركيز مش متاح دلوقتي.");
+        const [sessions, focus, active] = await Promise.all([
+          student.client.from("focus_sessions").select("duration_seconds,completed,started_at")
+            .eq("user_id", owner).order("started_at", { ascending: false }).limit(3),
+          student.client.rpc("focus_progress"),
+          student.client.from("focus_sessions").select("timer_state,task_id").eq("user_id", owner)
+            .in("timer_state", ["running", "paused"]).order("created_at", { ascending: false }).limit(1),
+        ]);
+        if (sessions.error || focus.error || active.error) return error(locale, "Focus history isn't available right now.", "سجل التركيز مش متاح دلوقتي.");
+        const progress = focus.data && typeof focus.data === "object" ? focus.data as { today?: string; days?: { day: string; seconds: number }[] } : null;
+        const minutes = progress?.today === snapshot.today && progress.days
+          ? Math.floor((progress.days.find(day => day.day === snapshot.today)?.seconds ?? 0) / 60) : null;
+        const timer = active.data[0]?.timer_state ?? null;
         const durations = sessions.data.filter(item => item.completed).map(item => Math.floor(item.duration_seconds / 60));
         const recentEn = durations.map(value => `${value} min`).join(", ");
         const recentAr = durations.map(value => `${value} دقيقة`).join("، ");
-        const stateAr = snapshot.activeFocus?.state === "paused" ? "متوقف مؤقتًا" : "شغال";
-        return okay(snapshot.activeFocus ? `Your Focus timer is ${snapshot.activeFocus.state}. Recent sessions: ${recentEn || "none"}.`
-          : snapshot.focusMinutesToday === null ? `Today's focus total isn't available. Recent sessions: ${recentEn || "none"}.`
-            : `You've studied ${snapshot.focusMinutesToday} minutes today. Recent sessions: ${recentEn || "none"}.`,
-        snapshot.activeFocus ? `مؤقت التركيز ${stateAr}. آخر جلسات: ${recentAr || "مفيش"}.`
-          : snapshot.focusMinutesToday === null ? `إجمالي تركيز النهارده مش متاح. آخر جلسات: ${recentAr || "مفيش"}.`
-            : `ذاكرت ${snapshot.focusMinutesToday} دقيقة النهارده. آخر جلسات: ${recentAr || "مفيش"}.`);
+        const stateAr = timer === "paused" ? "متوقف مؤقتًا" : "شغال";
+        return okay(timer ? `Your Focus timer is ${timer}. Recent sessions: ${recentEn || "none"}.`
+          : minutes === null ? `Today's focus total isn't available. Recent sessions: ${recentEn || "none"}.`
+            : `You've studied ${minutes} minutes today. Recent sessions: ${recentEn || "none"}.`,
+        timer ? `مؤقت التركيز ${stateAr}. آخر جلسات: ${recentAr || "مفيش"}.`
+          : minutes === null ? `إجمالي تركيز النهارده مش متاح. آخر جلسات: ${recentAr || "مفيش"}.`
+            : `ذاكرت ${minutes} دقيقة النهارده. آخر جلسات: ${recentAr || "مفيش"}.`);
       }
       case "read_progress": {
         const [profile, achievements, city] = await Promise.all([
@@ -161,7 +180,7 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
         if (isError(day)) return day;
         const priority = a.priority ?? "medium";
         const subject = a.subject ? subjectMatch(snapshot, a.subject, memory) : null;
-        if (subject && !found(subject, locale)) return missing(subject, locale);
+        if (subject && !found(subject, locale)) return missing(subject, locale, "subject");
         const time = a.time ? timeValue(a.time, locale) : null; if (time && isError(time)) return time;
         const dueAt = time ? toInstant(day, time, snapshot.zone) : null;
         if (time && !dueAt || !validTask({ title, notes: a.notes ?? "", priority, due_on: time ? null : day, due_at: dueAt }))
@@ -180,11 +199,12 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
             return error(locale, "That request changed; I didn't add a duplicate.", "الطلب اتغير، فمضفتش نسخة تانية.");
         }
         revalidatePath("/app", "layout");
-        return okay(`Done — ${title} is on your list for ${day} 👍`, `تمام، ضفت «${title}» ليوم ${day} 👌`, { kind: "task", id, title });
+        return { ok: true, message: companionTone.taskCreated(locale, title, day), ref: { kind: "task", id, title } as AgentRef,
+          card: { kind: "task", title, detail: day } };
       }
       case "update_task": case "complete_task": case "delete_task": {
         const match = taskMatch(snapshot, a.query, a.fromDay ?? a.day, memory);
-        if (!found(match, locale)) return missing(match, locale);
+        if (!found(match, locale)) return missing(match, locale, "task");
         const task = match.value;
         if (call.tool === "delete_task") {
           const result = await mutate(form({ entity: "tasks", action: "delete", id: task.id }));
@@ -204,7 +224,7 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
         const time = a.time ? timeValue(a.time, locale) : task.dueAt ? localParts(task.dueAt, snapshot.zone).time : null;
         if (time && isError(time)) return time;
         const subject = a.subject ? subjectMatch(snapshot, a.subject, memory) : null;
-        if (subject && !found(subject, locale)) return missing(subject, locale);
+        if (subject && !found(subject, locale)) return missing(subject, locale, "subject");
         const result = await mutate(form({ entity: "tasks", action: "save", id: task.id, title: a.title ?? task.title,
           date: day, time: time ?? "", priority: a.priority ?? task.priority, notes: a.notes ?? task.notes ?? "",
           subject_id: subject?.kind === "found" ? subject.value.id : task.subjectId }));
@@ -212,7 +232,7 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
       }
       case "create_subject": case "update_subject": case "delete_subject": {
         const match = call.tool === "create_subject" ? null : subjectMatch(snapshot, a.query, memory);
-        if (match && !found(match, locale)) return missing(match, locale);
+        if (match && !found(match, locale)) return missing(match, locale, "subject");
         const subject = match?.kind === "found" ? match.value : null;
         if (call.tool === "delete_subject") {
           const result = await mutate(form({ entity: "subjects", action: "delete", id: subject?.id }));
@@ -225,7 +245,7 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
       }
       case "create_block": case "move_block": case "delete_block": {
         const match = call.tool === "create_block" ? null : blockMatch(snapshot, a.query, a.fromDay ?? a.day, a.fromTime, memory);
-        if (match && !found(match, locale)) return missing(match, locale);
+        if (match && !found(match, locale)) return missing(match, locale, "block", snapshot.zone);
         const block = match?.kind === "found" ? match.value : null;
         if (call.tool === "delete_block") {
           const result = await mutate(form({ entity: "study_blocks", action: "delete", id: block?.id }));
@@ -239,7 +259,7 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
         const existingSubject = block?.subject_id ? snapshot.subjects.find(item => item.id === block.subject_id) : null;
         const subject = a.subject ? subjectMatch(snapshot, a.subject, memory) : existingSubject
           ? { kind: "found" as const, value: existingSubject } : null;
-        if (!subject || !found(subject, locale)) return subject ? missing(subject, locale) : error(locale,
+        if (!subject || !found(subject, locale)) return subject ? missing(subject, locale, "subject") : error(locale,
           "Which subject is this study session for?", "جلسة المذاكرة دي لأي مادة؟");
         const duration = a.duration ?? (block ? Math.round((Date.parse(block.ends_at) - Date.parse(block.starts_at)) / 60000) : 25);
         if (!Number.isInteger(duration) || duration < 5 || duration > 720 || !validText(a.title ?? block?.title ?? subject.value.name, 200))
@@ -271,16 +291,21 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
             time_zone: snapshot.zone }).select("id").single();
           if (inserted.error) return error(locale, "I couldn't add that study session.", "معرفتش أضيف جلسة المذاكرة دي.");
           revalidatePath("/app", "layout");
-          return okay(`Done — ${title} is at ${time} on ${day}.`, `تمام 👌 ${title} بقت الساعة ${time} يوم ${day}.`, { kind: "block", id, title });
+          return { ok: true, message: companionTone.blockPlaced(locale, title, day, time), ref: { kind: "block", id, title } as AgentRef,
+            card: { kind: "block", title, detail: `${day} · ${time}` } };
         }
         const result = await mutate(form({ entity: "study_blocks", action: "save", id: block.id, title,
           subject_id: subject.value.id, date: day, time, duration, zone: snapshot.zone, repeat: block?.repeat_weekly ? "weekly" : "never" }));
-        return confirmMutation(result, locale) ?? okay(`Done — ${a.title ?? block?.title ?? subject.value.name} is at ${time} on ${day}.`,
-          `تمام 👌 ${a.title ?? block?.title ?? subject.value.name} بقت الساعة ${time} يوم ${day}.`, block ? refFor("block", block) : undefined);
+        return confirmMutation(result, locale) ?? { ok: true, message: companionTone.blockPlaced(locale, title, day, time),
+          ref: refFor("block", block!),
+          card: { kind: "block", title, detail: `${localParts(block!.starts_at, snapshot.zone).time} → ${time} · ${day}` },
+          undo: { kind: "block", id: block!.id,
+            before: { title: block!.title, start: block!.starts_at, end: block!.ends_at },
+            after: { title, start, end } } };
       }
       case "create_reminder": case "edit_reminder": case "cancel_reminder": {
         const match = call.tool === "create_reminder" ? null : reminderMatch(snapshot, a.query, memory);
-        if (match && !found(match, locale)) return missing(match, locale);
+        if (match && !found(match, locale)) return missing(match, locale, "reminder", snapshot.zone);
         const reminder = match?.kind === "found" ? match.value : null;
         if (call.tool === "cancel_reminder") {
           const result = await student.client.from("study_reminders").update({ status: "cancelled" })
@@ -304,8 +329,8 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
         }
         const result = await createStudyReminder(proposal);
         if (!result.ok) return error(locale, "I couldn't save that reminder.", "معرفتش أحفظ التذكير ده.");
-        return okay(`Got it — I'll remind you about ${title} at ${time} on ${day}.`, `تمام، هفكرك بـ«${title}» الساعة ${time} يوم ${day}.`,
-          { kind: "reminder", id: result.value.id, title });
+        return { ok: true, message: companionTone.reminderSet(locale, title, day, time),
+          ref: { kind: "reminder", id: result.value.id, title }, card: { kind: "reminder", title, detail: `${day} · ${time}` } };
       }
       case "set_goal": {
         const goal = Number(a.value);
@@ -313,7 +338,8 @@ export async function executeTool(call: AgentCall, snapshot: AgentSnapshot, stud
         const result = await student.client.from("profiles").update({ daily_goal_minutes: goal }).eq("id", owner).select("id").single();
         if (result.error) return error(locale, "I couldn't change your goal.", "معرفتش أغير هدفك.");
         revalidatePath("/app", "layout");
-        return okay(`Your daily goal is now ${goal} minutes 👍`, `هدفك اليومي بقى ${goal} دقيقة 👌`);
+        return { ok: true, message: companionTone.goalSet(locale, goal),
+          undo: { kind: "goal", before: snapshot.goal, after: goal } };
       }
       case "set_locale": case "set_theme": case "set_accent": case "set_display_name": {
         const key = call.tool === "set_locale" ? "locale" : call.tool === "set_theme" ? "theme" : call.tool === "set_accent" ? "accent" : "name";

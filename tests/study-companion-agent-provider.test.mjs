@@ -42,3 +42,14 @@ test("malformed tool calls and invented arbitrary actions fail closed", async ()
   try { assert.equal(await interpretAgentMessage("Do it", "ar", snapshot, []), null); }
   finally { globalThis.__agentResponse = undefined; }
 });
+test("current page and bounded reference context reach Gemini without row IDs", async () => {
+  globalThis.__agentResponse=JSON.stringify({message:"Which one?",explicit:false,calls:[]});
+  try {
+    await interpretAgentMessage("Move it later","en",snapshot,[],{page:"planner",memory:{
+      refs:{block:{kind:"block",id:"97000000-0000-4000-8000-000000000003",title:"Physics"}},lastDay:"2026-10-05"}});
+    const payload=globalThis.__agentRequest.contents;
+    assert.match(payload,/"page":"planner"/);
+    assert.match(payload,/"block":"Physics"/);
+    assert.doesNotMatch(payload,/97000000-0000-4000-8000-000000000003/);
+  } finally {globalThis.__agentResponse=undefined;}
+});

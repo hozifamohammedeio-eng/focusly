@@ -29,7 +29,10 @@ export function taskMatch(snapshot: AgentSnapshot, query: string | undefined, da
   const day = dayRaw ? resolveDay(dayRaw, snapshot.today) : null;
   if (dayRaw && !day) return { kind: "missing" };
   const rows = snapshot.tasks.filter(task => !day || task.day === day);
-  return choose(rows, query, memory, "task");
+  // A corrected date can displace an owned remembered task; a foreign ID cannot.
+  const reference = day && memory?.kind === "task" && snapshot.tasks.some(task => task.id === memory.id)
+    && !rows.some(task => task.id === memory.id) ? null : memory;
+  return choose(rows, query, reference, "task");
 }
 export function subjectMatch(snapshot: AgentSnapshot, query: string | undefined, memory: AgentRef | null): Match<AgentSubject> {
   return choose(snapshot.subjects.filter(subject => !subject.archived), query, memory, "subject");
@@ -49,7 +52,9 @@ export function blockMatch(snapshot: AgentSnapshot, query: string | undefined, d
       (!time || new Intl.DateTimeFormat("en-GB", { timeZone: snapshot.zone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
         .format(new Date(event.starts)) === time) && (!day || dayInZone(event.starts, snapshot.zone) === day)));
   });
-  return choose(rows, query, memory, "block");
+  const reference = day && memory?.kind === "block" && snapshot.blocks.some(block => block.id === memory.id)
+    && !rows.some(block => block.id === memory.id) ? null : memory;
+  return choose(rows, query, reference, "block");
 }
 
 export function refFor(kind: AgentRef["kind"], row: { id: string; title?: string; name?: string }): AgentRef {

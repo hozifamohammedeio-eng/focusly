@@ -45,3 +45,29 @@ No new database migration is required. The already-existing V1 companion
 migration remains a prerequisite and must be reviewed and applied separately
 before any V2 deployment. This local task does not apply hosted migrations,
 push Git, or deploy.
+
+## Conversational UI iteration
+
+The client retains at most twelve visible messages and sends the last four to
+Gemini only when interpretation is necessary. Separate structured session
+memory keeps one reference per entity kind, the most recent date/intent/call,
+and a single safe undo receipt. It is never treated as authorization: every
+reference is looked up again in owner-scoped data. Selecting a Planner block
+passes an explicit typed reference to the floating Companion, even if the
+panel is closed. No DOM scraping or permanent transcript storage is used.
+
+Narrow English and Egyptian Arabic grammar handles common reads, goals,
+themes, accents, companion names, explicit reminders, and simple contextual
+Planner edits before considering Gemini. Gemini receives the current page and
+a limited context window without row IDs, notes, or a full data dump. Focus
+progress is fetched only for Focus questions; Progression, Achievements,
+Challenges, and City remain on-demand. The UI delays its working indicator
+briefly, shows compact result and clarification cards, and retains V1 Study
+Now/Day Plan controls. Multi-step work still reports partial results honestly.
+
+Undo is deliberately narrow: only the immediately previous daily-goal or
+Planner-block change with known before/after values can be reversed. The
+server verifies the current owner-owned state first and reuses the normal
+Planner conflict check. Other historical actions cannot be rolled back by
+chat. Ambiguous choices are rechecked against current owner-owned rows before
+execution. No curriculum or tutor capability is included.

@@ -24,7 +24,7 @@ export async function loadAgentSnapshot(student: Student): Promise<AgentSnapshot
   const now = new Date().toISOString();
   const today = dayInZone(now, zone);
   const from = dateAdd(today, -7), to = dateAdd(today, 14);
-  const [tasks, subjects, oneOff, recurring, schedule, reminders, focus, active] = await Promise.all([
+  const [tasks, subjects, oneOff, recurring, schedule, reminders] = await Promise.all([
     student.client.from("tasks").select("id,title,task_date,subject_id,priority,notes,status,due_at")
       .eq("user_id", owner).gte("task_date", from).lte("task_date", to).order("task_date").limit(100),
     student.client.from("subjects").select("id,name,color,archived_at").eq("user_id", owner).limit(100),
@@ -35,12 +35,8 @@ export async function loadAgentSnapshot(student: Student): Promise<AgentSnapshot
       .eq("user_id", owner).eq("enabled", true).limit(70),
     student.client.from("study_reminders").select("id,title,remind_at,status")
       .eq("user_id", owner).eq("status", "scheduled").gte("remind_at", now).order("remind_at").limit(30),
-    student.client.rpc("focus_progress"),
-    student.client.from("focus_sessions").select("timer_state,task_id").eq("user_id", owner)
-      .in("timer_state", ["running", "paused"]).order("created_at", { ascending: false }).limit(1),
   ]);
   if (tasks.error || subjects.error || oneOff.error || recurring.error || schedule.error || reminders.error) throw new Error("Agent context unavailable");
-  const progress = !focus.error && focus.data && typeof focus.data === "object" ? focus.data as { today?: string; days?: { day: string; seconds: number }[] } : null;
   return {
     owner, today, now, zone, goal: student.profile.daily_goal_minutes ?? 120,
     displayName: student.profile.display_name, locale: student.settings.locale, theme: student.settings.theme,
@@ -51,9 +47,8 @@ export async function loadAgentSnapshot(student: Student): Promise<AgentSnapshot
     blocks: [...oneOff.data, ...recurring.data], schedule: schedule.data.map(row => ({ title: row.title, weekday: row.weekday,
       time: row.local_time, zone: row.time_zone })),
     reminders: reminders.data.map(row => ({ id: row.id, title: row.title, remindAt: row.remind_at, status: row.status })),
-    focusMinutesToday: progress?.today === today && progress.days
-      ? Math.floor((progress.days.find(day => day.day === today)?.seconds ?? 0) / 60) : null,
-    activeFocus: active.error || !active.data[0] ? null : { state: active.data[0].timer_state ?? "unknown", taskId: active.data[0].task_id },
+    focusMinutesToday: null,
+    activeFocus: null,
   };
 }
 
