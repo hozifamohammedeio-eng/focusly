@@ -74,10 +74,19 @@ test("signup opens confirmation screen and uses trusted token-hash destination",
         confirm: "test-password",
       }),
     ),
-    (error) => error.path === "/confirm-email",
+    (error) => error.path === "/confirm-email?notice=sent",
   );
   assert.equal(app.jar.get(PENDING_EMAIL_COOKIE)?.value, "student@example.com");
   assert.ok(Number(app.jar.get(RESEND_AFTER_COOKIE)?.value) > Date.now());
+});
+test("auth UI includes the acknowledged Spam/Junk notice and password controls", () => {
+  const formSource = fs.readFileSync(new URL("../src/features/auth/auth-form.tsx", import.meta.url), "utf8");
+  const confirmationSource = fs.readFileSync(new URL("../src/features/auth/confirmation-screen.tsx", import.meta.url), "utf8");
+  assert.match(formSource, /PasswordField/);
+  assert.match(formSource, /unconfirmed/);
+  assert.match(confirmationSource, /initialNotice/);
+  assert.match(confirmationSource, /Spam|Junk/);
+  assert.match(confirmationSource, /Got it/);
 });
 test("confirmation masking and owner-safe destination", () => {
   assert.equal(maskEmail("home@gmail.com"), "ho***@gmail.com");

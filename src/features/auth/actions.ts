@@ -20,7 +20,13 @@ export async function login(
   try {
     const client = await createClient();
     const { error } = await client.auth.signInWithPassword({ email, password });
-    if (error) return { error: authError(error.code) };
+    if (error) {
+      if (error.code === "email_not_confirmed") {
+        const jar = await cookies();
+        jar.set(PENDING_EMAIL_COOKIE, email, { httpOnly: true, sameSite: "lax", secure: siteUrl().startsWith("https:"), path: "/", maxAge: 3600 });
+      }
+      return { error: authError(error.code) };
+    }
   } catch {
     return { error: "unavailable" };
   }
@@ -64,7 +70,7 @@ export async function signup(
   } catch {
     return { error: "unavailable" };
   }
-  redirect("/confirm-email");
+  redirect("/confirm-email?notice=sent");
 }
 
 export type ResendState = { status?: "sent" | "rateLimit" | "unavailable" | "missing"; retryAt?: number };

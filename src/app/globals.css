@@ -790,6 +790,13 @@ textarea.field { min-height: 8rem; resize: vertical; }
 .auth-page { max-width: 540px; margin-inline: auto; padding: 3.5rem 1.25rem 5rem; }
 .auth-form h1 { font-size: clamp(2.4rem, 5vw, 3rem); }
 .auth-form form { margin-top: 2rem; }
+.auth-form { position: relative; }
+.auth-mark { display: inline-grid; place-items: center; width: 2.75rem; height: 2.75rem; margin-bottom: 1.25rem; border: 1px solid var(--border); border-radius: 1rem; color: var(--accent); font-size: 1.35rem; font-weight: 800; box-shadow: 0 8px 24px color-mix(in srgb, var(--foreground) 8%, transparent); }
+.auth-password { position: relative; display: flex; align-items: center; }
+.auth-password .field { padding-inline-end: 5rem; }
+.auth-password button { position: absolute; inset-inline-end: .75rem; color: var(--accent); font-size: .78rem; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.auth-info { border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border)); border-radius: 1rem; background: color-mix(in srgb, var(--accent) 8%, var(--surface)); padding: .85rem 1rem; line-height: 1.6; }
+.auth-email { overflow-wrap: anywhere; font-weight: 700; }
 .onboarding-page { max-width: 720px; margin-inline: auto; padding: 2.5rem 1.25rem 5rem; }
 .onboarding-question { padding: 2rem 0; }
 .onboarding-question form { margin-top: 2.5rem; }
