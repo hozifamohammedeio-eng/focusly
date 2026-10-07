@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { registerHooks } from "node:module";
 import { renderToStaticMarkup } from "react-dom/server";
+import React from "react";
 import { LocaleProvider } from "../src/features/i18n/locale-provider";
 
 registerHooks({

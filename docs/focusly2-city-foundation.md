@@ -1,8 +1,8 @@
 # Local City domain and database foundation
 
-This phase is local only. Do not apply its migration to hosted Supabase or import
-the City data layer into active routes until a separately approved rollout.
-The existing `/app/city` remains a UI-only concept map.
+The City foundation is now active: persisted building levels and trusted reward
+receipts drive automatic progression. `/app/city` reads that state and includes a
+Papercut Focus Tower scene; neither City view awards progress itself.
 
 ## Model and balancing
 

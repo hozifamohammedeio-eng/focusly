@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { registerHooks } from "node:module";
 import { test } from "node:test";
 import { renderToStaticMarkup } from "react-dom/server";
+import React from "react";
 
 registerHooks({ load(url, context, nextLoad) {
   if (url.endsWith(".module.css")) return { format: "module", source: "export default new Proxy({}, { get: (_, key) => String(key) });", shortCircuit: true };

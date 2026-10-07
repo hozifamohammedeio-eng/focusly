@@ -15,6 +15,7 @@
     "test": "node --test tests/validation.mjs tests/planning.mjs tests/focus.mjs tests/education.mjs tests/auth-flows.mjs tests/confirmation-routes.mjs",
     "test:db": "node tests/database.mjs",
     "test:progression": "tsx --test tests/progression.test.ts tests/city.test.ts tests/city-experience.test.tsx tests/challenges.test.tsx tests/achievements.test.tsx tests/dashboard.test.tsx tests/statistics.test.tsx",
+    "test:ui": "tsx --test tests/navigation-focus-ui.test.ts tests/focus-timer-ring.test.tsx tests/page-organization.test.tsx tests/landing-demos.test.tsx tests/focus-completion-ui.test.tsx",
     "test:ai-planner": "tsx --test tests/ai-planner.test.ts tests/ai-planner-provider.test.mjs",
     "test:pwa": "tsx --test tests/pwa.test.ts",
     "test:companion": "tsx --test tests/study-companion.test.ts tests/study-companion-provider.test.mjs tests/study-companion-agent.test.ts tests/study-companion-agent-v3.test.ts tests/study-companion-agent-provider.test.mjs tests/study-companion-agent-execute.test.mjs tests/study-companion-agent-actions.test.mjs"

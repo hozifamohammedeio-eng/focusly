@@ -2,6 +2,34 @@ import test from "node:test";
 import fs from "node:fs";
 import ts from "typescript";
 import assert from "node:assert/strict";
+import { confirmedFocusXp, isNewCompletion, completionAlreadyShowsCityGrowth, completionMessages } from "../src/features/focus/completion.ts";
+
+test("one trusted City reward uses the completion announcement without hiding other rewards", () => {
+  const growth = { eventId: "city-event", source: "direct", buildings: [{ key: "focus_tower", level: 1 }] };
+  assert.equal(completionAlreadyShowsCityGrowth({ growth }, growth), true);
+  assert.equal(completionAlreadyShowsCityGrowth({ growth }, { ...growth, eventId: "another-event" }), false);
+  assert.equal(completionAlreadyShowsCityGrowth(null, growth), false);
+  assert.equal(completionAlreadyShowsCityGrowth({ growth: null }, growth), false);
+});
+
+test("completion presentation requires a genuine finish, never recovery, cancellation or replay", () => {
+  const active = { id: "one", completed: false, timer_state: "running" };
+  const completed = { ...active, completed: true, timer_state: "completed" };
+  assert.equal(isNewCompletion("finish", active, completed), true);
+  assert.equal(isNewCompletion("finish", { ...active, timer_state: "paused" }, completed), true);
+  for (const action of ["recover", "discard", "start", "pause", "resume"]) assert.equal(isNewCompletion(action, active, completed), false);
+  assert.equal(isNewCompletion("finish", null, completed), false);
+  assert.equal(isNewCompletion("finish", completed, completed), false);
+  assert.equal(isNewCompletion("finish", active, { ...completed, id: "other" }), false);
+  assert.equal(isNewCompletion("finish", active, { ...active, timer_state: "discarded" }), false);
+  assert.equal(completionMessages.en.length, completionMessages.ar.length);
+});
+
+test("completion XP is presented only from a new valid trusted receipt", () => {
+  const receipt = { awarded: true, eventId: "event", reward: { xp: 20 } };
+  assert.equal(confirmedFocusXp(receipt), 20);
+  for (const value of [null, {}, { ...receipt, awarded: false }, { ...receipt, eventId: null }, { ...receipt, reward: { xp: -1 } }, { ...receipt, reward: { xp: "20" } }]) assert.equal(confirmedFocusXp(value), null);
+});
 
 test("timer recovery preserves auth checks without invalidating the app layout", async () => {
   const source = fs.readFileSync(new URL("../src/features/focus/actions.ts", import.meta.url), "utf8");
@@ -38,6 +66,7 @@ test("Focus claim evaluates achievements only for a new trusted reward", async (
   process.env.FOCUSLY2_REWARDS_ENABLED = "true";
   try {
     new Function("require", "exports", code)((name) => {
+      if (name === "./completion") return { confirmedFocusXp };
       if (name === "next/cache") return { revalidatePath: () => {} };
       if (name === "@/lib/supabase/server") return { createClient: async () => ({
         auth: { getUser: async () => ({ data: { user: { id: "owner" } } }) },
@@ -46,7 +75,7 @@ test("Focus claim evaluates achievements only for a new trusted reward", async (
           if (rpc === "claim_focus_progression_reward" && fail) throw new Error("network");
           return rpc === "focus_transition"
             ? { data: { session: { id: "session", completed: true, timer_state: "completed" }, serverNow: new Date().toISOString() } }
-            : { data: { awarded, achievements: awarded ? [{ achievementKey: "first_focus", reward: { xp: 1, coins: 0 } }] : [], challenges: awarded ? [{ eventId: "event" }] : [] } };
+            : { data: { awarded, eventId: "focus-event", reward: { xp: 20 }, achievements: awarded ? [{ achievementKey: "first_focus", reward: { xp: 1, coins: 0 } }] : [], challenges: awarded ? [{ eventId: "event" }] : [] } };
         },
       }) };
       if (name === "@/features/challenges/receipt") return { challengeAwardsFromClaim: (value) => value.awarded ? value.challenges : [] };
@@ -59,15 +88,18 @@ test("Focus claim evaluates achievements only for a new trusted reward", async (
     const first = await exports.focusAction(form);
     assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward"]);
     assert.equal(first.challengeAwards.length, 1);
+    assert.equal(first.focusXp, 20);
     assert.equal(first.achievementAwards.length, 1);
     awarded = false;
     const replay = await exports.focusAction(form);
     assert.deepEqual(calls, ["focus_transition", "claim_focus_progression_reward", "focus_transition", "claim_focus_progression_reward"]);
     assert.deepEqual(replay.challengeAwards, []);
+    assert.equal(replay.focusXp, null);
     assert.deepEqual(replay.achievementAwards, []);
     fail = true;
     const saved = await exports.focusAction(form);
     assert.equal(saved.session.completed, true);
+    assert.equal(saved.focusXp, null);
     assert.deepEqual(saved.challengeAwards, []);
   } finally {
     if (prior === undefined) delete process.env.FOCUSLY2_REWARDS_ENABLED;

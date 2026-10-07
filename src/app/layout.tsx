@@ -70,6 +70,7 @@ const alexandria =
 
 export const metadata:
   Metadata = {
+    metadataBase: new URL("https://focusly-beige.vercel.app"),
     applicationName: "Focusly",
     title: {
       default:

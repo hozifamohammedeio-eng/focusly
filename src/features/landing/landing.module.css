@@ -25,6 +25,8 @@
 .number { display: inline-block; direction: ltr; unicode-bidi: isolate; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
 .page h3 { font-size: 1.1rem; font-weight: 650; margin: 1.25rem 0 .7rem; }
 .features p, .steps p, .companion p, .final p, .footer p { color: var(--muted); font-size: .92rem; line-height: 1.8; max-width: 55ch; }
+.cityShowcase { margin-top: 2.5rem; padding: clamp(1.25rem, 3vw, 2.5rem); border: 1px solid var(--border); border-radius: 2rem; background: var(--surface); text-align: center; }
+.cityShowcase h3 { margin: .5rem 0 0; font-size: clamp(1.35rem, 2.5vw, 2rem); }
 .steps { list-style: none; display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem; margin-top: 2.5rem; padding: 0; }
 .steps li { border-top: 1px solid var(--border); padding-top: 1.4rem; }
 .companion { margin-block: var(--landing-section-space); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3rem; align-items: center; border-radius: 2rem; padding: 3rem; background: var(--surface); border: 1px solid var(--border); }
@@ -41,13 +43,14 @@
 .footer a { display: inline-flex; align-items: center; min-height: 44px; }
 .footer nav { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; font-size: .85rem; }
 .page :is(a,button,select):focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; border-radius: .5rem; }
+.page :global(.landing-introduction) :global(.button-primary) { background: var(--accent) !important; color: var(--accent-contrast) !important; border-color: transparent !important; }
 @media (max-width: 1000px) { .header { flex-wrap: wrap; } .features { grid-template-columns: repeat(2,minmax(0,1fr)); } .companion { padding: 2rem; gap: 2rem; } }
 @media (max-width: 899px) {
   .page :global(.landing-hero) { gap: 2rem; }
-  .page :global(.product-collage) { width: 100%; max-width: 500px; margin-inline: auto; }
+  .page :global(.product-collage) { width: 100%; max-width: 620px; margin-inline: auto; }
   .page :global(.landing-introduction) h1 { max-width: 18ch; }
 }
-@media (max-width: 700px) { .header { position: relative; padding: 1rem 1.25rem; } .header nav { justify-content: flex-start; gap: .8rem; } .features, .steps, .companion { grid-template-columns: 1fr; } .section { padding: 2.5rem 0; } .companion { margin: 2rem 0; padding: 1.25rem; } .footer { flex-direction: column; } }
+@media (max-width: 700px) { .header { position: relative; padding: .75rem 1.25rem; } .header nav { justify-content: flex-start; gap: .6rem; } .header nav :global(.button-primary) { display: none; } .page :global(.landing-page) { padding-top: .75rem; } .page :global(.landing-hero) { padding-block: .75rem; gap: 1rem; } .page :global(.landing-introduction) h1 { margin-top: .75rem; } .features, .steps, .companion { grid-template-columns: 1fr; } .section { padding: 2.5rem 0; } .companion { margin: 2rem 0; padding: 1.25rem; } .footer { flex-direction: column; } }
 @media (max-width: 390px) {
   .page :global(.landing-introduction) h1 { font-size: 2.5rem; }
   .page :global(.product-collage) { grid-template-columns: minmax(0, 1fr); }

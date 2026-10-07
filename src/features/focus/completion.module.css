@@ -1,0 +1,8 @@
+.moment { position: relative; padding: 1.25rem; margin-block: 1rem; border: 1px solid var(--border); border-radius: 1.5rem; background: var(--surface); text-align: center; animation: arrival 1.5s ease-out; }
+.moment p { line-height: 1.8; overflow-wrap: anywhere; }
+.spark { display: inline-block; color: var(--accent); font-size: 1.8rem; animation: sparkle 1.8s ease-out; }
+.xp { font-weight: 650; margin-top: .5rem; }
+.city { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: .875rem; }
+@keyframes arrival { from { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 12%, transparent); } to { box-shadow: 0 0 0 0 transparent; } }
+@keyframes sparkle { 0% { transform: scale(.75); opacity: .4; } 35% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+@media(prefers-reduced-motion: reduce) { .moment, .spark { animation: none; } }

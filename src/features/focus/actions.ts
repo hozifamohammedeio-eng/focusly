@@ -5,12 +5,13 @@ import { validName } from "@/features/auth/validation";
 import { educationFrom, validEducation } from "@/features/education/config";
 import { UUID, validZone } from "@/features/planning/logic";
 import type { TimerReply } from "./logic";
+import { confirmedFocusXp } from "./completion";
 import { challengeAwardsFromClaim, type ChallengeAward } from "@/features/challenges/receipt";
 import { cityGrowthFromClaim, type CityGrowth } from "@/features/city/receipt";
 import { achievementAwardsFromEvaluation, type AchievementAward } from "@/features/progression/achievement-receipt";
 export async function focusAction(
   form: FormData,
-): Promise<(TimerReply & { challengeAwards?: ChallengeAward[]; cityGrowth?: CityGrowth | null; achievementAwards?: AchievementAward[] }) | { error: true }> {
+): Promise<(TimerReply & { focusXp?: number | null; challengeAwards?: ChallengeAward[]; cityGrowth?: CityGrowth | null; achievementAwards?: AchievementAward[] }) | { error: true }> {
   try {
     const action = String(form.get("action") ?? ""),
       id = String(form.get("id") ?? ""),
@@ -46,6 +47,7 @@ export async function focusAction(
     let challengeAwards: ChallengeAward[] = [];
     let cityGrowth: CityGrowth | null = null;
     let achievementAwards: AchievementAward[] = [];
+    let focusXp: number | null = null;
     // The server-only flag gates the trusted reward RPC; the reply never spends locally.
     if (process.env.FOCUSLY2_REWARDS_ENABLED === "true" && reply.session?.completed) {
       try {
@@ -54,6 +56,7 @@ export async function focusAction(
         });
         if (reward.error) console.error("focus_reward_failed", { code: reward.error.code });
         else {
+          focusXp = confirmedFocusXp(reward.data);
           challengeAwards = challengeAwardsFromClaim(reward.data);
           cityGrowth = cityGrowthFromClaim(reward.data);
           if (reward.data && typeof reward.data === "object" && !Array.isArray(reward.data) && reward.data.awarded === true)
@@ -71,7 +74,7 @@ export async function focusAction(
       revalidatePath("/app/city");
       revalidatePath("/app/achievements");
     }
-    return { ...reply, challengeAwards, cityGrowth, achievementAwards };
+    return { ...reply, focusXp, challengeAwards, cityGrowth, achievementAwards };
   } catch {
     return { error: true };
   }

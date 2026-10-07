@@ -844,41 +844,34 @@ html[dir="rtl"] .eyebrow { letter-spacing: 0; }
 }
 @media(prefers-reduced-motion:reduce) { .focusly-dialog[open] { animation: none; } }
 .landing-page { max-width: 1200px; margin-inline: auto; padding: 3rem 2.5rem 0; }
-.landing-hero { display: grid; align-items: center; gap: 3rem; min-height: 660px; }
+.landing-hero { display: grid; align-items: center; gap: clamp(2rem, 4vw, 4rem); }
 .landing-introduction { position: relative; z-index: 1; }
 .landing-introduction h1 { font-size: clamp(3rem, 6.1vw, 5.5rem); margin-top: 1.75rem; font-weight: 400; line-height: 1.03; }
 .landing-description { max-width: 29rem; font-size: 1.05rem; line-height: 1.9; margin-top: 1.75rem; }
-.product-collage { position: relative; display: grid; grid-template-columns: 1fr 1fr; align-items: start; padding: 1rem 0; }
-.preview-goal { grid-column: 1 / -1; grid-row: 1; width: 80%; padding: 2rem; min-height: 300px; }
+.product-collage { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: .85rem; align-items: stretch; min-width: 0; margin: 0; }
+.preview-goal { grid-column: 2; grid-row: 2; min-width: 0; padding: 1.25rem; }
 .preview-goal .eyebrow { color: inherit; }
-.preview-duration { font-size: 3.5rem; margin-top: 1.6rem; }
-.preview-track { height: 4px; background: rgb(93 42 26 / .15); margin-top: 1.4rem; border-radius: 9999px; overflow: hidden; }
+.preview-duration { font-size: clamp(1.9rem, 3vw, 2.7rem); margin-top: .45rem; }
+.preview-track { height: 4px; background: rgb(93 42 26 / .15); margin-top: .65rem; border-radius: 9999px; overflow: hidden; }
 .preview-track span { display: block; width: 58%; height: 100%; background: var(--highlight-ink); }
-.preview-focus { grid-column: 2; grid-row: 2; margin-top: -3rem; margin-inline-start: 1rem; text-align: center; padding: 1.6rem; z-index: 1; }
-.preview-focus .quick-digits { font-size: 3.2rem; }
-.preview-pill { display: block; margin-top: 1.5rem; border-radius: 9999px; background: var(--foreground); color: var(--background); padding: .75rem; font-size: .8rem; }
-.preview-tasks { grid-column: 1; grid-row: 2; width: 100%; margin-top: 1.5rem; padding: 1.5rem; }
+.preview-focus { grid-column: 1; grid-row: 1 / 3; min-width: 0; text-align: center; padding: 1.4rem; }
+.preview-tasks { grid-column: 2; grid-row: 1; min-width: 0; padding: 1.25rem; }
 .preview-task { display: flex; gap: .75rem; font-size: .875rem; align-items: center; padding-block: .7rem; }
-.preview-task + .preview-task { border-top: 1px solid var(--border); }
-.preview-task:first-of-type span:last-child { text-decoration: line-through; color: var(--muted); }
-.product-collage figcaption { grid-column: 1 / -1; margin-top: 1.75rem; font-size: .75rem; text-align: center; }
-.landing-note { display: grid; gap: 2rem; border-top: 1px solid var(--border); padding-block: 4rem; margin-top: 4rem; }
-.landing-note h2 { font-size: clamp(2rem,3.5vw,3rem); margin-top: 1rem; }
-.landing-note > p { max-width: 28rem; align-self: center; line-height: 1.9; }
-.landing-footer { max-width: 1200px; padding: 2rem 2.5rem; margin-inline: auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; font-size: .875rem; }
-@media(min-width:900px) { .landing-hero { grid-template-columns: 1.15fr 1fr; gap: 2rem; } .landing-note { grid-template-columns: 1.15fr 1fr; } }
+.product-collage figcaption { grid-column: 1 / -1; margin-top: .25rem; font-size: .75rem; text-align: center; }
+@media(min-width:900px) { .landing-hero { grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); } }
 @media(max-width:767px) {
   .landing-page { padding: 2rem 1.25rem 0; }
   .landing-introduction h1 { font-size: clamp(2.625rem,10vw,3.25rem); }
   .landing-hero { gap: 2rem; }
-  .product-collage { max-width: 500px; width: 100%; margin-inline: auto; }
-  .preview-goal { padding: 1.5rem; width: 100%; min-height: auto; }
-  .preview-duration { font-size: 3rem; }
-  .preview-focus { margin-top: 1rem; padding: 1rem; margin-inline-start: .5rem; }
-  .preview-focus .quick-digits { font-size: 2.5rem; }
-  .preview-tasks { width: 100%; padding: 1rem; margin-top: 1rem; }
-  .landing-footer { padding-inline: 1.25rem; }
-  .landing-note { margin-top: 2rem; padding-block: 3rem; }
+  .product-collage { max-width: 620px; width: 100%; margin-inline: auto; }
+  .preview-goal { padding: 1.25rem; }
+  .preview-duration { font-size: 2rem; }
+  .preview-focus { padding: 1.25rem; }
+  .preview-tasks { padding: 1.25rem; }
+}
+@media(max-width:580px) {
+  .product-collage { grid-template-columns: minmax(0, 1fr); }
+  .preview-focus, .preview-tasks, .preview-goal { grid-column: 1; grid-row: auto; }
 }
 html[lang="ar"] .landing-introduction h1 { line-height: 1.4; font-size: clamp(2.625rem,5vw,4.5rem); }
 

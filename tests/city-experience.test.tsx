@@ -3,10 +3,13 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { registerHooks } from "node:module";
 import { renderToStaticMarkup } from "react-dom/server";
+import React from "react";
 import { LocaleProvider } from "../src/features/i18n/locale-provider";
 import { buildingCatalog } from "../src/features/city/domain";
 import { buildingView, citySummary, nextCityMilestone, type CityOverview } from "../src/features/city/overview";
 import { cityGrowthFromClaim, confirmedRecentGrowth } from "../src/features/city/receipt";
+import { confirmedTowerTransition, papercutState } from "../src/features/city/papercut";
+import type { Progress } from "../src/features/focus/logic";
 
 registerHooks({ load(url, context, nextLoad) {
   if (url.endsWith(".module.css")) return { format: "module", source: "export default new Proxy({}, { get: (_, key) => String(key) });", shortCircuit: true };
@@ -24,9 +27,61 @@ function overview(levels: number[] = [0, 0, 0, 0, 0, 0]): CityOverview {
   };
 }
 
-function html(data: CityOverview | null, locale: "en" | "ar" = "en") {
-  return renderToStaticMarkup(<LocaleProvider initial={locale}><CityExperience overview={data} /></LocaleProvider>);
+function progress(seconds = 0, streak = 0): Progress {
+  return { zone: "Africa/Cairo", today: "2026-10-07", weekStart: "2026-10-03", streak,
+    totalSeconds: seconds, totalSessions: seconds ? 1 : 0,
+    days: seconds ? [{ day: "2026-10-07", seconds, sessions: 1 }] : [], subjects: [], recent: [] };
 }
+
+function html(data: CityOverview | null, locale: "en" | "ar" = "en", focusProgress: Progress | null = null, dailyGoal: number | null = null) {
+  return renderToStaticMarkup(<LocaleProvider initial={locale}><CityExperience overview={data} focusProgress={focusProgress} dailyGoal={dailyGoal} /></LocaleProvider>);
+}
+
+test("Papercut stage uses only the persisted Focus Tower level", () => {
+  for (const [level, stage] of ["foundation", "walls", "roof", "completed"].entries()) {
+    const data = overview([3, level, 3, 3, 3, 3]);
+    assert.equal(papercutState(data, progress(12_000), 60)?.stage, stage);
+  }
+  assert.equal(papercutState(overview([0, 0, 0, 0, 0, 0]), progress(12_000), 60)?.stage, "foundation");
+});
+
+test("today-to-goal ambient and streak windows are decorative, bounded and owner-read derived", () => {
+  const data = overview();
+  assert.deepEqual([0, 15, 48, 60].map(minutes => papercutState(data, progress(minutes * 60), 60)?.ambient), ["dawn", "morning", "golden", "golden"]);
+  assert.deepEqual([0, 1, 3, 7].map(streak => papercutState(data, progress(0, streak), 60)?.litWindows), [1, 2, 3, 4]);
+  assert.equal(papercutState(data, progress(9000, 7), 60)?.percent, 100);
+  assert.equal(papercutState(data, progress(), 60)?.todayMinutes, 0);
+});
+
+test("unavailable City, Focus or goal never renders invented Papercut progress", () => {
+  assert.equal(papercutState(null, progress(), 60), null);
+  assert.equal(papercutState(overview(), null, 60), null);
+  assert.equal(papercutState(overview(), progress(), null)?.goalMinutes, 120);
+  assert.equal(papercutState(overview(), progress(), 0), null);
+  const rendered = html(overview(), "en", null, 60);
+  assert.match(rendered, /Focus Tower scene is unavailable/);
+  assert.doesNotMatch(rendered, /TODAY&#x27;S FOCUS/);
+});
+
+test("Papercut matches Focus and Dashboard's 120-minute fallback for an unset saved goal", () => {
+  const state = papercutState(overview([0, 1, 0, 0, 0, 0]), progress(60 * 60), null);
+  assert.equal(state?.goalMinutes, 120);
+  assert.equal(state?.ambient, "morning");
+  assert.match(html(overview(), "en", progress(60 * 60), null), /60 \/ 120/);
+});
+
+test("Papercut SVG preserves LTR/RTL UI without mirroring the artwork", () => {
+  const en = html(overview([0, 2, 0, 0, 0, 0]), "en", progress(1800, 3), 60);
+  const ar = html(overview([0, 2, 0, 0, 0, 0]), "ar", progress(1800, 3), 60);
+  assert.match(en, /data-ambient="morning"/);
+  assert.match(en, /Roof/);
+  assert.match(en, /30 \/ 60/);
+  assert.match(ar, /dir="rtl"/);
+  assert.match(ar, /السقف/);
+  assert.match(ar, /<bdi dir="ltr">30 \/ 60<\/bdi>/);
+  assert.match(en, /viewBox="0 0 640 310"/);
+  assert.match(ar, /viewBox="0 0 640 310"/);
+});
 
 test("all six authoritative buildings render with owner levels and bilingual direction", () => {
   const en = html(overview([0, 1, 2, 3, 0, 0]));
@@ -85,6 +140,10 @@ test("only a newly awarded, matching City receipt can animate and cannot replay"
   const activity = [{ key: "focus_tower" as const, level: 1, at: "2026-09-30T00:00:00Z", sourceRewardEventId: "event-1" }];
   const raw = JSON.stringify({ at: 1000, growth });
   assert.deepEqual(confirmedRecentGrowth(raw, activity, 1001), ["focus_tower"]);
+  assert.deepEqual(confirmedTowerTransition(raw, activity, 1001, 1), { from: 0, to: 1 });
+  assert.equal(confirmedTowerTransition(raw, activity, 1001, 2), null);
+  assert.equal(confirmedTowerTransition(raw, [], 1001, 1), null);
+  assert.equal(confirmedTowerTransition(raw, activity, 400_001, 1), null);
   assert.deepEqual(confirmedRecentGrowth(raw, activity, 400_001), []);
   assert.deepEqual(confirmedRecentGrowth(raw, [], 1001), []);
   assert.deepEqual(confirmedRecentGrowth(null, activity, 1001), []);
@@ -93,12 +152,30 @@ test("only a newly awarded, matching City receipt can animate and cannot replay"
   assert.equal(cityGrowthFromClaim({ ...challengeClaim, awarded: false }), null);
 });
 
+test("multi-step Tower reveal requires each persisted transaction and a one-time consumed hint", () => {
+  const growth = { eventId: "focus-award", buildings: [{ key: "focus_tower", level: 2 }, { key: "focus_tower", level: 3 }] };
+  const raw = JSON.stringify({ at: 1000, growth });
+  const activity = [2, 3].map(level => ({ key: "focus_tower" as const, level, at: "2026-10-07T00:00:00Z", sourceRewardEventId: "focus-award" }));
+  assert.deepEqual(confirmedTowerTransition(raw, activity, 1001, 3), { from: 1, to: 3 });
+  assert.equal(confirmedTowerTransition(raw, activity.slice(1), 1001, 3), null);
+  assert.equal(confirmedTowerTransition(null, activity, 1001, 3), null);
+  const presentation = readFileSync(new URL("../src/app/app/city/city-experience.tsx", import.meta.url), "utf8");
+  const visual = readFileSync(new URL("../src/app/app/city/papercut-city.tsx", import.meta.url), "utf8");
+  assert.match(presentation, /sessionStorage\.removeItem\(CITY_GROWTH_STORAGE_KEY\)/);
+  assert.doesNotMatch(visual, /\.rpc\(|\.from\(|focusAction|claimReward/);
+});
+
 test("mobile, keyboard focus and reduced motion rules remain in the City stylesheet", () => {
   const css = readFileSync(new URL("../src/app/app/city/city.module.css", import.meta.url), "utf8");
+  const papercutCss = readFileSync(new URL("../src/app/app/city/papercut-city.module.css", import.meta.url), "utf8");
   assert.match(css, /max-width: 720px/);
   assert.match(css, /max-width: 440px/);
   assert.match(css, /:focus-visible/);
   assert.match(css, /prefers-reduced-motion: reduce/);
+  assert.match(papercutCss, /max-width: 600px/);
+  assert.match(papercutCss, /:focus-visible/);
+  assert.match(papercutCss, /prefers-reduced-motion: reduce/);
+  assert.match(papercutCss, /animation: none/);
 });
 
 test("six distinct vector buildings reflect persisted levels without client-side guesses", () => {

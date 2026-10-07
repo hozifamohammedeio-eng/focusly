@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { getIdentity } from "@/features/auth/session";
+import { TimerDemo, TaskDemo, CityDemo, CompanionDemo, Reveal } from "./demos";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { phase2 } from "@/features/i18n/phase2";
@@ -8,7 +10,10 @@ import styles from "./landing.module.css";
 import { phase4 } from "@/features/i18n/phase4";
 
 export async function Landing() {
-  const locale = (await cookies()).get("focusly-locale")?.value === "ar" ? "ar" : "en";
+  const savedLocale = (await cookies()).get("focusly-locale")?.value;
+  const preferred = (await headers()).get("accept-language")?.split(",")[0]?.trim().toLowerCase();
+  const locale = savedLocale === "ar" || savedLocale === "en" ? savedLocale : preferred?.startsWith("ar") ? "ar" : "en";
+  const identity = await getIdentity();
   const t = phase2[locale];
   const p = phase4[locale];
   const ar = locale === "ar";
@@ -20,11 +25,10 @@ export async function Landing() {
         <nav aria-label={ar ? "التنقل الرئيسي" : "Main navigation"}>
           <a href="#features">{ar ? "المميزات" : "Features"}</a><a href="#how-it-works">{ar ? "بنبدأ إزاي" : "How it works"}</a>
           <LandingControls ar={ar} />
-          <Link href="/login">{ar ? "دخول" : "Log in"}</Link><ButtonLink href="/signup">{ar ? "ابدأ دلوقتي" : "Get started"}</ButtonLink>
-          <Link href="/app">{ar ? "لوحة التحكم" : "Go to Dashboard"}</Link>
+          {identity.kind === "authenticated" ? <Link href="/app">{ar ? "لوحة التحكم" : "Go to Dashboard"}</Link> : <><Link href="/login">{ar ? "دخول" : "Log in"}</Link><ButtonLink href="/signup">{ar ? "ابدأ دلوقتي" : "Get started"}</ButtonLink></>}
         </nav>
       </header>
-      <main id="main" className="landing-page">
+      <main id="main" className="landing-page"><Reveal>
         <div className="landing-hero">
           <section className="landing-introduction">
             <p className="eyebrow">{t.built}</p>
@@ -36,23 +40,22 @@ export async function Landing() {
             </div>
           </section>
           <figure className="product-collage" aria-label={t.previewLabel}>
+            <Card variant="floating" className="preview-focus">
+              <p className="eyebrow">{ar ? "جرّب مؤقت التركيز" : "TRY THE FOCUS TIMER"}</p>
+              <p className="muted text-sm">{t.subjectNames.Mathematics}</p>
+              <TimerDemo ar={ar} />
+            </Card>
+            <Card variant="floating" className="preview-tasks">
+              <p className="mb-2 text-sm font-medium">{ar ? "جرّب مهمة من مهامك" : "TRY A DAILY TASK"}</p>
+              <TaskDemo ar={ar} />
+              <div className="preview-task"><span aria-hidden="true">○</span><span>{ar ? "قراءة الفصل التالي" : "Read the next chapter"}</span></div>
+            </Card>
             <Card variant="accent" className="preview-goal">
               <p className="eyebrow">{p.goal}</p>
               <p className="preview-duration display-type"><bdi>{ar ? "١س ٤٥د" : "1h 45m"}</bdi></p>
               <p>{ar ? "من هدف ٣ ساعات" : "of a 3 hour goal"}</p>
               <div className="preview-track" aria-hidden="true"><span /></div>
               <p className="mt-5 text-sm">{t.intentText}</p>
-            </Card>
-            <Card variant="floating" className="preview-focus">
-              <p className="eyebrow">{p.focus}</p>
-              <p className="quick-digits" dir="ltr">25:00</p>
-              <p className="muted text-sm">{t.subjectNames.Mathematics}</p>
-              <span className="preview-pill" aria-hidden="true">{p.startSession}</span>
-            </Card>
-            <Card variant="floating" className="preview-tasks">
-              <p className="mb-4 text-sm font-medium">{p.todayTasks}</p>
-              <div className="preview-task"><span aria-hidden="true">✓</span><span>{ar ? "مراجعة الجبر" : "Review algebra"}</span></div>
-              <div className="preview-task"><span aria-hidden="true">○</span><span>{ar ? "قراءة الفصل التالي" : "Read the next chapter"}</span></div>
             </Card>
             <figcaption className="muted">{ar ? "لمحة توضيحية عن مساحة دراستك" : "An illustrative look at your study space"}</figcaption>
           </figure>
@@ -68,6 +71,10 @@ export async function Landing() {
             ["Goals & Progress", "الأهداف والتقدّم", "Set a daily goal and see your focus time and study patterns in Statistics.", "حدد هدفك اليومي وتابع وقت تركيزك وعادات مذاكرتك في الإحصائيات."],
             ["Challenges & Your City", "التحديات ومدينتك", "Take on challenges, unlock achievements, and grow your city through study progress.", "شارك في التحديات، افتح إنجازات، وشوف مدينتك بتكبر مع تقدّمك."]
           ].map(([en, arabic, body, arabicBody], i) => <article key={en}><span className={styles.number}>0{i + 1}</span><h3>{ar ? arabic : en}</h3><p>{ar ? arabicBody : body}</p></article>)}</div>
+          <div className={styles.cityShowcase}>
+            <div><p className="eyebrow">{ar ? "جرّب مراحل المدينة" : "EXPLORE THE CITY"}</p><h3>{ar ? "ذاكر ← اتقدّم ← ابنِ مدينتك" : "Study → Progress → Build your city"}</h3></div>
+            <CityDemo ar={ar} />
+          </div>
         </section>
         <section id="how-it-works" className={styles.section} aria-labelledby="steps-title">
           <p className="eyebrow">{ar ? "على طريقتك" : "Make it yours"}</p><h2 id="steps-title">{ar ? "بداية جديدة في تلات خطوات." : "A fresh start in three steps."}</h2>
@@ -79,15 +86,14 @@ export async function Landing() {
         </section>
         <section className={styles.companion} aria-labelledby="companion-title">
           <div><p className="eyebrow">{ar ? "اتعرّف على رفيق المذاكرة" : "Meet your Study Companion"}</p><h2 id="companion-title">{ar ? "مساعدة بسيطة، في وقتها." : "A little help, right when you need it."}</h2><p>{ar ? "حوّل فكرتك لخطوة مترتبة. رفيقك يساعدك في المهام والتذكيرات والخطط والأهداف جوه Focusly." : "Turn a thought into an organized next step. Your Companion helps with tasks, reminders, plans, and goals across Focusly."}</p></div>
-          <figure className={styles.chat}><figcaption>{ar ? "محادثة توضيحية" : "Illustrative conversation"}</figcaption>
+          <CompanionDemo ar={ar}><figure className={styles.chat}><figcaption>{ar ? "جرّب المحادثة التوضيحية" : "TRY THE ILLUSTRATIVE CONVERSATION"}</figcaption>
             <p className={styles.student}>{ar ? "انقل جلسة البرمجة بتاعة بكرة للساعة ٧ مساءً." : "Move tomorrow’s programming session to 7 PM."}</p>
             <p>{ar ? "تمام 👌 خلينا نتأكد إن الوقت فاضي." : "Sure 👌 Let’s check that the time is free."}</p>
             <p className={styles.student}>{ar ? "وخلي هدفي اليومي ٩٠ دقيقة." : "And set my daily goal to 90 minutes."}</p>
-            <p>{ar ? "تمام ✅ هدفك اليومي بقى ٩٠ دقيقة." : "Done ✅ Your daily goal is 90 minutes."}</p>
-          </figure>
+          </figure></CompanionDemo>
         </section>
         <section className={styles.final}><h2>{ar ? "جاهز تنظم مذاكرتك؟" : "Ready to make studying feel easier?"}</h2><p>{ar ? "ابدأ بخطوة بسيطة، وخلي كل يوم أقرب لهدفك." : "Build better study habits, one focused day at a time."}</p><ButtonLink href="/signup">{ar ? "ابدأ مع Focusly" : "Start Using Focusly"}</ButtonLink></section>
-      </main>
+      </Reveal></main>
       <footer className={styles.footer}><div><span className={styles.brand} dir="ltr">focusly.</span><p>{ar ? "تخطيط وتركيز وتقدّم. في مكان واحد." : "Study planning, focus, and progress. Together."}</p></div><nav aria-label={ar ? "روابط إضافية" : "Footer"}><Link href="/login">{ar ? "تسجيل الدخول" : "Log in"}</Link><Link href="/signup">{ar ? "إنشاء حساب" : "Create account"}</Link></nav></footer>
     </div>
   );

@@ -52,6 +52,8 @@ import {
 } from "./logic";
 
 import { GoalCard } from "./progress-ui";
+import { CompletionMoment } from "./completion-card";
+import { completionAlreadyShowsCityGrowth, isNewCompletion } from "./completion";
 
 import styles from "./timer.module.css";
 
@@ -97,6 +99,8 @@ export function FocusTimer({
   const [challengeAwards, setChallengeAwards] = useState<ChallengeAward[]>([]);
   const [achievementAwards, setAchievementAwards] = useState<AchievementAward[]>([]);
   const [cityGrowth, setCityGrowth] = useState<CityGrowth | null>(null);
+  const [completion, setCompletion] = useState<{ id: string; message: number; xp: number | null; growth: CityGrowth | null } | null>(null);
+  const celebrated = useRef(new Set<string>());
   const dismissChallengeAwards = useCallback(() => setChallengeAwards([]), []);
   const dismissAchievementAwards = useCallback(() => setAchievementAwards([]), []);
   const dismissCityGrowth = useCallback(() => setCityGrowth(null), []);
@@ -257,6 +261,20 @@ export function FocusTimer({
               ?.completed &&
             !current.current
               ?.completed;
+          if (isNewCompletion(action, current.current, result.session) && result.session && !celebrated.current.has(result.session.id)) {
+            const id = result.session.id;
+            celebrated.current.add(id);
+            let message = 0;
+            let alreadySeen = false;
+            try {
+              const key = `focusly-completion:${userId}`;
+              const saved = JSON.parse(sessionStorage.getItem(key) ?? "null") as { id?: string; count?: number } | null;
+              alreadySeen = saved?.id === id;
+              message = Number.isSafeInteger(saved?.count) ? Math.max(0, saved!.count!) % 4 : 0;
+              sessionStorage.setItem(key, JSON.stringify({ id, count: message + 1 }));
+            } catch { /* Storage is optional; the in-memory guard still applies. */ }
+            if (!alreadySeen) setCompletion({ id, message, xp: result.focusXp ?? null, growth: result.cityGrowth ?? null });
+          }
           if (result.challengeAwards?.length) setChallengeAwards(result.challengeAwards);
           if (result.achievementAwards?.length) setAchievementAwards(result.achievementAwards);
           if (result.cityGrowth) setCityGrowth(result.cityGrowth);
@@ -314,7 +332,7 @@ export function FocusTimer({
           setPending(false);
         }
       },
-      [router],
+      [router, userId],
     );
 
   useEffect(() => {
@@ -527,7 +545,7 @@ export function FocusTimer({
     >
       <ChallengeRewardToast awards={challengeAwards} onDismiss={dismissChallengeAwards} />
       <AchievementRewardToast awards={achievementAwards} onDismiss={dismissAchievementAwards} />
-      <CityGrowthToast growth={cityGrowth} onDismiss={dismissCityGrowth} />
+      <CityGrowthToast growth={cityGrowth} onDismiss={dismissCityGrowth} suppressAnnouncement={completionAlreadyShowsCityGrowth(completion, cityGrowth)} />
       <header
         className={
           styles.header
@@ -957,6 +975,7 @@ export function FocusTimer({
 
                 {session.completed ? (
                   <>
+                    {completion?.id === session.id && <CompletionMoment key={session.id} locale={locale} message={completion.message} xp={completion.xp} growth={completion.growth} />}
                     <p
                       className={
                         styles.synced

@@ -13,7 +13,6 @@ import {
 import {
   calculateProgressionFromEvents,
   createProgressionSnapshot,
-  EMPTY_PROGRESSION_BALANCES,
 } from "./calculator";
 import { createSubjectProgressSnapshots } from "./mastery";
 
@@ -243,40 +242,3 @@ export const getAchievementSummary = cache(async () => {
     return { kind: "unavailable" as const };
   }
 });
-
-export async function evaluateProgressionAchievements() {
-  const identity = await getIdentity();
-  if (identity.kind !== "authenticated") {
-    throw new Error("Authentication required");
-  }
-  const result = await identity.client.rpc("evaluate_progression_achievements");
-  if (result.error) throw new Error("Achievement evaluation unavailable");
-  return result.data;
-}
-
-export async function claimFocusProgressionReward(sessionId: string) {
-  const identity = await getIdentity();
-  if (identity.kind !== "authenticated") {
-    throw new Error("Authentication required");
-  }
-  const result = await identity.client.rpc("claim_focus_progression_reward", {
-    p_session_id: sessionId,
-  });
-  if (result.error) throw new Error("Focus reward unavailable");
-  return result.data;
-}
-
-export async function claimTaskProgressionReward(taskId: string) {
-  const identity = await getIdentity();
-  if (identity.kind !== "authenticated") {
-    throw new Error("Authentication required");
-  }
-  const result = await identity.client.rpc("claim_task_progression_reward", {
-    p_task_id: taskId,
-  });
-  if (result.error) throw new Error("Task reward unavailable");
-  return result.data;
-}
-
-export const emptyProgressionSnapshot = (): ProgressionSnapshot =>
-  createProgressionSnapshot(EMPTY_PROGRESSION_BALANCES);

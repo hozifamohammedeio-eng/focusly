@@ -1,0 +1,40 @@
+.scene { --sky: #d7d5df; --horizon: #b1b4b1; --sun: #f0d6b1; --ground: #879d8c; display: grid; gap: 1rem; overflow: hidden; margin-block: 1.5rem; border: 1px solid var(--border); border-radius: 1.75rem; background: var(--surface); }
+.scene[data-ambient="morning"] { --sky: #c1d9dc; --horizon: #c2cfbb; --sun: #f8dfaa; --ground: #8aab93; }
+.scene[data-ambient="golden"] { --sky: #f2cda5; --horizon: #e7c49c; --sun: #fff0bb; --ground: #9baa81; }
+.heading { display: flex; justify-content: space-between; align-items: end; gap: 1rem; padding: 1.5rem 1.5rem 0; }
+.heading h2 { font-size: clamp(1.25rem, 2.5vw, 1.9rem); line-height: 1.35; font-weight: 700; }
+.heading > p { max-width: 32ch; color: var(--muted); font-size: .86rem; line-height: 1.6; }
+.eyebrow { color: var(--muted); font-size: .69rem; font-weight: 700; letter-spacing: .04em; }
+.heading .eyebrow { margin-bottom: .35rem; }
+.art { display: block; width: 100%; max-height: 310px; }
+.sky { fill: var(--sky); }
+.sun { fill: var(--sun); }
+.hillBack { fill: var(--horizon); }
+.hillFront { fill: var(--ground); }
+.path { fill: #c6b6a5; }
+.plaza { fill: #ddd2bf; }
+.tree path { fill: none; stroke: #645f59; stroke-width: 4; }
+.tree circle { fill: #577d63; }
+.paperShadow { fill: #313837; opacity: .16; }
+.foundation { fill: #778c88; stroke: #4e6766; stroke-width: 2; }
+.scaffold { fill: none; stroke: #8a6b57; stroke-width: 5; stroke-linejoin: round; }
+.wall { fill: #e0d3b8; stroke: #927c70; stroke-width: 2; }
+.wallSide { fill: #a48e7c; }
+.arch { fill: #566965; stroke: #f1e4c7; stroke-width: 3; }
+.window, .windowLit { stroke: #877a68; stroke-width: 2; }
+.window { fill: #667e82; }
+.windowLit { fill: #ffe9a5; }
+.roof { fill: #656d73; stroke: #d6c8b7; stroke-width: 3; stroke-linejoin: round; }
+.spire { fill: none; stroke: #8c6955; stroke-width: 4; }
+.spireDot { fill: #efc982; }
+.info { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; padding: 0 1.5rem 1.5rem; }
+.info > div { display: grid; gap: .2rem; flex: 1 1 9rem; }
+.info strong { font-size: 1rem; }
+.info span { color: var(--muted); font-size: .75rem; }
+.info button { min-height: 44px; border: 1px solid var(--border); border-radius: 999px; padding: .5rem 1rem; background: var(--surface-subtle); font-size: .8rem; }
+.info button:hover { border-color: var(--accent); }
+.info button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.scene[data-revealed="true"] .tower { animation: built .7s ease-out; transform-origin: 50% 100%; }
+@keyframes built { from { opacity: .55; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+@media (max-width: 600px) { .heading { display: block; padding: 1.1rem 1.1rem 0; } .heading > p { margin-top: .5rem; } .info { padding: 0 1.1rem 1.1rem; } .art { min-height: 175px; } }
+@media (prefers-reduced-motion: reduce) { .scene[data-revealed="true"] .tower { animation: none; } }

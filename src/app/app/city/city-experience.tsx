@@ -7,6 +7,9 @@ import { cityCopy } from "@/features/i18n/city";
 import type { BuildingKey } from "@/features/city/domain";
 import { buildingView, citySummary, nextCityMilestone, type CityBuilding, type CityOverview } from "@/features/city/overview";
 import { CITY_GROWTH_STORAGE_KEY, confirmedRecentGrowth } from "@/features/city/receipt";
+import { confirmedTowerTransition, papercutState } from "@/features/city/papercut";
+import type { Progress } from "@/features/focus/logic";
+import { PapercutCity } from "./papercut-city";
 import { buildings } from "./city-buildings";
 import { CityBuildingArt } from "./city-building-art";
 import styles from "./city.module.css";
@@ -18,13 +21,14 @@ function Status({ building, overview, locale }: { building: CityBuilding; overvi
   return <span className={`${styles.status} ${styles[view.state]}`}>{label}</span>;
 }
 
-export function CityExperience({ overview }: { overview: CityOverview | null }) {
+export function CityExperience({ overview, focusProgress = null, dailyGoal = null }: { overview: CityOverview | null; focusProgress?: Progress | null; dailyGoal?: number | null }) {
   const { locale } = useLocale();
   const t = cityCopy[locale];
   const ar = locale === "ar";
   const number = (value: number) => new Intl.NumberFormat(locale).format(value);
   const [selectedKey, setSelectedKey] = useState<BuildingKey>("knowledge_center");
   const [growing, setGrowing] = useState<BuildingKey[]>([]);
+  const [towerFrom, setTowerFrom] = useState<number | null>(null);
   useEffect(() => {
     if (!overview) return;
     let raw: string | null = null;
@@ -34,7 +38,12 @@ export function CityExperience({ overview }: { overview: CityOverview | null }) 
     } catch { /* Optional browser storage. */ }
     const confirmed = confirmedRecentGrowth(raw, overview.activity, Date.now());
     if (!confirmed.length) return;
-    const show = window.setTimeout(() => setGrowing(confirmed), 0);
+    const tower = overview.buildings.find(building => building.key === "focus_tower");
+    const transition = tower ? confirmedTowerTransition(raw, overview.activity, Date.now(), tower.level) : null;
+    const show = window.setTimeout(() => {
+      if (transition) setTowerFrom(transition.from);
+      setGrowing(confirmed);
+    }, 0);
     const settle = window.setTimeout(() => setGrowing([]), 900);
     return () => { window.clearTimeout(show); window.clearTimeout(settle); };
   }, [overview]);
@@ -44,6 +53,7 @@ export function CityExperience({ overview }: { overview: CityOverview | null }) 
   </main>;
 
   const summary = citySummary(overview);
+  const papercut = papercutState(overview, focusProgress, dailyGoal);
   const selected = overview.buildings.find(building => building.key === selectedKey) ?? overview.buildings[0];
   const milestone = nextCityMilestone(overview);
   const next = selected ? buildingView(selected, overview) : null;
@@ -78,6 +88,10 @@ export function CityExperience({ overview }: { overview: CityOverview | null }) 
                 : t.ready}</p></> : <p>{t.allComplete}</p>}
       </section>
     </div>
+
+    {papercut
+      ? <PapercutCity key={`${papercut.level}:${towerFrom ?? "steady"}`} scene={papercut} locale={locale} fromLevel={towerFrom} onSelect={() => setSelectedKey("focus_tower")} />
+      : <div className={styles.unavailable} role="status">{ar ? "مش قادرين نعرض مشهد برج التركيز دلوقتي. تفاصيل المدينة موجودة تحت." : "The Focus Tower scene is unavailable right now. Your City details remain below."}</div>}
 
     <div className={styles.workspace}>
       <section className={styles.mapPanel} aria-labelledby="city-map-title">
